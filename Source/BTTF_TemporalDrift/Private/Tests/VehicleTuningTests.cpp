@@ -5,6 +5,7 @@
 #include "DeLoreanVehicle.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
+#include "GameFramework/SpringArmComponent.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FBTTFVehicleTuningDefaultsTest,
@@ -62,6 +63,9 @@ bool FBTTFHeroVehicleContractTest::RunTest(const FString& Parameters)
         Vehicle->HasPrototypeVisuals());
     TestEqual(TEXT("Vehicle exposes four camera modes"),
         Vehicle->GetCameraModeCount(), 4);
+    TestTrue(TEXT("Default chase camera frames the hero vehicle closely"),
+        Vehicle->CameraSpringArm->TargetArmLength >= 450.0f &&
+        Vehicle->CameraSpringArm->TargetArmLength <= 600.0f);
     return !HasAnyErrors();
 }
 

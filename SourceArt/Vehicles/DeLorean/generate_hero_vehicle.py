@@ -99,9 +99,9 @@ for name,pos in wheel_positions.items():
     hub=bpy.context.object; hub.name=name+'_Hub'; hub.data.materials.append(ALLOY); bevel(hub,1,2); move_to_collection(hub)
 
 # Original rear time apparatus: rails, reactor, coils, and emissive conduits.
-box('TimeMachinery',(-135,0,105),(54,55,14),TRIM,3)
+box('TimeMachinery',(-138,0,101),(48,49,10),TRIM,3)
 for y in (-48,0,48): box('FluxRail_'+str(y),(-135,y,126),(48,3,4),ALLOY,1)
-bpy.ops.mesh.primitive_cylinder_add(vertices=24,radius=22,depth=34,location=(-148,0,139),rotation=(0,math.radians(90),0))
+bpy.ops.mesh.primitive_cylinder_add(vertices=24,radius=11,depth=26,location=(-151,0,121),rotation=(0,math.radians(90),0))
 reactor=bpy.context.object; reactor.name='FluxReactor'; reactor.data.materials.append(EMISSIVE); bevel(reactor,1.5); move_to_collection(reactor)
 for y in (-62,62): box('EmissiveConduit_'+str(y),(-112,y,132),(58,2.5,2.5),EMISSIVE,1)
 for y in (-43,43): box('HeadLamp_'+str(y),(210,y,59),(2,17,6),LAMPS,1)
@@ -126,6 +126,7 @@ bpy.ops.wm.save_as_mainfile(filepath=str(ROOT/'HeroTimeMachine.blend'))
 EXPORT.parent.mkdir(parents=True,exist_ok=True)
 bpy.ops.object.select_all(action='DESELECT')
 for obj in collection.objects:
-    if obj.type=='MESH': obj.select_set(True)
+    if obj.type=='MESH' and not obj.name.startswith(('UCX_','LOD1_','LOD2_')):
+        obj.select_set(True)
 bpy.ops.export_scene.fbx(filepath=str(EXPORT), use_selection=True, apply_scale_options='FBX_SCALE_UNITS', axis_forward='-Y', axis_up='Z', add_leaf_bones=False, mesh_smooth_type='FACE', use_mesh_modifiers=True)
 print(f'HERO_EXPORT={EXPORT}')

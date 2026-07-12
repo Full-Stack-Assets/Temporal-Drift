@@ -64,10 +64,10 @@ ADeLoreanVehicle::ADeLoreanVehicle()
     // Chase camera
     CameraSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
     CameraSpringArm->SetupAttachment(RootComponent);
-    CameraSpringArm->TargetArmLength = 800.0f;
-    CameraSpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 175.0f));
-    CameraSpringArm->SetRelativeRotation(FRotator(-12.0f, 0.0f, 0.0f));
-    CameraSpringArm->SocketOffset = FVector(0.0f, 0.0f, 100.0f);
+    CameraSpringArm->TargetArmLength = 525.0f;
+    CameraSpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 105.0f));
+    CameraSpringArm->SetRelativeRotation(FRotator(-7.0f, 0.0f, 0.0f));
+    CameraSpringArm->SocketOffset = FVector(0.0f, 0.0f, 45.0f);
     // The prototype's giant cube floor can collapse a spring arm to the pawn
     // origin, hiding the vehicle. Keep a stable chase view in the test level.
     CameraSpringArm->bDoCollisionTest = false;
