@@ -2,6 +2,23 @@
 #include "Misc/AutomationTest.h"
 #include "MissionSubsystem.h"
 #include "Engine/GameInstance.h"
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFCampaignMissionAssetsTest,"BTTF.Mission.CampaignAssetsLoad",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FBTTFCampaignMissionAssetsTest::RunTest(const FString& Parameters)
+{
+    const TCHAR* Paths[]={
+        TEXT("/Game/Data/Missions/Campaign/DA_Mission_M01_FirstTestRun.DA_Mission_M01_FirstTestRun"),
+        TEXT("/Game/Data/Missions/Campaign/DA_Mission_M02_ClocktowerCalibration.DA_Mission_M02_ClocktowerCalibration"),
+        TEXT("/Game/Data/Missions/Campaign/DA_Mission_M03_TownOutOfTime.DA_Mission_M03_TownOutOfTime"),
+        TEXT("/Game/Data/Missions/Campaign/DA_Mission_M04_MissingComponent.DA_Mission_M04_MissingComponent"),
+        TEXT("/Game/Data/Missions/Campaign/DA_Mission_M05_RaceTheLightning.DA_Mission_M05_RaceTheLightning")};
+    for(const TCHAR* Path:Paths)
+    {
+        UMissionDataAsset* Mission=LoadObject<UMissionDataAsset>(nullptr,Path);
+        TestNotNull(FString::Printf(TEXT("Mission loads: %s"),Path),Mission);
+        if(Mission)TestTrue(TEXT("Mission contains objectives"),Mission->Objectives.Num()>=4);
+    }
+    return !HasAnyErrors();
+}
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFMissionProgressTest,"BTTF.Mission.ProgressAndCheckpoint",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
 bool FBTTFMissionProgressTest::RunTest(const FString& Parameters)
 {
