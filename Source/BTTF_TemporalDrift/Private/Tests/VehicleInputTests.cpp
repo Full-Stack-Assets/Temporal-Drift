@@ -68,4 +68,44 @@ bool FBTTFVehicleResetTest::RunTest(const FString& Parameters)
     return bPassed;
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FBTTFVehicleCameraCycleTest,
+    "BTTF.Vehicle.Input.CameraCyclesAllPresets",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFVehicleCameraCycleTest::RunTest(const FString& Parameters)
+{
+    ADeLoreanVehicle* Vehicle = NewObject<ADeLoreanVehicle>();
+    TestEqual(TEXT("Camera starts on chase preset"), Vehicle->GetActiveCameraIndex(), 0);
+
+    Vehicle->ToggleCamera();
+    TestEqual(TEXT("First toggle selects hood preset"), Vehicle->GetActiveCameraIndex(), 1);
+    Vehicle->ToggleCamera();
+    TestEqual(TEXT("Second toggle selects bumper preset"), Vehicle->GetActiveCameraIndex(), 2);
+    Vehicle->ToggleCamera();
+    TestEqual(TEXT("Third toggle selects cockpit preset"), Vehicle->GetActiveCameraIndex(), 3);
+    Vehicle->ToggleCamera();
+    TestEqual(TEXT("Fourth toggle wraps to chase preset"), Vehicle->GetActiveCameraIndex(), 0);
+    return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FBTTFDestinationCycleTest,
+    "BTTF.Vehicle.Input.DestinationCyclesSupportedEras",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFDestinationCycleTest::RunTest(const FString& Parameters)
+{
+    ADeLoreanVehicle* Vehicle = NewObject<ADeLoreanVehicle>();
+    Vehicle->InputTargetEra = ETimelineState::Past1955;
+
+    Vehicle->CycleDestinationEra(1);
+    TestEqual(TEXT("Forward cycle selects 1985"), Vehicle->InputTargetEra, ETimelineState::Present1985);
+    Vehicle->CycleDestinationEra(-1);
+    TestEqual(TEXT("Backward cycle returns to 1955"), Vehicle->InputTargetEra, ETimelineState::Past1955);
+    Vehicle->CycleDestinationEra(-1);
+    TestEqual(TEXT("Backward cycle wraps to 1885"), Vehicle->InputTargetEra, ETimelineState::WildWest1885);
+    return true;
+}
+
 #endif

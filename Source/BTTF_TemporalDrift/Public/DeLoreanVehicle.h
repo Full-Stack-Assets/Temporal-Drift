@@ -113,6 +113,15 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Vehicle|Recovery")
     void SetLastSafeTransform(const FTransform& SafeTransform);
 
+    UFUNCTION(BlueprintCallable, Category = "Camera")
+    void ToggleCamera();
+
+    UFUNCTION(BlueprintPure, Category = "Camera")
+    int32 GetActiveCameraIndex() const { return ActiveCameraIndex; }
+
+    UFUNCTION(BlueprintCallable, Category = "Time Travel")
+    void CycleDestinationEra(int32 Direction);
+
     UFUNCTION(BlueprintCallable, Category = "Flux Capacitor")
     void UpdateFluxCapacitor(float DeltaTime);
 
@@ -139,6 +148,9 @@ protected:
 
     UPROPERTY(VisibleInstanceOnly, Category = "Vehicle|Recovery")
     FTransform LastSafeTransform;
+
+    UPROPERTY(VisibleInstanceOnly, Category = "Camera")
+    int32 ActiveCameraIndex = 0;
 
     // Input handlers
     void HandleThrottle(const FInputActionValue& Value);
