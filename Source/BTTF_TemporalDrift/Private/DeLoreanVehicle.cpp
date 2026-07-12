@@ -94,6 +94,8 @@ void ADeLoreanVehicle::BeginPlay()
 {
     Super::BeginPlay();
 
+    LastSafeTransform = GetActorTransform();
+
     if (USkeletalMeshComponent* VehicleMesh = GetMesh())
     {
         // BP_DeLorean had Simulate Physics disabled in its saved component
@@ -291,9 +293,7 @@ void ADeLoreanVehicle::ApplyKeyboardFallback()
         (PlayerController->IsInputKeyDown(EKeys::A) ? 1.0f : 0.0f);
     const float Brake = PlayerController->IsInputKeyDown(EKeys::SpaceBar) ? 1.0f : 0.0f;
 
-    Movement->SetThrottleInput(Throttle);
-    Movement->SetSteeringInput(Steering);
-    Movement->SetBrakeInput(Brake);
+    ApplyVehicleInput(Throttle, Steering, Brake, PlayerController->IsInputKeyDown(EKeys::SpaceBar));
 
     if (!FMath::IsNearlyEqual(Throttle, LastKeyboardThrottle) ||
         !FMath::IsNearlyEqual(Steering, LastKeyboardSteering) ||
@@ -317,6 +317,42 @@ void ADeLoreanVehicle::ApplyKeyboardFallback()
         LastKeyboardThrottle = Throttle;
         LastKeyboardSteering = Steering;
         LastKeyboardBrake = Brake;
+    }
+}
+
+void ADeLoreanVehicle::ApplyVehicleInput(
+    float Throttle,
+    float Steering,
+    float Brake,
+    bool bHandbrake)
+{
+    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+    {
+        Movement->SetThrottleInput(FMath::Clamp(Throttle, -1.0f, 1.0f));
+        Movement->SetSteeringInput(FMath::Clamp(Steering, -1.0f, 1.0f));
+        Movement->SetBrakeInput(FMath::Clamp(Brake, 0.0f, 1.0f));
+        Movement->SetHandbrakeInput(bHandbrake);
+    }
+}
+
+void ADeLoreanVehicle::SetLastSafeTransform(const FTransform& SafeTransform)
+{
+    LastSafeTransform = SafeTransform;
+}
+
+void ADeLoreanVehicle::ResetVehicle()
+{
+    if (USkeletalMeshComponent* VehicleMesh = GetMesh())
+    {
+        VehicleMesh->SetPhysicsLinearVelocity(FVector::ZeroVector);
+        VehicleMesh->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+    }
+
+    SetActorTransform(LastSafeTransform, false, nullptr, ETeleportType::TeleportPhysics);
+
+    if (USkeletalMeshComponent* VehicleMesh = GetMesh())
+    {
+        VehicleMesh->WakeAllRigidBodies();
     }
 }
 

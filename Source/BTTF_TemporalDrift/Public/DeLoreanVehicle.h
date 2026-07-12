@@ -104,6 +104,15 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Vehicle")
     void UpdateSpeedometer();
 
+    UFUNCTION(BlueprintCallable, Category = "Vehicle|Input")
+    void ApplyVehicleInput(float Throttle, float Steering, float Brake, bool bHandbrake);
+
+    UFUNCTION(BlueprintCallable, Category = "Vehicle|Recovery")
+    void ResetVehicle();
+
+    UFUNCTION(BlueprintCallable, Category = "Vehicle|Recovery")
+    void SetLastSafeTransform(const FTransform& SafeTransform);
+
     UFUNCTION(BlueprintCallable, Category = "Flux Capacitor")
     void UpdateFluxCapacitor(float DeltaTime);
 
@@ -127,6 +136,9 @@ protected:
     float LastKeyboardThrottle = 0.0f;
     float LastKeyboardSteering = 0.0f;
     float LastKeyboardBrake = 0.0f;
+
+    UPROPERTY(VisibleInstanceOnly, Category = "Vehicle|Recovery")
+    FTransform LastSafeTransform;
 
     // Input handlers
     void HandleThrottle(const FInputActionValue& Value);
