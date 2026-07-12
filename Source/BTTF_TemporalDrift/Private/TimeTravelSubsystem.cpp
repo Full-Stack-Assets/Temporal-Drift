@@ -56,12 +56,71 @@ bool UTimeTravelSubsystem::HasEnoughEnergyForJump() const
 
 void UTimeTravelSubsystem::AddFluxEnergy(float Amount)
 {
-    CurrentFluxEnergy = FMath::Min(CurrentFluxEnergy + Amount, FluxCapacitorMaxEnergy);
+    CurrentFluxEnergy = FMath::Clamp(CurrentFluxEnergy + Amount, 0.0f, FluxCapacitorMaxEnergy);
 }
 
 void UTimeTravelSubsystem::ConsumeEnergyForTimeTravel()
 {
     CurrentFluxEnergy = FMath::Max(0.0f, CurrentFluxEnergy - EnergyDrainOnJump);
+}
+
+void UTimeTravelSubsystem::SetTimeCircuitsArmed(bool bArmed)
+{
+    bTimeCircuitsArmed = bArmed;
+    if (!bIsTimeTraveling)
+    {
+        TimeTravelPhase = bArmed ? ETimeTravelPhase::Armed : ETimeTravelPhase::Idle;
+    }
+}
+
+bool UTimeTravelSubsystem::RequestTimeTravel(const FTimeTravelRequest& Request)
+{
+    if (!bTimeCircuitsArmed || bIsTimeTraveling || TimeTravelPhase == ETimeTravelPhase::Cooldown ||
+        Request.Destination == CurrentTimelineState || Request.EntrySpeedMph < 88.0f || !HasEnoughEnergyForJump())
+    {
+        return false;
+    }
+
+    ActiveTravelRequest = Request;
+    bIsTimeTraveling = true;
+    TimeTravelPhase = ETimeTravelPhase::ThresholdReached;
+    ConsumeEnergyForTimeTravel();
+    return true;
+}
+
+bool UTimeTravelSubsystem::AdvanceTimeTravelPhase()
+{
+    switch (TimeTravelPhase)
+    {
+    case ETimeTravelPhase::ThresholdReached: TimeTravelPhase = ETimeTravelPhase::Departing; return true;
+    case ETimeTravelPhase::Departing: TimeTravelPhase = ETimeTravelPhase::SwitchingEra; return true;
+    case ETimeTravelPhase::SwitchingEra:
+        PreviousTimelineState = CurrentTimelineState;
+        CurrentTimelineState = ActiveTravelRequest.Destination;
+        ++TotalJumpsMade;
+        UpdateTimelineFlagsInternal(CurrentTimelineState);
+        TimeTravelPhase = ETimeTravelPhase::Arriving;
+        return true;
+    case ETimeTravelPhase::Arriving: TimeTravelPhase = ETimeTravelPhase::Cooldown; return true;
+    case ETimeTravelPhase::Cooldown:
+        bIsTimeTraveling = false;
+        TimeTravelPhase = bTimeCircuitsArmed ? ETimeTravelPhase::Armed : ETimeTravelPhase::Idle;
+        bTimeCircuitsArmed = false;
+        TimeTravelPhase = ETimeTravelPhase::Idle;
+        return true;
+    default: return false;
+    }
+}
+
+void UTimeTravelSubsystem::ResetTimeTravelState()
+{
+    bIsTimeTraveling = false;
+    bTimeCircuitsArmed = false;
+    TimeTravelPhase = ETimeTravelPhase::Idle;
+    CurrentTimelineState = ETimelineState::Present1985;
+    PreviousTimelineState = ETimelineState::Present1985;
+    CurrentFluxEnergy = 0.0f;
+    TotalJumpsMade = 0;
 }
 
 #pragma endregion

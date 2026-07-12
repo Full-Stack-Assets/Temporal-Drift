@@ -3,20 +3,11 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "TimeTravelTypes.h"
 #include "TimeTravelSubsystem.generated.h"
 
 class ADeLoreanVehicle;
 class UEraDataAsset;
-
-UENUM(BlueprintType)
-enum class ETimelineState : uint8
-{
-    Present1985     UMETA(DisplayName = "1985 - Present"),
-    Alternate1985   UMETA(DisplayName = "1985 - Alternate (Biff's World)"),
-    Past1955        UMETA(DisplayName = "1955 - Past"),
-    Future2015      UMETA(DisplayName = "2015 - Future"),
-    WildWest1885    UMETA(DisplayName = "1885 - Wild West")
-};
 
 UENUM(BlueprintType)
 enum class EParadoxLevel : uint8
@@ -81,6 +72,21 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Flux Capacitor")
     void ConsumeEnergyForTimeTravel();
+
+    UFUNCTION(BlueprintCallable, Category = "Time Travel")
+    void SetTimeCircuitsArmed(bool bArmed);
+
+    UFUNCTION(BlueprintPure, Category = "Time Travel")
+    ETimeTravelPhase GetTimeTravelPhase() const { return TimeTravelPhase; }
+
+    UFUNCTION(BlueprintCallable, Category = "Time Travel")
+    bool RequestTimeTravel(const FTimeTravelRequest& Request);
+
+    UFUNCTION(BlueprintCallable, Category = "Time Travel")
+    bool AdvanceTimeTravelPhase();
+
+    UFUNCTION(BlueprintCallable, Category = "Time Travel")
+    void ResetTimeTravelState();
 
     // ==================== TIMELINE STATE ====================
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Timeline")
@@ -170,4 +176,10 @@ private:
 
     FTimerHandle TimeTravelResetHandle;
     bool bIsTimeTraveling = false;
+
+    UPROPERTY(VisibleAnywhere, Category = "Time Travel")
+    ETimeTravelPhase TimeTravelPhase = ETimeTravelPhase::Idle;
+
+    FTimeTravelRequest ActiveTravelRequest;
+    bool bTimeCircuitsArmed = false;
 };
