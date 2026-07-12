@@ -384,16 +384,117 @@
 
 ---
 
-## Post-Campaign Expansion
+### Task 17: Complete Five-Era Hill Valley Production
 
-Only after M6 passes:
+**Files:** Create era content under `/Game/Environment/HillValley/1885`, `/1955`, `/1985`, `/1985A`, `/2015`, `/2045`; modify `LVL_TimeTravelTest`; extend Hill Valley validators.
 
-1. Add Alternate 1985 as the second consequence-heavy layer.
-2. Add 1885 with off-road/rail traversal and period mission content.
-3. Add 2015 hover mode after ground driving and arrival placement are stable.
-4. Add 2045 and Tipler-cylinder mechanics as optional late-game systems.
-5. Expand Hill Valley beyond courthouse square using the same neutral-base/era-layer contract.
-6. Add named-character AI, dialogue trees, additional missions, collectibles, upgrades, and a full campaign progression model.
+- [ ] Preserve one persistent World Partition street grid and finish separate dressing, architecture, interiors, navigation, lighting, weather, traffic routes, and population profiles for 1885, 1955, 1985, systemic 1985-A, 2015, and 2045.
+- [ ] Build the era landmarks specified by the expanded master plan: frontier courthouse/saloon/blacksmith/mine/ravine; 1955 square/cafe/records/theater/school/Lyon Estates/Brown Mansion; 1985 mall/garage/fitness center; 1985-A casino/patrol/toxic industry; 2015 skyways/Cafe 80's/Hilldale; 2045 three-tier city/Heritage District/slipstreams/Tannen skyline variants.
+- [ ] Make all authored buildings explorable with era-consistent interiors, interactive props, readable changing newspapers, secrets, and a five-era wall-cavity treasure chain.
+- [ ] Add seasonal, day/night, rain, fog, snow, and scheduled thunderstorm profiles, including a gameplay-authoritative November 12, 1955 countdown.
+- [ ] Gate: validators pass for every era; a full ground/air traversal circuit has no holes or streaming blockers; blind screenshots identify every era and timeline-health variant.
+
+### Task 18: Implement Ripple Facts, Genealogy, and the Fading Photograph
+
+**Files:** Create `TimelineFactSubsystem`, `TimelineFactDataAsset`, `GenealogySubsystem`, `FadingPhotographViewModel`, tests, and assets under `/Game/Data/Timeline`.
+
+- [ ] Implement a stable-ID dependency graph evaluated on era transitions, with deterministic recomputation, cycle detection, provenance, save migration, and debug visualization.
+- [ ] Connect facts to newspapers, storefront names, road names, interiors, family trees, radio lines, weather anomalies, access state, population profiles, 1985-A threshold, and 2045 physical rearrangement.
+- [ ] Simulate roughly 60 named cross-era citizens with ancestry/descendant links, schedules, relationships, dialogue conditions, and consequence-safe spawn IDs; scale ambient pedestrians separately through pooling.
+- [ ] Implement the inventory photograph as the universal failure indicator with progressive subject fading, critical hand-fade warning, accessibility-safe reduced-flash mode, and exact recovery rules.
+- [ ] Add paradox glitches—duplicate citizens, wrong-era weather/props, and 2045 Temporal Enforcement—only through deterministic fact/paradox events.
+- [ ] Gate: a fixed set of historical mutations produces identical five-era facts across repeated runs, save/load, and packaged builds.
+
+### Task 19: Finish Marty Character, Outfits, Skills, Boards, and Chicken System
+
+**Files:** Extend `BTTFHeroCharacter`; create outfit, skill, board, parkour, temperance, and tests under `/Game/Characters/Marty`.
+
+- [ ] Replace placeholder presentation with a legally authorized/usable rigged Marty character, facial rig, LODs, physics, animation Blueprint, and era-reactive outfit system.
+- [ ] Implement orange vest, 2015 auto-fit/power-lace outfit, Eastwood poncho/hat, radiation suit, and 2045 reenactor disguise with explicit NPC disposition/traversal/intimidation modifiers.
+- [ ] Implement Performance, Marksmanship, Board Mastery, and Tinkering skill trees with stable unlock IDs, costs, UI, save persistence, and mission gates.
+- [ ] Add climbing, vaulting, sliding, ledge movement, rooftop chains, skateboard/hoverboard locomotion, skitching, and safe moving-vehicle/skyway grabs.
+- [ ] Implement dialogue-driven chicken provocations, risky optional objectives, hidden Temperance growth, resistance feedback, and ending conditions.
+- [ ] Gate: all traversal/outfit/skill paths work with keyboard/controller, recover safely, persist, and affect dialogue/world facts exactly as specified.
+
+### Task 20: Build the Full Branching Five-Act Campaign and Endings
+
+**Files:** Expand `MissionCampaign.md`, mission subsystem/data, dialogue, sequences, and tests under `/Game/Data/Missions/MainCampaign`.
+
+- [ ] Author the trilogy-spine objectives—parents' first kiss, dance, lightning run, Almanac recovery, 1985-A dismantling, Buford conflict—plus the new 2045 reconciliation act.
+- [ ] Allow safe re-ordering after era unlocks through explicit dependency/availability rules; every branch has checkpoint, fail/recovery, cinematic skip, dialogue variant, and fact consequence.
+- [ ] Produce canonical-happy, Tannen-owned 2045, Doc's Choice, and intermediate endings from paradox history, Temperance, Tannen outcomes, ravine state, and McFly family facts.
+- [ ] Add fully authored subtitle/voice/gesture/camera slots for every required cinematic while keeping all comprehension accessible without voice audio.
+- [ ] Gate: automated graph coverage proves no unreachable required mission/endings; new-player playthroughs complete every ending without editor intervention.
+
+### Task 21: Deliver 40+ Side Missions, Mini-Games, Collectibles, and World Events
+
+**Files:** Create data/assets under `/Game/Data/Missions/Side`, `/MiniGames`, `/Collectibles`, `/WorldEvents`; add subsystem tests.
+
+- [ ] Author at least eight side missions per era, including cross-era parts delivery, Goldie campaign, Uncle Joey, manure rivalry, Needles races, and preservation-society chain.
+- [ ] Implement Wild Gunman, poker, faro, dance rhythm performance, hoverboard parks, slipstream races, hydrating pizza, horse shoeing, stagecoach escort, festival performance, and era economies.
+- [ ] Add Tales from Space issues, Telegraph front pages, Doc marginalia blueprints, 88 lightning bolts, and completion/reward tracking.
+- [ ] Add deterministic pooled random events with cooldowns, spawn budgets, failure cleanup, and cross-era echo events.
+- [ ] Gate: all content can start, finish/fail, save/reload, and cleanly release actors; collectible counts and rewards survive schema migration.
+
+### Task 22: Implement Combat, Stealth, Gadgets, and Era Detection Rules
+
+**Files:** Create combat/stealth/gadget components, AI perception/state trees, tests, and content under `/Game/Combat`, `/Stealth`, `/Gadgets`.
+
+- [ ] Implement non-lethal-first hand-to-hand combat, block/dodge/counters, Tannen archetypes, environmental takedowns, manure interactions, and the learned parking-lot left hook.
+- [ ] Implement stealth spaces and era rules for Tannen household, Strickland office, casino tower, Delgado mine, and 2045 headquarters, including hearing differences and drone surveillance.
+- [ ] Implement camcorder evidence, alpha-rhythm device, walkie-talkies, binoculars, hoverboard variants, and portable Mr. Fusion with crafting/mission gates.
+- [ ] Gate: combat and stealth encounters support recovery, accessibility assists, controller play, save/checkpoints, and no mandatory lethal outcome where the design specifies alternatives.
+
+### Task 23: Complete DeLorean Damage, Upgrades, Date Entry, and Fuel Economies
+
+**Files:** Extend vehicle/tuning/time circuits; create damage, upgrade, fuel, date-entry data and tests under `/Game/Vehicles/DeLorean`.
+
+- [ ] Add visual/mechanical damage, repair, hover conversion, whitewalls, railroad wheels, mag-lev skids, and stable handling profiles for each configuration.
+- [ ] Implement diegetic destination date entry that honors valid mistyped dates through authored date/content routing and safely rejects impossible/unavailable destinations.
+- [ ] Keep physical 88-MPH runway planning authoritative in ground eras and full 3D corridor travel in 2045.
+- [ ] Implement plutonium, scheduled lightning, Mr. Fusion, and era-appropriate repair/fuel economies with inventory/crafting/save support.
+- [ ] Gate: every configuration completes its era test course, damages/repairs deterministically, jumps correctly, and passes clean-package controller smoke tests.
+
+### Task 24: Add Era Traffic, Hijacking/Hitching, and Full Population Simulation
+
+**Files:** Extend `EraPopulationManager`; create traffic vehicles, mounts, splines, pooling, schedule/genealogy integration, and tests.
+
+- [ ] Implement horses/wagons/stagecoaches, tail-fin cruisers, 1980s sedans, skyway flyers, and 2045 autonomous swarms with era filtering, reaction, collision, pooling, and performance budgets.
+- [ ] Support authorized gameplay interactions: hitching rides, board skitching, horse mounting, mission vehicle commandeering, and skyway grabs, with safe placement/recovery.
+- [ ] Populate sidewalks/interiors with hundreds of pooled ambient citizens and persistent named-cast routines without duplicate stable IDs across layer switches.
+- [ ] Gate: traffic/population swaps across every era without long hitch, duplicate named citizens, mission-zone contamination, or frame-budget violation.
+
+### Task 25: Add Multiplayer, Competitive Modes, Leaderboards, and Achievements
+
+**Files:** Create networked game modes, replicated mission/time state, online interfaces, tests, and content under `/Game/Multiplayer`.
+
+- [ ] Implement cooperative campaign synchronization, including the real-time two-role clocktower run, shared fact/ripple authority, reconnect, host migration policy, and walkie-talkie voice routing.
+- [ ] Implement hoverboard racing, Almanac Heist, and Paradox Royale with matchmaking/session lifecycle, anti-stall rules, spectating, results, and cleanup.
+- [ ] Add leaderboards and named achievements from the master plan with offline queue/retry and platform-safe identifiers.
+- [ ] Gate: two-machine packaged tests pass join, mission, era switch, disconnect/reconnect, results, and clean shutdown without divergent timeline facts.
+
+### Task 26: Deliver Photo Mode, Schematic Map/GPS, Crafting, and Mod Support
+
+**Files:** Create photo/map/crafting/mod subsystems, UIs, schemas, tests, and developer documentation.
+
+- [ ] Implement photo mode with camera controls and five era film-stock filters while preventing mission/network exploits.
+- [ ] Implement Doc's schematic map/GPS with cross-era pushpin/string cause-effect overlays, discovered destinations, and accessibility navigation.
+- [ ] Implement data-driven crafting for gadgets, outfits, vehicle parts, and 1885 workarounds with recipes, inventory, economy, and migration.
+- [ ] Expose versioned mod manifests, custom era/data-layer registration, timeline facts, missions/dialogue, validation, packaging examples, and safe failure isolation.
+- [ ] Gate: features work in Shipping, save correctly, support controller/UI scaling, and invalid mods fail with actionable logs rather than corrupting saves.
+
+### Task 27: Final Five-Era Audio, Visuals, Optimization, Packaging, and Acceptance
+
+**Files:** Extend audio/presentation/settings/QA/package scripts and content across `/Game/Audio`, `/VFX`, `/Materials`, `/UI`, `Docs/QA`.
+
+- [ ] Produce era-aware adaptive orchestral layers, original in-style radio libraries, flux/sonic-boom/fire-trail/hover sounds, city ambience, dialogue mix, subtitles, and full volume/accessibility controls.
+- [ ] Deliver brushed-steel reflections, era materials, 10:04 PM clocktower shadows, volumetric storm lightning, healthy/corrupted grading, paradox glitches, scalable Lumen/Nanite settings, reduced-flash variants, and photo filters.
+- [ ] Profile every era, traversal mode, population peak, combat, mission finale, multiplayer mode, ripple recompute, save/load, and package startup against explicit CPU/GPU/memory/streaming/network budgets.
+- [ ] Run full automation, validators, campaign/endings, 40+ side content audit, two-machine multiplayer, accessibility, keyboard/controller, Development/Shipping, clean-machine, alt-tab, crash-recovery, and mod smoke tests.
+- [ ] Publish source and reproducible builds to GitHub with licenses, third-party attribution, QA evidence, known issues, crash-log instructions, and signed versioned Windows packages.
+- [ ] Gate: the five-era game and all required modern features complete on a machine without Unreal Editor, with no blocker and actionable logs for every non-blocking known issue.
+
+---
 
 ## Definition of Done for the Vertical Slice
 
@@ -409,3 +510,12 @@ Only after M6 passes:
 - Data-driven dialogue supports branching choices, localization-ready subtitles, mission/paradox events, interruption, skip-safe cinematics, controller navigation, and exact-once persistence.
 - The five-mission campaign and two side missions complete from a new game through the return to consequence-altered 1985 without editor intervention or developer guidance.
 - Full automation, world validators, campaign playthrough, save/recovery tests, Development package, Shipping package, keyboard/mouse smoke test, and controller smoke test all pass with evidence recorded under `Docs/QA`.
+
+## Definition of Done for the Expanded Master Game
+
+- 1885, 1955, 1985, systemic 1985-A, 2015, and 2045 share one learned Hill Valley geography while providing complete era-specific architecture, interiors, landscaping, weather, population, traffic, traversal, economy, missions, and audiovisual identity.
+- Timeline facts, genealogy, photograph fading, paradox glitches, signs, newspapers, schedules, dialogue, and 2045 rearrangement recompute deterministically from player choices and survive save migration and multiplayer synchronization.
+- Marty supports the specified outfits, four skill trees, parkour, boards, vehicle grabs, Chicken/Temperance choices, combat, stealth, gadgets, interaction, and all DeLorean configurations/fuel/date-entry systems.
+- The branching five-act campaign, multiple endings, at least 40 side missions, mini-games, collectibles, and random events are content-complete, accessible, checkpointed, and playable without editor intervention.
+- Cooperative campaign, three competitive modes, leaderboards, achievements, photo mode, schematic map/GPS, crafting, and documented versioned mod support pass their packaged acceptance suites.
+- Final Windows Development and Shipping packages pass five-era, campaign/endings, side-content, multiplayer, accessibility, keyboard/controller, performance, clean-machine, recovery, and mod smoke tests with evidence and known issues published to GitHub.
