@@ -8,6 +8,14 @@ This package contains the latest iteration of the project scaffold, including:
 - All generated concept art (43 images)
 - Documentation and design files
 
+## Run the Playable Test
+
+Open the test map in a forced 1280x720 window (the script also overrides Unreal's remembered narrow window geometry):
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\run_game.ps1
+```
+
 ## What's Included
 
 ### Core Code (Latest)
