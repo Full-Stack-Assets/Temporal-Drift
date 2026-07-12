@@ -289,7 +289,102 @@
 
 ---
 
-## Post-Vertical-Slice Expansion
+### Task 13: Build the Complete Playable Hill Valley Region
+
+**Files:**
+- Create: `Source/BTTF_TemporalDrift/Public/HillValleyWorldValidator.h`
+- Create: `Source/BTTF_TemporalDrift/Private/HillValleyWorldValidator.cpp`
+- Create: `Source/BTTF_TemporalDrift/Private/Tests/HillValleyWorldTests.cpp`
+- Create/modify assets under: `/Game/Environment/HillValley/Neutral`, `/1985`, `/1955`, `/Landscape`, `/Foliage`, `/Roads`, `/Buildings`, `/Signage`, `/Props`
+- Modify: `/Game/Levels/LVL_TimeTravelTest`
+
+**Interfaces:**
+- Produces: a World Partition Hill Valley region with courthouse square, civic blocks, residential streets, commercial streets, school district, rural edge, road network, terrain, vegetation, signed buildings, interiors for mission-critical locations, and navigation coverage.
+
+- [ ] Back up the map and write validator tests for required districts, road connectivity, terrain bounds, landscape materials, foliage density, building counts, named signage, collision, navigation, spawn clearance, era-layer assignment, and World Partition streaming cells.
+- [ ] Run `BTTF.World.HillValleyComplete`; expect failures listing missing districts and content categories.
+- [ ] Sculpt a complete playable landscape with town basin, surrounding hills, rural approaches, creek/drainage, road grades, sidewalks, alleys, parking, and traversal-safe boundaries.
+- [ ] Build a modular architecture kit covering courthouse/civic, 1950s and 1980s commercial façades, residential homes, school structures, service buildings, garages, and rural structures.
+- [ ] Finish courthouse square with a readable clocktower, plaza, lawns, paths, monuments, storefront perimeter, alleys, parking, and mission access points.
+- [ ] Add unique readable signs for every major business and civic destination; prohibit placeholder text and repeated storefront names within the same block.
+- [ ] Add landscape material blending, grass, shrubs, deciduous trees, planters, utility poles, street lamps, benches, bins, hydrants, mailboxes, phone booths, fences, road markings, and traffic signage.
+- [ ] Create collision and simplified interiors for the courthouse, diner, garage/lab, school entry, and mission-critical storefronts; keep non-enterable buildings visually opaque and clearly closed.
+- [ ] Assign neutral geography permanently and era-specific architecture, signs, vehicles, props, vegetation, lighting, and construction states to the correct Data Layers.
+- [ ] Generate navigation data, pedestrian sidewalks, crossings, traffic splines, parking nodes, and emergency/reset volumes across the complete region.
+- [ ] Profile streaming while driving a full circuit at top speed; eliminate visible holes, blocking hitches, unloaded road cells, and below-world reset failures.
+- [ ] Gate: drive from rural edge through every district and around courthouse square without collision holes or dead ends; every destination is identifiable by architecture or signage; 1955 and 1985 are immediately distinguishable while geography remains consistent.
+
+### Task 14: Add a Playable On-Foot Hero Character
+
+**Files:**
+- Create: `Source/BTTF_TemporalDrift/Public/BTTFHeroCharacter.h`
+- Create: `Source/BTTF_TemporalDrift/Private/BTTFHeroCharacter.cpp`
+- Create: `Source/BTTF_TemporalDrift/Public/VehicleInteractionComponent.h`
+- Create: `Source/BTTF_TemporalDrift/Private/VehicleInteractionComponent.cpp`
+- Create: `Source/BTTF_TemporalDrift/Private/Tests/HeroCharacterTests.cpp`
+- Create assets under: `/Game/Characters/Hero`, `/Game/Input/Hero`, `/Game/Animations/Hero`
+
+**Interfaces:**
+- Produces: walk, run, jump, crouch, interact, enter/exit vehicle, conversation targeting, mission item use, safe spawn/reset, and camera switching.
+
+- [ ] Write tests for movement configuration, input assets, possession handoff, nearest-door selection, blocked exit rejection, safe exit placement, vehicle re-entry, interaction range, and checkpoint restoration.
+- [ ] Create or license a legally usable fully rigged hero model with LODs, facial/viseme support, clothing appropriate to the 1985 base era, physics asset, animation Blueprint, and retargeted locomotion set.
+- [ ] Implement third-person movement, camera collision, sprint stamina, crouch, jump, interaction trace, and accessible input prompts using Enhanced Input for keyboard/mouse and controller.
+- [ ] Implement deterministic enter/exit handoff between `ABTTFHeroCharacter` and `ADeLoreanVehicle`, preserving vehicle state and placing the hero only on a clear navigable side.
+- [ ] Add interaction interfaces for doors, pickups, mission devices, NPC conversations, vehicle controls, and contextual prompts.
+- [ ] Add safe reset, fall recovery, out-of-bounds recovery, and checkpoint restore without duplicating the pawn or losing the PlayerController.
+- [ ] Gate: start on foot, enter the DeLorean, drive, stop, exit on either clear side, talk to an NPC, collect/use a mission item, re-enter, and save/load the exact hero/vehicle state.
+
+### Task 15: Implement Dialogue, Conversation, and Cinematic Delivery
+
+**Files:**
+- Create: `Source/BTTF_TemporalDrift/Public/DialogueSubsystem.h`
+- Create: `Source/BTTF_TemporalDrift/Private/DialogueSubsystem.cpp`
+- Create: `Source/BTTF_TemporalDrift/Public/DialogueDataAsset.h`
+- Create: `Source/BTTF_TemporalDrift/Private/DialogueDataAsset.cpp`
+- Create: `Source/BTTF_TemporalDrift/Private/Tests/DialogueSubsystemTests.cpp`
+- Create assets under: `/Game/Dialogue`, `/Game/UI/Dialogue`, `/Game/Sequences/Dialogue`
+
+**Interfaces:**
+- Produces: conversation nodes, speaker IDs, localized lines, response choices, conditions, mission events, paradox consequences, subtitle timing, skip/advance behavior, and save-safe conversation state.
+
+- [ ] Write tests for node order, conditional branches, unavailable choices, repeated conversations, interruption/resume, mission-event dispatch, paradox consequences, localization keys, subtitle timing, and save/load restoration.
+- [ ] Create data-driven conversation assets; dialogue text, conditions, responses, and events must not be hard-coded in widgets or actor Blueprints.
+- [ ] Implement interact-to-talk, speaker focus, camera framing, response selection, input lock policy, distance interruption, skip-safe progression, and restoration of player control.
+- [ ] Build subtitle-safe UMG with speaker name, line text, response choices, continue indicator, controller glyphs, text-size setting, background opacity, and configurable auto-advance.
+- [ ] Add optional voice slots, facial animation/viseme hooks, gesture montages, look-at behavior, and short Level Sequence support without making voice audio mandatory for comprehension.
+- [ ] Connect dialogue conditions and events to mission objectives, era, inventory, paradox, prior choices, and save data through stable IDs.
+- [ ] Author baseline conversations for the hero, Doc-equivalent inventor, courthouse contact, diner staff, school contact, antagonist/rival, and ambient townspeople in both 1985 and 1955.
+- [ ] Gate: complete branching conversations with keyboard and controller, skip/replay safely, interrupt by leaving range, reload mid-conversation, and preserve every mission/paradox consequence exactly once.
+
+### Task 16: Expand Into a Multi-Mission Hill Valley Campaign
+
+**Files:**
+- Modify: `Source/BTTF_TemporalDrift/Public/MissionSubsystem.h`
+- Modify: `Source/BTTF_TemporalDrift/Private/MissionSubsystem.cpp`
+- Create: `Docs/Design/MissionCampaign.md`
+- Create mission assets under: `/Game/Data/Missions/Campaign`
+- Create mission actors/sequences under: `/Game/Blueprints/Missions/Campaign`, `/Game/Sequences/Missions`
+
+**Interfaces:**
+- Consumes: hero interaction, DeLorean driving/time travel, full Hill Valley map, dialogue, NPC/traffic, save/load, paradox, and era layers.
+- Produces: a campaign graph with objectives, checkpoints, optional actions, fail/recovery paths, dialogue, consequences, rewards, and return-to-free-roam state.
+
+- [ ] Write `Docs/Design/MissionCampaign.md` with the campaign premise, character roster, location roster, mission dependency graph, objective-by-objective flows, dialogue beats, optional choices, paradox consequences, rewards, checkpoints, failure recovery, and required assets.
+- [ ] Mission 1 — **First Test Run:** meet the inventor in 1985, learn on-foot/vehicle controls, collect calibration parts across town, install them, and complete a timed driving test.
+- [ ] Mission 2 — **Clocktower Calibration:** charge flux, select 1955, cross 88 MPH, arrive safely, reach courthouse square on foot, install the clocktower sensor, and avoid one documented paradox action.
+- [ ] Mission 3 — **A Town Out of Time:** investigate changed storefront signs and NPC memories, follow dialogue clues through the diner/school/courthouse, and identify the altered historical event.
+- [ ] Mission 4 — **The Missing Component:** use driving, pedestrian exploration, dialogue choices, and a restricted-area interaction to recover a time-machine component without exposing future technology.
+- [ ] Mission 5 — **Race the Lightning:** prepare the courthouse route, coordinate NPC positions through dialogue, complete a checkpointed high-speed finale, trigger the return jump, and arrive in consequence-altered 1985.
+- [ ] Add at least two optional side missions using existing districts: a pedestrian favor/investigation and a vehicle courier/time-trial, each with era-specific outcomes.
+- [ ] Implement objective markers, map destinations, dialogue triggers, inventory items, fail-safe resets, skip-safe cinematics, checkpoint saves, mission exclusion zones, and post-mission free roam.
+- [ ] Connect at least three player choices to visible signage, prop, population, dialogue, or access changes in returned 1985; record paradox change and stable consequence IDs.
+- [ ] Run new-player usability tests and tune the critical path to 60-120 minutes while keeping each mission independently restartable from its last checkpoint.
+- [ ] Gate: a new player can complete the full campaign without developer guidance, every required objective works on keyboard/controller, save/quit/continue preserves exact state, and all consequence changes survive era travel and packaging.
+
+---
+
+## Post-Campaign Expansion
 
 Only after M6 passes:
 
@@ -306,3 +401,11 @@ Only after M6 passes:
 - No required action depends on debug text, Output Log inspection, or editor-only intervention.
 - The full automation suite, map validators, editor build, cook, and Windows package succeed from documented PowerShell commands.
 - Known non-blocking limitations are recorded in `Docs/QA/KnownIssues.md` with reproduction steps.
+
+## Definition of Done for the Expanded Campaign
+
+- The World Partition map contains a complete landscaped Hill Valley region with traversable connected districts, recognizable signed destinations, collision/navigation coverage, populated sidewalks and roads, and visibly distinct 1985/1955 era dressing.
+- The player can freely transition between the on-foot hero and the DeLorean, explore, interact, converse, collect/use mission items, recover from invalid positions, and save/load either state.
+- Data-driven dialogue supports branching choices, localization-ready subtitles, mission/paradox events, interruption, skip-safe cinematics, controller navigation, and exact-once persistence.
+- The five-mission campaign and two side missions complete from a new game through the return to consequence-altered 1985 without editor intervention or developer guidance.
+- Full automation, world validators, campaign playthrough, save/recovery tests, Development package, Shipping package, keyboard/mouse smoke test, and controller smoke test all pass with evidence recorded under `Docs/QA`.
