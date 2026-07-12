@@ -497,6 +497,7 @@ void ADeLoreanVehicle::CycleDestinationEra(int32 Direction)
         ETimelineState::Present1985,
         ETimelineState::Alternate1985,
         ETimelineState::Future2015,
+        ETimelineState::DeepFuture2045,
         ETimelineState::WildWest1885};
 
     int32 CurrentIndex = 0;

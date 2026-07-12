@@ -10,6 +10,7 @@ enum class ETimelineState : uint8
     Alternate1985 UMETA(DisplayName = "1985 - Alternate"),
     Past1955 UMETA(DisplayName = "1955 - Past"),
     Future2015 UMETA(DisplayName = "2015 - Future"),
+    DeepFuture2045 UMETA(DisplayName = "2045 - Deep Future"),
     WildWest1885 UMETA(DisplayName = "1885 - Wild West")
 };
 

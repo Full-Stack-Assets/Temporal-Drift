@@ -14,6 +14,7 @@ bool FBTTFEraWorldMappingTest::RunTest(const FString& Parameters)
     const TArray<ETimelineState> RequiredEras = {
         ETimelineState::Present1985, ETimelineState::Past1955,
         ETimelineState::Alternate1985, ETimelineState::Future2015,
+        ETimelineState::DeepFuture2045,
         ETimelineState::WildWest1885};
     for (ETimelineState Era : RequiredEras)
     {
