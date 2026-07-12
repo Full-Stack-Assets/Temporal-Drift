@@ -32,6 +32,8 @@ struct FTimelineFlags
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimelineInstability, float, ParadoxLevel);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTimeTravelCompleted);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTimeTravelPhaseChanged, ETimeTravelPhase, PreviousPhase, ETimeTravelPhase, NewPhase);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeTravelRequestEvent, FTimeTravelRequest, Request);
 
 UCLASS(Blueprintable, BlueprintType)
 class BTTF_TEMPORALDRIFT_API UTimeTravelSubsystem : public UTickableWorldSubsystem
@@ -144,6 +146,18 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "Events")
     FOnTimeTravelCompleted OnTimeTravelCompleted;
 
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnTimeTravelPhaseChanged OnPhaseChanged;
+
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnTimeTravelRequestEvent OnJumpDeparted;
+
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnTimeTravelRequestEvent OnEraSwitchRequested;
+
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnTimeTravelRequestEvent OnJumpArrived;
+
     // ==================== HAWKING RADIATION ====================
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Hawking Radiation")
     float WormholeStability = 100.0f;
@@ -173,6 +187,7 @@ private:
 
     // Shared jump core used by both flux-capacitor and Tipler jump paths.
     void ExecuteJumpInternal(ETimelineState TargetEra, UEraDataAsset* EraData);
+    void SetTimeTravelPhase(ETimeTravelPhase NewPhase);
 
     FTimerHandle TimeTravelResetHandle;
     bool bIsTimeTraveling = false;
@@ -182,4 +197,5 @@ private:
 
     FTimeTravelRequest ActiveTravelRequest;
     bool bTimeCircuitsArmed = false;
+    float PhaseElapsedSeconds = 0.0f;
 };

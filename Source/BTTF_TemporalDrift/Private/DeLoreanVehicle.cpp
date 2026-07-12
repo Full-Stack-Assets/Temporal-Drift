@@ -280,6 +280,10 @@ void ADeLoreanVehicle::HandleCycleDestination(const FInputActionValue& Value)
 void ADeLoreanVehicle::ToggleTimeCircuits()
 {
     bTimeCircuitsOn = !bTimeCircuitsOn;
+    if (TimeTravelSubsystem)
+    {
+        TimeTravelSubsystem->SetTimeCircuitsArmed(bTimeCircuitsOn);
+    }
     UE_LOG(LogTemp, Log, TEXT("Time circuits %s"), bTimeCircuitsOn ? TEXT("ON") : TEXT("OFF"));
 }
 
@@ -550,10 +554,16 @@ void ADeLoreanVehicle::UpdateFluxCapacitor(float DeltaTime)
 
 void ADeLoreanVehicle::TryTimeTravel(ETimelineState TargetEra)
 {
-    if (TimeTravelSubsystem && TimeTravelSubsystem->CanPerformTimeTravel(this))
+    if (TimeTravelSubsystem)
     {
-        TimeTravelSubsystem->PerformTimeTravel(this, TargetEra);
-        StartTimeTravelEffects();
+        FTimeTravelRequest Request;
+        Request.Destination = TargetEra;
+        Request.Origin = GetActorLocation();
+        Request.EntrySpeedMph = CurrentSpeedMph;
+        if (TimeTravelSubsystem->RequestTimeTravel(Request))
+        {
+            StartTimeTravelEffects();
+        }
     }
 }
 

@@ -35,6 +35,15 @@ void UTimeTravelSubsystem::Deinitialize()
 void UTimeTravelSubsystem::Tick(float DeltaTime)
 {
     UpdateParadoxOverTime(DeltaTime);
+    if (bIsTimeTraveling)
+    {
+        PhaseElapsedSeconds += DeltaTime;
+        const float PhaseDuration = TimeTravelPhase == ETimeTravelPhase::Cooldown ? 1.0f : 0.25f;
+        if (PhaseElapsedSeconds >= PhaseDuration)
+        {
+            AdvanceTimeTravelPhase();
+        }
+    }
 }
 
 TStatId UTimeTravelSubsystem::GetStatId() const
@@ -69,7 +78,7 @@ void UTimeTravelSubsystem::SetTimeCircuitsArmed(bool bArmed)
     bTimeCircuitsArmed = bArmed;
     if (!bIsTimeTraveling)
     {
-        TimeTravelPhase = bArmed ? ETimeTravelPhase::Armed : ETimeTravelPhase::Idle;
+        SetTimeTravelPhase(bArmed ? ETimeTravelPhase::Armed : ETimeTravelPhase::Idle);
     }
 }
 
@@ -83,7 +92,7 @@ bool UTimeTravelSubsystem::RequestTimeTravel(const FTimeTravelRequest& Request)
 
     ActiveTravelRequest = Request;
     bIsTimeTraveling = true;
-    TimeTravelPhase = ETimeTravelPhase::ThresholdReached;
+    SetTimeTravelPhase(ETimeTravelPhase::ThresholdReached);
     ConsumeEnergyForTimeTravel();
     return true;
 }
@@ -92,21 +101,24 @@ bool UTimeTravelSubsystem::AdvanceTimeTravelPhase()
 {
     switch (TimeTravelPhase)
     {
-    case ETimeTravelPhase::ThresholdReached: TimeTravelPhase = ETimeTravelPhase::Departing; return true;
-    case ETimeTravelPhase::Departing: TimeTravelPhase = ETimeTravelPhase::SwitchingEra; return true;
+    case ETimeTravelPhase::ThresholdReached:
+        SetTimeTravelPhase(ETimeTravelPhase::Departing); OnJumpDeparted.Broadcast(ActiveTravelRequest); return true;
+    case ETimeTravelPhase::Departing:
+        SetTimeTravelPhase(ETimeTravelPhase::SwitchingEra); OnEraSwitchRequested.Broadcast(ActiveTravelRequest); return true;
     case ETimeTravelPhase::SwitchingEra:
         PreviousTimelineState = CurrentTimelineState;
         CurrentTimelineState = ActiveTravelRequest.Destination;
         ++TotalJumpsMade;
         UpdateTimelineFlagsInternal(CurrentTimelineState);
-        TimeTravelPhase = ETimeTravelPhase::Arriving;
+        SetTimeTravelPhase(ETimeTravelPhase::Arriving);
+        OnJumpArrived.Broadcast(ActiveTravelRequest);
         return true;
-    case ETimeTravelPhase::Arriving: TimeTravelPhase = ETimeTravelPhase::Cooldown; return true;
+    case ETimeTravelPhase::Arriving: SetTimeTravelPhase(ETimeTravelPhase::Cooldown); return true;
     case ETimeTravelPhase::Cooldown:
         bIsTimeTraveling = false;
-        TimeTravelPhase = bTimeCircuitsArmed ? ETimeTravelPhase::Armed : ETimeTravelPhase::Idle;
         bTimeCircuitsArmed = false;
-        TimeTravelPhase = ETimeTravelPhase::Idle;
+        SetTimeTravelPhase(ETimeTravelPhase::Idle);
+        OnTimeTravelCompleted.Broadcast();
         return true;
     default: return false;
     }
@@ -116,11 +128,23 @@ void UTimeTravelSubsystem::ResetTimeTravelState()
 {
     bIsTimeTraveling = false;
     bTimeCircuitsArmed = false;
-    TimeTravelPhase = ETimeTravelPhase::Idle;
+    SetTimeTravelPhase(ETimeTravelPhase::Idle);
     CurrentTimelineState = ETimelineState::Present1985;
     PreviousTimelineState = ETimelineState::Present1985;
     CurrentFluxEnergy = 0.0f;
     TotalJumpsMade = 0;
+}
+
+void UTimeTravelSubsystem::SetTimeTravelPhase(ETimeTravelPhase NewPhase)
+{
+    if (TimeTravelPhase == NewPhase)
+    {
+        return;
+    }
+    const ETimeTravelPhase PreviousPhase = TimeTravelPhase;
+    TimeTravelPhase = NewPhase;
+    PhaseElapsedSeconds = 0.0f;
+    OnPhaseChanged.Broadcast(PreviousPhase, NewPhase);
 }
 
 #pragma endregion
