@@ -9,6 +9,7 @@
 #include "HeroProgressionSubsystem.h"
 #include "TemporalDriveSubsystem.h"
 #include "EraWeatherSubsystem.h"
+#include "CraftingSubsystem.h"
 
 UBTTF_GameInstance::UBTTF_GameInstance()
 {
@@ -86,6 +87,7 @@ bool UBTTF_GameInstance::SaveGameToSlot(const FString& SlotName)
         if(UHeroProgressionSubsystem* Hero=GetSubsystem<UHeroProgressionSubsystem>())CurrentSaveGame->HeroProgression=Hero->GetSnapshot();
         if(UTemporalDriveSubsystem* Drive=GetSubsystem<UTemporalDriveSubsystem>())CurrentSaveGame->TemporalDrive=Drive->GetSnapshot();
         if(UEraWeatherSubsystem* Weather=GetSubsystem<UEraWeatherSubsystem>())CurrentSaveGame->WorldClock=Weather->GetWorldClock();
+        if(UCraftingSubsystem* Crafting=GetSubsystem<UCraftingSubsystem>())CurrentSaveGame->Crafting=Crafting->GetSnapshot();
 
         const FString TempSlot=SlotName+TEXT("__tmp");
         UGameplayStatics::DeleteGameInSlot(TempSlot,0);

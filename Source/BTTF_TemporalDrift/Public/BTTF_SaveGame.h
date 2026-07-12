@@ -11,6 +11,7 @@
 #include "HeroProgressionSubsystem.h"
 #include "TemporalDriveSubsystem.h"
 #include "EraWeatherSubsystem.h"
+#include "CraftingSubsystem.h"
 #include "BTTF_SaveGame.generated.h"
 
 UCLASS()
@@ -54,6 +55,7 @@ public:
     UPROPERTY(VisibleAnywhere, Category="Vehicle") FTemporalDriveSnapshot TemporalDrive;
     UPROPERTY(VisibleAnywhere, Category="World") FEraWorldClock WorldClock;
     UPROPERTY(VisibleAnywhere, Category="Timeline") TMap<FName,bool> TimelineFactOverrides;
+    UPROPERTY(VisibleAnywhere, Category="Crafting") FCraftingSnapshot Crafting;
 };
 
 UCLASS()
