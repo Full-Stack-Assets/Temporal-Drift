@@ -1,5 +1,7 @@
 #include "BTTFHeroCharacter.h"
 #include "VehicleInteractionComponent.h"
+#include "HeroCombatComponent.h"
+#include "HeroStealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -25,6 +27,8 @@ ABTTFHeroCharacter::ABTTFHeroCharacter()
     FollowCamera->bUsePawnControlRotation = false;
 
     VehicleInteraction = CreateDefaultSubobject<UVehicleInteractionComponent>(TEXT("VehicleInteraction"));
+    Combat = CreateDefaultSubobject<UHeroCombatComponent>(TEXT("Combat"));
+    Stealth = CreateDefaultSubobject<UHeroStealthComponent>(TEXT("Stealth"));
 }
 
 void ABTTFHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

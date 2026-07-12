@@ -7,6 +7,8 @@
 class USpringArmComponent;
 class UCameraComponent;
 class UVehicleInteractionComponent;
+class UHeroCombatComponent;
+class UHeroStealthComponent;
 
 UCLASS()
 class BTTF_TEMPORALDRIFT_API ABTTFHeroCharacter : public ACharacter
@@ -19,6 +21,8 @@ public:
 
     UFUNCTION(BlueprintPure, Category="Interaction")
     UVehicleInteractionComponent* GetVehicleInteractionComponent() const { return VehicleInteraction; }
+    UFUNCTION(BlueprintPure,Category="Combat") UHeroCombatComponent* GetCombatComponent()const{return Combat;}
+    UFUNCTION(BlueprintPure,Category="Stealth") UHeroStealthComponent* GetStealthComponent()const{return Stealth;}
 
 protected:
     void MoveForward(float Value);
@@ -32,4 +36,6 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Interaction")
     UVehicleInteractionComponent* VehicleInteraction;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Combat") UHeroCombatComponent* Combat;
+    UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Stealth") UHeroStealthComponent* Stealth;
 };
