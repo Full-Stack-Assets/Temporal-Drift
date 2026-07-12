@@ -174,6 +174,26 @@ void ADeLoreanVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
             EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleBrake);
             EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Completed, this, &ADeLoreanVehicle::HandleBrake);
         }
+        if (HandbrakeAction)
+        {
+            EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleHandbrake);
+            EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Completed, this, &ADeLoreanVehicle::HandleHandbrake);
+        }
+        if (ReverseAction)
+        {
+            EnhancedInputComponent->BindAction(ReverseAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleReverse);
+            EnhancedInputComponent->BindAction(ReverseAction, ETriggerEvent::Completed, this, &ADeLoreanVehicle::HandleReverse);
+        }
+        if (ResetVehicleAction)
+            EnhancedInputComponent->BindAction(ResetVehicleAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::ResetVehicle);
+        if (TimeCircuitsAction)
+            EnhancedInputComponent->BindAction(TimeCircuitsAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::ToggleTimeCircuits);
+        if (TimeJumpAction)
+            EnhancedInputComponent->BindAction(TimeJumpAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::TryTimeTravelFromInput);
+        if (ToggleCameraAction)
+            EnhancedInputComponent->BindAction(ToggleCameraAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::ToggleCamera);
+        if (CycleDestinationAction)
+            EnhancedInputComponent->BindAction(CycleDestinationAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleCycleDestination);
     }
 }
 
@@ -198,6 +218,31 @@ void ADeLoreanVehicle::HandleBrake(const FInputActionValue& Value)
     if (UChaosVehicleMovementComponent* Movement = Cast<UChaosVehicleMovementComponent>(GetVehicleMovementComponent()))
     {
         Movement->SetBrakeInput(Value.Get<float>());
+    }
+}
+
+void ADeLoreanVehicle::HandleHandbrake(const FInputActionValue& Value)
+{
+    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+    {
+        Movement->SetHandbrakeInput(Value.Get<bool>());
+    }
+}
+
+void ADeLoreanVehicle::HandleReverse(const FInputActionValue& Value)
+{
+    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+    {
+        Movement->SetThrottleInput(Value.Get<bool>() ? -1.0f : 0.0f);
+    }
+}
+
+void ADeLoreanVehicle::HandleCycleDestination(const FInputActionValue& Value)
+{
+    const float Direction = Value.Get<float>();
+    if (!FMath::IsNearlyZero(Direction))
+    {
+        CycleDestinationEra(Direction < 0.0f ? -1 : 1);
     }
 }
 

@@ -41,6 +41,27 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
     UInputAction* BrakeAction;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* HandbrakeAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* ReverseAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* ResetVehicleAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* TimeCircuitsAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* TimeJumpAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* CycleDestinationAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* ToggleCameraAction;
+
     // Era targeted when the time travel input is pressed
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time Travel")
     ETimelineState InputTargetEra = ETimelineState::Past1955;
@@ -156,4 +177,7 @@ protected:
     void HandleThrottle(const FInputActionValue& Value);
     void HandleSteering(const FInputActionValue& Value);
     void HandleBrake(const FInputActionValue& Value);
+    void HandleHandbrake(const FInputActionValue& Value);
+    void HandleReverse(const FInputActionValue& Value);
+    void HandleCycleDestination(const FInputActionValue& Value);
 };
