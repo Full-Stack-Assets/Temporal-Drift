@@ -3,6 +3,8 @@
 #include "Misc/AutomationTest.h"
 #include "DeLoreanTuningData.h"
 #include "DeLoreanVehicle.h"
+#include "Engine/StaticMesh.h"
+#include "Materials/MaterialInterface.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FBTTFVehicleTuningDefaultsTest,
@@ -35,6 +37,23 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(
 
 bool FBTTFHeroVehicleContractTest::RunTest(const FString& Parameters)
 {
+    const TCHAR* RequiredMeshes[] = {
+        TEXT("/Game/Vehicles/DeLorean/Hero/SM_HeroTimeMachine.SM_HeroTimeMachine"),
+        TEXT("/Game/Vehicles/DeLorean/Hero/SM_BodyShell.SM_BodyShell"),
+        TEXT("/Game/Vehicles/DeLorean/Hero/SM_GlassSet.SM_GlassSet"),
+        TEXT("/Game/Vehicles/DeLorean/Hero/SM_Interior.SM_Interior"),
+        TEXT("/Game/Vehicles/DeLorean/Hero/SM_TimeMachinery.SM_TimeMachinery"),
+        TEXT("/Game/Vehicles/DeLorean/Hero/SM_Wheel_FL.SM_Wheel_FL"),
+        TEXT("/Game/Vehicles/DeLorean/Hero/SM_Wheel_FR.SM_Wheel_FR"),
+        TEXT("/Game/Vehicles/DeLorean/Hero/SM_Wheel_RL.SM_Wheel_RL"),
+        TEXT("/Game/Vehicles/DeLorean/Hero/SM_Wheel_RR.SM_Wheel_RR")
+    };
+    for (const TCHAR* AssetPath : RequiredMeshes)
+    {
+        TestNotNull(FString::Printf(TEXT("Hero mesh resolves: %s"), AssetPath),
+            LoadObject<UStaticMesh>(nullptr, AssetPath));
+    }
+
     const ADeLoreanVehicle* Vehicle = GetDefault<ADeLoreanVehicle>();
     TestNotNull(TEXT("Hero visual root exists"), Vehicle->GetHeroVisualRoot());
     TestTrue(TEXT("At least one imported hero visual mesh is assigned"),

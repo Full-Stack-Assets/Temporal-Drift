@@ -49,6 +49,18 @@ ADeLoreanVehicle::ADeLoreanVehicle()
     HeroVisualRoot = CreateDefaultSubobject<USceneComponent>(TEXT("HeroVisualRoot"));
     HeroVisualRoot->SetupAttachment(GetMesh());
 
+    UStaticMeshComponent* HeroPresentation = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeroPresentation"));
+    HeroPresentation->SetupAttachment(HeroVisualRoot);
+    HeroPresentation->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    HeroPresentation->SetGenerateOverlapEvents(false);
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> HeroMeshAsset(
+        TEXT("/Game/Vehicles/DeLorean/Hero/SM_HeroTimeMachine.SM_HeroTimeMachine"));
+    if (HeroMeshAsset.Succeeded())
+    {
+        HeroPresentation->SetStaticMesh(HeroMeshAsset.Object);
+        HeroVisualMeshes.Add(HeroPresentation);
+    }
+
     // Chase camera
     CameraSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
     CameraSpringArm->SetupAttachment(RootComponent);
