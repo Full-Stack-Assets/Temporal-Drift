@@ -7,6 +7,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SceneComponent.h"
 #include "NiagaraComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -14,6 +15,7 @@
 #include "InputCoreTypes.h"
 #include "GameFramework/PlayerController.h"
 #include "PhysicsEngine/PhysicsAsset.h"
+#include "DeLoreanTuningData.h"
 
 ADeLoreanVehicle::ADeLoreanVehicle()
 {
@@ -41,6 +43,11 @@ ADeLoreanVehicle::ADeLoreanVehicle()
     {
         VisualCarBody->SetStaticMesh(CarBodyAsset.Object);
     }
+    VisualCarBody->SetVisibility(false, true);
+    VisualCarBody->SetHiddenInGame(true, true);
+
+    HeroVisualRoot = CreateDefaultSubobject<USceneComponent>(TEXT("HeroVisualRoot"));
+    HeroVisualRoot->SetupAttachment(GetMesh());
 
     // Chase camera
     CameraSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
@@ -71,23 +78,34 @@ ADeLoreanVehicle::ADeLoreanVehicle()
         Movement->WheelSetups[3].WheelClass = UDeLoreanWheelRear::StaticClass();
         Movement->WheelSetups[3].BoneName = FName("Phys_Wheel_BR");
 
-        Movement->EngineSetup.MaxRPM = 6500.0f;
-        Movement->EngineSetup.MaxTorque = 500.0f;
-        // Chaos disables mechanical simulation when the normalized torque curve
-        // is empty. Supply a broad street-engine curve so throttle can drive the
-        // vehicle across the full RPM range.
-        if (FRichCurve* TorqueCurve = Movement->EngineSetup.TorqueCurve.GetRichCurve())
-        {
-            TorqueCurve->Reset();
-            TorqueCurve->AddKey(0.0f, 0.70f);
-            TorqueCurve->AddKey(1500.0f, 0.90f);
-            TorqueCurve->AddKey(3500.0f, 1.00f);
-            TorqueCurve->AddKey(5500.0f, 0.85f);
-            TorqueCurve->AddKey(6500.0f, 0.60f);
-        }
-        Movement->Mass = 1300.0f;
         Movement->bLegacyWheelFrictionPosition = true;
     }
+
+    ApplyTuningData(GetDefault<UDeLoreanTuningData>());
+}
+
+void ADeLoreanVehicle::ApplyTuningData(const UDeLoreanTuningData* TuningData)
+{
+    if (!TuningData)
+    {
+        return;
+    }
+
+    UChaosWheeledVehicleMovementComponent* Movement =
+        Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent());
+    if (!Movement)
+    {
+        return;
+    }
+
+    Movement->Mass = TuningData->MassKg;
+    Movement->EngineSetup.MaxRPM = TuningData->MaxRPM;
+    Movement->EngineSetup.MaxTorque = TuningData->MaxTorqueNm;
+    Movement->EngineSetup.TorqueCurve = TuningData->TorqueCurve;
+    Movement->TransmissionSetup.ForwardGearRatios = TuningData->ForwardGearRatios;
+    Movement->TransmissionSetup.ReverseGearRatios = {
+        FMath::Abs(TuningData->ReverseGearRatio)};
+    Movement->TransmissionSetup.FinalRatio = TuningData->FinalDriveRatio;
 }
 
 void ADeLoreanVehicle::BeginPlay()
@@ -95,6 +113,7 @@ void ADeLoreanVehicle::BeginPlay()
     Super::BeginPlay();
 
     LastSafeTransform = GetActorTransform();
+    ApplyTuningData(TuningDataAsset ? TuningDataAsset : GetDefault<UDeLoreanTuningData>());
 
     if (USkeletalMeshComponent* VehicleMesh = GetMesh())
     {
@@ -105,8 +124,8 @@ void ADeLoreanVehicle::BeginPlay()
         VehicleMesh->SetSimulatePhysics(true);
         VehicleMesh->WakeAllRigidBodies();
 
-        VehicleMesh->SetVisibility(true, true);
-        VehicleMesh->SetHiddenInGame(false, true);
+        VehicleMesh->SetVisibility(false, false);
+        VehicleMesh->SetHiddenInGame(true, false);
         VehicleMesh->SetOwnerNoSee(false);
         VehicleMesh->SetOnlyOwnerSee(false);
         VehicleMesh->SetRenderInMainPass(true);

@@ -12,6 +12,8 @@ class UInputAction;
 class USpringArmComponent;
 class UCameraComponent;
 class UStaticMeshComponent;
+class USceneComponent;
+class UDeLoreanTuningData;
 struct FInputActionValue;
 
 UCLASS()
@@ -81,6 +83,27 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vehicle")
     UStaticMeshComponent* VisualCarBody;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vehicle|Hero")
+    USceneComponent* HeroVisualRoot;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vehicle|Hero")
+    TArray<TObjectPtr<UStaticMeshComponent>> HeroVisualMeshes;
+
+    UFUNCTION(BlueprintPure, Category = "Vehicle|Hero")
+    USceneComponent* GetHeroVisualRoot() const { return HeroVisualRoot; }
+
+    UFUNCTION(BlueprintPure, Category = "Vehicle|Hero")
+    int32 GetHeroVisualMeshCount() const { return HeroVisualMeshes.Num(); }
+
+    UFUNCTION(BlueprintPure, Category = "Vehicle|Hero")
+    bool HasPrototypeVisuals() const { return bPrototypeVisualsEnabled; }
+
+    UFUNCTION(BlueprintPure, Category = "Camera")
+    int32 GetCameraModeCount() const { return 4; }
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vehicle|Tuning")
+    UDeLoreanTuningData* TuningDataAsset;
+
     UPROPERTY(BlueprintReadOnly, Category = "Time Travel")
     UTimeTravelSubsystem* TimeTravelSubsystem;
 
@@ -90,6 +113,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
     bool bShowDebugInfo = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
+    bool bPrototypeVisualsEnabled = false;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Time Travel")
     bool bIsTimeTraveling = false;
@@ -160,6 +186,7 @@ public:
 
 protected:
     void InitializeTimeTravelSubsystem();
+    void ApplyTuningData(const UDeLoreanTuningData* TuningData);
     void UpdateHoverMode(float DeltaTime);
     void ApplyKeyboardFallback();
 
