@@ -2,6 +2,7 @@
 #include "TimeTravelSubsystem.h"
 #include "DeLoreanVehicle.h"
 #include "EraDataAsset.h"
+#include "EraWorldManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
@@ -106,6 +107,13 @@ bool UTimeTravelSubsystem::AdvanceTimeTravelPhase()
     case ETimeTravelPhase::Departing:
         SetTimeTravelPhase(ETimeTravelPhase::SwitchingEra); OnEraSwitchRequested.Broadcast(ActiveTravelRequest); return true;
     case ETimeTravelPhase::SwitchingEra:
+        if (UWorld* World = GetWorld())
+        {
+            if (UEraWorldManager* EraManager = World->GetSubsystem<UEraWorldManager>())
+            {
+                EraManager->SwitchToEra(ActiveTravelRequest.Destination);
+            }
+        }
         PreviousTimelineState = CurrentTimelineState;
         CurrentTimelineState = ActiveTravelRequest.Destination;
         ++TotalJumpsMade;
