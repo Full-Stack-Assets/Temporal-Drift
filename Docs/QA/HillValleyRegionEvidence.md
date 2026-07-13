@@ -26,6 +26,9 @@ vegetation, and a dedicated lighting profile.
 - Vehicle possession, driving HUD, collision, and neutral region rendering were
   observed in the standalone game.
 - The new runtime UMG readout was visible and updating speed and flux.
+- Latest live preview shows the readable regional façade pass (windows, trim,
+  doors, awnings, and house fronts) and the in-game control strip for driving,
+  destination selection, circuits, jump, hover, and reset.
 
 ## Remaining Task 13 acceptance work
 
