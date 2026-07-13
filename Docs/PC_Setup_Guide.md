@@ -96,17 +96,24 @@ If prompted to rebuild modules, accept. If the editor reports **0 compile action
 
 | Input | Action |
 |-------|--------|
-| WASD / arrows | Drive |
+| `Up` / `Down` / `Left` / `Right` | Drive the DeLorean; move the hero on foot |
+| `W` / `A` / `S` / `D` | Manual camera orbit only |
+| `Space` | Jump on foot; handbrake while driving |
+| `G` | Exit the DeLorean; re-enter when near it |
+| `C` | Cycle camera preset |
+| `V` | Toggle auto-chase camera recentering |
 | `T` | Toggle time circuits |
 | `Q` / `E` | Cycle destination era |
-| `F` | Time jump (when armed) |
-| `G` | Exit vehicle (on foot) |
+| `F` | Time jump when armed and valid |
+| `H` | Toggle hover mode |
+| `R` | Reset vehicle to last safe transform |
 | `Esc` | Pause + autosave |
 
 ### Quick verification
 
 - HUD shows speed, flux, era, mission objective, and (when active) ripple summary
 - Jump **1985 → 1955** — square dressing changes, era music crossfades
+- Exit/re-enter with `G`; arrow keys still control the possessed pawn and `W/A/S/D` still only orbit the camera
 - Walk to courthouse — mission volumes and dialogue interactables respond
 - Polaroid widget pulses when paradox is high
 
