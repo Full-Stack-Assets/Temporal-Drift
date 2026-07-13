@@ -3,6 +3,7 @@
 #include "BTTF_SaveGame.h"
 #include "MissionSubsystem.h"
 #include "MissionDataAsset.h"
+#include "MissionCoordinatorSubsystem.h"
 #include "BTTF_GameInstance.h"
 #include "CraftingSubsystem.h"
 #include "TimelineFactSubsystem.h"
@@ -126,6 +127,26 @@ bool FBTTFSubsystemSnapshotRoundTripTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Timeline facts restore"), Facts2->RestoreOverrideSnapshot(FactSnapshot));
     bool bFound = false;
     TestTrue(TEXT("Plaque fact true after restore"), Facts2->GetFact(TEXT("C_PlaqueChanged"), bFound) && bFound);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFMissionCampaignChainTest,
+    "BTTF.Mission.CampaignChainOrder",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFMissionCampaignChainTest::RunTest(const FString& Parameters)
+{
+    TestEqual(TEXT("M01 advances to M02"),
+        UMissionCoordinatorSubsystem::GetNextCampaignMissionId(FName(TEXT("M01.FirstTestRun"))),
+        FName(TEXT("M02.ClocktowerCalibration")));
+    TestEqual(TEXT("M02 advances to M03"),
+        UMissionCoordinatorSubsystem::GetNextCampaignMissionId(FName(TEXT("M02.ClocktowerCalibration"))),
+        FName(TEXT("M03.TownOutOfTime")));
+    TestEqual(TEXT("M04 advances to M05"),
+        UMissionCoordinatorSubsystem::GetNextCampaignMissionId(FName(TEXT("M04.MissingComponent"))),
+        FName(TEXT("M05.RaceTheLightning")));
+    TestTrue(TEXT("M05 is campaign finale"),
+        UMissionCoordinatorSubsystem::GetNextCampaignMissionId(FName(TEXT("M05.RaceTheLightning"))).IsNone());
     return !HasAnyErrors();
 }
 

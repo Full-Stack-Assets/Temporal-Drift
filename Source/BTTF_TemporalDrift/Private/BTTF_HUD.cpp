@@ -12,6 +12,7 @@
 #include "DialogueWidget.h"
 #include "DialogueDataAsset.h"
 #include "EraMusicSubsystem.h"
+#include "FadingPhotographViewModel.h"
 #include "BTTF_PlayerController.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
@@ -189,6 +190,7 @@ void ABTTF_HUD::RefreshTimeCircuitsDisplay()
 
     const FText MissionObjective = Mission ? Mission->GetActiveObjectiveDescription() : FText::GetEmpty();
     FText NowPlaying = FText::GetEmpty();
+    FText PhotographStatus = FText::GetEmpty();
     if (UGameInstance* GameInstance = GetGameInstance())
     {
         if (UEraMusicSubsystem* Music = GameInstance->GetSubsystem<UEraMusicSubsystem>())
@@ -200,13 +202,24 @@ void ABTTF_HUD::RefreshTimeCircuitsDisplay()
                     Track.TrackTitle, Track.ArtistName);
             }
         }
+
+        if (!PhotographViewModel)
+        {
+            PhotographViewModel = NewObject<UFadingPhotographViewModel>(this);
+        }
+        if (UBTTF_GameInstance* BTTFInstance = Cast<UBTTF_GameInstance>(GameInstance))
+        {
+            const float ParadoxPercent = Subsystem ? Subsystem->CurrentParadoxLevel : 0.0f;
+            PhotographViewModel->UpdatePhotograph(ParadoxPercent, true, BTTFInstance->IsReducedFlashEnabled());
+            PhotographStatus = PhotographViewModel->StatusText;
+        }
     }
     if (Subsystem)
     {
         TimeCircuitsViewModel->UpdateDisplay(Speed, Subsystem->GetFluxChargePercent(),
             Subsystem->GetCurrentEra(), DestinationEra, Subsystem->GetTimeTravelPhase(),
             Subsystem->CurrentParadoxLevel, Subsystem->WormholeStability,
-            Subsystem->GetLastJumpFailureReason(), MissionObjective, NowPlaying);
+            Subsystem->GetLastJumpFailureReason(), MissionObjective, NowPlaying, PhotographStatus);
     }
 }
 

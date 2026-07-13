@@ -12,6 +12,7 @@
 #include "TemporalDriveSubsystem.h"
 #include "EraWeatherSubsystem.h"
 #include "CraftingSubsystem.h"
+#include "DialogueSubsystem.h"
 #include "BTTF_SaveGame.generated.h"
 
 UCLASS()
@@ -56,6 +57,7 @@ public:
     UPROPERTY(VisibleAnywhere, Category="World") FEraWorldClock WorldClock;
     UPROPERTY(VisibleAnywhere, Category="Timeline") TMap<FName,bool> TimelineFactOverrides;
     UPROPERTY(VisibleAnywhere, Category="Crafting") FCraftingSnapshot Crafting;
+    UPROPERTY(VisibleAnywhere, Category="Dialogue") FDialogueProgressSnapshot DialogueProgress;
 };
 
 UCLASS()

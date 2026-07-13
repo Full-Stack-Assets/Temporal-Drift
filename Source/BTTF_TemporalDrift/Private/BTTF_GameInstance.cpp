@@ -14,6 +14,8 @@
 #include "CraftingSubsystem.h"
 #include "TimelineFactSubsystem.h"
 #include "TimelineFactDataAsset.h"
+#include "GenealogySubsystem.h"
+#include "GenealogyDataAsset.h"
 #include "BTTFHeroCharacter.h"
 #include "DeLoreanVehicle.h"
 #include "TimeTravelPresentationComponent.h"
@@ -35,6 +37,7 @@ void UBTTF_GameInstance::Init()
 {
     Super::Init();
     EnsureProfileLoaded();
+    BootstrapCampaignSystems();
 }
 
 void UBTTF_GameInstance::Shutdown()
@@ -215,6 +218,7 @@ bool UBTTF_GameInstance::SaveGameToSlot(const FString& SlotName)
         if(UEraWeatherSubsystem* Weather=GetSubsystem<UEraWeatherSubsystem>())CurrentSaveGame->WorldClock=Weather->GetWorldClock();
         if(UCraftingSubsystem* Crafting=GetSubsystem<UCraftingSubsystem>())CurrentSaveGame->Crafting=Crafting->GetSnapshot();
         if(UTimelineFactSubsystem* Facts=GetSubsystem<UTimelineFactSubsystem>())CurrentSaveGame->TimelineFactOverrides=Facts->GetOverrideSnapshot();
+        if(UDialogueSubsystem* Dialogue=GetSubsystem<UDialogueSubsystem>())CurrentSaveGame->DialogueProgress=Dialogue->GetProgressSnapshot();
 
         const FString TempSlot=SlotName+TEXT("__tmp");
         UGameplayStatics::DeleteGameInSlot(TempSlot,0);
@@ -263,6 +267,10 @@ bool UBTTF_GameInstance::LoadGameFromSlot(const FString& SlotName)
                     Facts->LoadDefinitions(const_cast<UTimelineFactDataAsset*>(Data));
                 }
                 Facts->RestoreOverrideSnapshot(CurrentSaveGame->TimelineFactOverrides);
+            }
+            if(UDialogueSubsystem* Dialogue=GetSubsystem<UDialogueSubsystem>())
+            {
+                Dialogue->RestoreProgressSnapshot(CurrentSaveGame->DialogueProgress);
             }
 
             LoadTimelineState();
@@ -445,4 +453,49 @@ void UBTTF_GameInstance::SetEffectsVolume(float Volume)
 float UBTTF_GameInstance::GetEffectsVolume() const
 {
     return ProfileSave ? ProfileSave->EffectsVolume : 1.0f;
+}
+
+void UBTTF_GameInstance::BootstrapCampaignSystems()
+{
+    if (UTimelineFactSubsystem* Facts = GetSubsystem<UTimelineFactSubsystem>())
+    {
+        if (UTimelineFactDataAsset* Data = LoadObject<UTimelineFactDataAsset>(nullptr,
+            TEXT("/Game/Data/Timeline/DA_TimelineFacts.DA_TimelineFacts")))
+        {
+            Facts->LoadDefinitions(Data);
+        }
+    }
+
+    if (UGenealogySubsystem* Genealogy = GetSubsystem<UGenealogySubsystem>())
+    {
+        if (UGenealogyDataAsset* Data = LoadObject<UGenealogyDataAsset>(nullptr,
+            TEXT("/Game/Data/Timeline/DA_Genealogy_HillValley.DA_Genealogy_HillValley")))
+        {
+            Genealogy->LoadGenealogy(Data);
+        }
+    }
+
+    if (UCraftingSubsystem* Crafting = GetSubsystem<UCraftingSubsystem>())
+    {
+        if (Crafting->GetSnapshot().UnlockedRecipeIds.IsEmpty())
+        {
+            FCraftingRecipe SensorPackage;
+            SensorPackage.RecipeId = TEXT("Recipe.SensorPackage");
+            SensorPackage.OutputItemId = TEXT("Part.ClocktowerSensor");
+            SensorPackage.OutputQuantity = 1;
+            SensorPackage.AllowedEras = {ETimelineState::Present1985};
+            FCraftingIngredient Oscillator;
+            Oscillator.ItemId = TEXT("Part.Oscillator");
+            Oscillator.Quantity = 1;
+            FCraftingIngredient Cable;
+            Cable.ItemId = TEXT("Part.ShieldedCable");
+            Cable.Quantity = 1;
+            FCraftingIngredient Coolant;
+            Coolant.ItemId = TEXT("Part.CoolantCell");
+            Coolant.Quantity = 1;
+            SensorPackage.Ingredients = {Oscillator, Cable, Coolant};
+            Crafting->LoadRecipes({SensorPackage});
+            Crafting->UnlockRecipe(SensorPackage.RecipeId);
+        }
+    }
 }

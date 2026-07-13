@@ -11,6 +11,7 @@ class UTimeCircuitsViewModel;
 class UTimeCircuitsWidget;
 class UDialogueViewModel;
 class UDialogueWidget;
+class UFadingPhotographViewModel;
 
 UCLASS()
 class BTTF_TEMPORALDRIFT_API ABTTF_HUD : public AHUD
@@ -51,4 +52,7 @@ private:
 
     UPROPERTY(Transient)
     TObjectPtr<UDialogueWidget> DialogueWidget;
+
+    UPROPERTY(Transient)
+    TObjectPtr<UFadingPhotographViewModel> PhotographViewModel;
 };

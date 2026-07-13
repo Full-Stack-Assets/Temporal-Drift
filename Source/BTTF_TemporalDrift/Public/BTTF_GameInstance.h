@@ -107,6 +107,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Profile")
     void ApplyProfileAccessibility(UWorld* World);
 
+    UFUNCTION(BlueprintCallable, Category = "Campaign")
+    void BootstrapCampaignSystems();
+
     static FString BuildMissionAssetPathFromStableId(const FName& MissionStableId);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Save System")

@@ -70,6 +70,8 @@ if (-not $SkipBuild) {
 $pythonSteps = @(
     @{ Path = 'Scripts\create_campaign_missions.py'; Token = 'CAMPAIGN_MISSION_SAVED' },
     @{ Path = 'Scripts\create_timeline_data.py'; Token = 'TIMELINE_DATA_SUCCESS' },
+    @{ Path = 'Scripts\create_side_missions.py'; Token = 'SIDE_MISSIONS_SUCCESS' },
+    @{ Path = 'Scripts\create_crafting_recipes.py'; Token = 'CRAFTING_RECIPES_SUCCESS' },
     @{ Path = 'Scripts\create_presentation_assets.py'; Token = 'TEMPORAL_PRESENTATION_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_presentation_vfx_audio.py'; Token = 'PRESENTATION_VFX_AUDIO_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_ui_widgets.py'; Token = 'UI_WIDGETS_SUCCESS' },

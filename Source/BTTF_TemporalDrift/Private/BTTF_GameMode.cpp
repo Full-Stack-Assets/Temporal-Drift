@@ -51,7 +51,14 @@ void ABTTF_GameMode::BeginPlay()
 
     if (!bContinuedFromSave)
     {
-        StartVerticalSliceMission();
+        if (bStartFullCampaignOnNewGame)
+        {
+            StartFullCampaign();
+        }
+        else
+        {
+            StartVerticalSliceMission();
+        }
     }
 }
 
@@ -105,6 +112,25 @@ void ABTTF_GameMode::StartNewGame()
 
     StartVerticalSliceMission();
     UE_LOG(LogTemp, Log, TEXT("New game started."));
+}
+
+void ABTTF_GameMode::StartFullCampaign()
+{
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UMissionSubsystem* Mission = GameInstance->GetSubsystem<UMissionSubsystem>())
+        {
+            if (Mission->IsMissionActive())
+            {
+                return;
+            }
+        }
+    }
+
+    if (UMissionCoordinatorSubsystem* Coordinator = GetWorld()->GetSubsystem<UMissionCoordinatorSubsystem>())
+    {
+        Coordinator->StartFirstCampaignMission();
+    }
 }
 
 void ABTTF_GameMode::SaveCurrentProgress()

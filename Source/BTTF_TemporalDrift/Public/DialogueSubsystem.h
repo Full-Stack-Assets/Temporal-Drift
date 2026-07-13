@@ -7,6 +7,30 @@
 
 class UAudioComponent;
 
+USTRUCT(BlueprintType)
+struct FDialogueProgressSnapshot
+{
+    GENERATED_BODY()
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FSoftObjectPath ActiveConversationPath;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName CurrentNodeId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName InterruptedNodeId;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FName> StoryFlags;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    TArray<FName> DispatchedEventKeys;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool bConversationActive = false;
+};
+
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnDialogueNodeChanged, FDialogueNode, Node);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDialogueMissionEvent, FName, EventId, FName, SourceNodeId);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDialogueEnded);
@@ -30,6 +54,8 @@ public:
     UFUNCTION(BlueprintCallable) void SetStoryFlag(FName Flag, bool bEnabled);
     UFUNCTION(BlueprintPure) bool HasStoryFlag(FName Flag) const;
     UFUNCTION(BlueprintCallable) void SetDialogueVolume(float Volume);
+    UFUNCTION(BlueprintPure) FDialogueProgressSnapshot GetProgressSnapshot() const;
+    UFUNCTION(BlueprintCallable) bool RestoreProgressSnapshot(const FDialogueProgressSnapshot& Snapshot);
 
     UPROPERTY(BlueprintAssignable) FOnDialogueNodeChanged OnNodeChanged;
     UPROPERTY(BlueprintAssignable) FOnDialogueMissionEvent OnMissionEvent;

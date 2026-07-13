@@ -4,7 +4,7 @@
 void UTimeCircuitsViewModel::UpdateDisplay(float SpeedMph, float FluxPercent,
     ETimelineState CurrentEra, ETimelineState DestinationEra, ETimeTravelPhase Phase,
     float ParadoxPercent, float StabilityPercent, const FText& ExplicitFailureReason,
-    const FText& MissionObjective, const FText& NowPlaying)
+    const FText& MissionObjective, const FText& NowPlaying, const FText& PhotographStatus)
 {
     DisplayState.SpeedText = FText::FromString(FString::Printf(TEXT("%.0f MPH"), SpeedMph));
     DisplayState.FluxPercent = FMath::Clamp(FluxPercent, 0.0f, 1.0f);
@@ -41,6 +41,7 @@ void UTimeCircuitsViewModel::UpdateDisplay(float SpeedMph, float FluxPercent,
 
     DisplayState.MissionObjectiveText = MissionObjective;
     DisplayState.NowPlayingText = NowPlaying;
+    DisplayState.PhotographStatusText = PhotographStatus;
     OnDisplayChanged.Broadcast(DisplayState);
 }
 

@@ -266,3 +266,59 @@ bool UDialogueSubsystem::HasStoryFlag(FName Flag) const
 {
     return StoryFlags.Contains(Flag);
 }
+
+FDialogueProgressSnapshot UDialogueSubsystem::GetProgressSnapshot() const
+{
+    FDialogueProgressSnapshot Snapshot;
+    if (ActiveConversation)
+    {
+        Snapshot.ActiveConversationPath = ActiveConversation;
+    }
+    Snapshot.CurrentNodeId = CurrentNodeId;
+    Snapshot.InterruptedNodeId = InterruptedNodeId;
+    Snapshot.bConversationActive = bActive;
+    StoryFlags.GenerateKeyArray(Snapshot.StoryFlags);
+    DispatchedEventKeys.GenerateKeyArray(Snapshot.DispatchedEventKeys);
+    return Snapshot;
+}
+
+bool UDialogueSubsystem::RestoreProgressSnapshot(const FDialogueProgressSnapshot& Snapshot)
+{
+    StopActiveVoice();
+    bActive = false;
+    ActiveConversation = nullptr;
+    CurrentNodeId = NAME_None;
+    InterruptedNodeId = NAME_None;
+    StoryFlags.Reset();
+    DispatchedEventKeys.Reset();
+
+    for (const FName Flag : Snapshot.StoryFlags)
+    {
+        StoryFlags.Add(Flag);
+    }
+    for (const FName EventKey : Snapshot.DispatchedEventKeys)
+    {
+        DispatchedEventKeys.Add(EventKey);
+    }
+
+    if (Snapshot.ActiveConversationPath.IsNull())
+    {
+        return true;
+    }
+
+    UDialogueDataAsset* Conversation = Cast<UDialogueDataAsset>(Snapshot.ActiveConversationPath.TryLoad());
+    if (!Conversation)
+    {
+        return false;
+    }
+
+    ActiveConversation = Conversation;
+    CurrentNodeId = Snapshot.CurrentNodeId;
+    InterruptedNodeId = Snapshot.InterruptedNodeId;
+    bActive = Snapshot.bConversationActive;
+    if (bActive && !CurrentNodeId.IsNone())
+    {
+        OnNodeChanged.Broadcast(GetCurrentNode());
+    }
+    return true;
+}

@@ -26,6 +26,7 @@ Last updated: 2026-07-13
 - [x] `BTTF.Save.MissionAssetPathResolution` verifies dotted mission IDs map to underscore asset paths.
 - [x] `BTTF.Save.SubsystemSnapshotRoundTrip` verifies crafting and timeline fact snapshot restore.
 - [x] `BTTF.UI.PauseAndSettingsContract` verifies pause/settings widget classes and profile setters.
+- [x] `BTTF.Mission.CampaignChainOrder` verifies M01→M05 mission dependency order.
 
 ## Live transition evidence
 

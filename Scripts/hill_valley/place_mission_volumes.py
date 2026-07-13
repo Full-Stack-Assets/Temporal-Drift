@@ -36,6 +36,19 @@ DIALOGUE_INTERACTABLES = [
      "/Game/Dialogue/DA_Dialogue_M03_ArchiveBriefing.DA_Dialogue_M03_ArchiveBriefing"),
 ]
 
+M04_M05_VOLUMES = [
+    ("MV_M04_WorkshopApproach", (5200, -1200, 120), (1800, 1800, 350), "WorkshopEntered"),
+    ("MV_M05_LightningApproach", (-4200, 6200, 120), (2400, 2400, 400), "FinalRunStarted"),
+    ("MV_M05_ReturnSquare", (0, 3000, 120), (2000, 2000, 350), "ConsequencesInspected"),
+]
+
+M04_M05_INTERACTABLES = [
+    ("MI_M04_RecoverComponents", (5400, -1000, 100), "ComponentsRecovered", "Recover alloy and regulator"),
+    ("MI_M04_InstallRegulator", (-2400, 900, 100), "RegulatorInstalled", "Install temporal regulator"),
+    ("MI_M05_PrepareRoute", (-4000, 6000, 100), "FinalePrepared", "Prepare lightning route"),
+    ("MI_M05_FinalDialogue", (-2400, 700, 100), "CampaignResolved", "Resolve campaign with Vale"),
+]
+
 
 def load_actor_class(primary_path, fallback_path):
     actor_class = unreal.load_class(None, primary_path)
@@ -140,7 +153,11 @@ def main():
 
     for spec in MISSION_VOLUMES:
         spawn_volume(*spec, volume_class, volume_class_path)
+    for spec in M04_M05_VOLUMES:
+        spawn_volume(*spec, volume_class, volume_class_path)
     for spec in MISSION_INTERACTABLES:
+        spawn_interactable(*spec, interactable_class, interactable_class_path)
+    for spec in M04_M05_INTERACTABLES:
         spawn_interactable(*spec, interactable_class, interactable_class_path)
     for spec in DIALOGUE_INTERACTABLES:
         spawn_dialogue_interactable(*spec, dialogue_class, dialogue_class_path)

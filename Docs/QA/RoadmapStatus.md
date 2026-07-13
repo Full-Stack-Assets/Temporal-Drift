@@ -21,9 +21,9 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 
 | Task | Status | Notes |
 |------|--------|-------|
-| 9 Vertical-slice mission | **Partial** | M02 full coordinator flow + world actors; M01/M03 scaffolding scripts; automation contracts for M01–M05. |
+| 9 Vertical-slice mission | **Partial** | M02 full flow; M01–M05 automation + volumes; campaign auto-advance chain. |
 | 10 NPCs/traffic | **Partial** | `EraPopulationManager` + budget tests; live splines/population sets pending. |
-| 11 Save/load/settings | **Partial** | Schema v3, atomic saves, crafting + timeline fact restore, pause/settings UI shell, profile mutators. Menu confirmations pending polish. |
+| 11 Save/load/settings | **Partial** | Schema v3 + crafting/timeline facts/dialogue restore; pause/settings UI. |
 | 12 Windows alpha | **Partial** | Dev package scripts + checklist; Shipping smoke and 1080p controller acceptance pending on PC. |
 
 ## Tasks 13–14 (Region + hero)
@@ -37,8 +37,8 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 
 | Task | Status | Notes |
 |------|--------|-------|
-| 15 Dialogue | **Partial** | Subsystem + widget + M01/M02/M03 dialogue scripts; full cast graphs and save-safe conversation restore pending. |
-| 16 Campaign M01–M05 | **Partial** | Mission data assets, flow automation tests, M01–M03 volume/dialogue placement scripts; M04/M05 world actors pending. |
+| 15 Dialogue | **Partial** | Subsystem + widget + M01/M02/M03 dialogue scripts; full cast graphs pending. |
+| 16 Campaign M01–M05 | **Partial** | Mission data assets, flow automation tests, M01–M05 volume/dialogue placement scripts; live playthrough pending. |
 | 17 Five-era production | **Scaffolded** | Layer mappings + era music catalog; content for 1885/1985A/2015/2045 pending. |
 | 18 Timeline facts/genealogy | **Partial** | Subsystems + tests + `create_timeline_data.py`; mission coordinator sets `C_*` flags on objective complete. |
 
@@ -54,7 +54,12 @@ Combat/stealth components, temporal drive, crafting, hero progression, and era m
 - `Scripts/create_timeline_data.py` — timeline fact + genealogy seed assets.
 - Mission coordinator applies `C_PlaqueChanged`, `C_DinerRenamed`, `C_SchoolDedication`, `C_FounderMissing`, `C_CampaignComplete` on objective completion.
 - Expanded `place_mission_volumes.py` and `create_dialogue_assets.py` for M01/M03 scaffolding.
-- Automation: `BTTF.Mission.M01FirstTestRunContract` … `M05RaceTheLightningContract`, `BTTF.Save.MissionAssetPathResolution`, `BTTF.Save.SubsystemSnapshotRoundTrip`, `BTTF.UI.PauseAndSettingsContract`.
+- Campaign mission chaining (`M01` → `M05`) with `bAutoAdvanceCampaign` and optional `bStartFullCampaignOnNewGame` on GameMode.
+- Dialogue progress snapshots saved/restored with story flags and conversation state.
+- Fading photograph status row on time-circuits HUD driven by paradox level.
+- `BootstrapCampaignSystems()` loads timeline facts, genealogy, and default crafting recipes on init.
+- M04/M05 mission volume scaffolding + `Scripts/create_side_missions.py` (Side A/B).
+- Automation: `BTTF.Mission.CampaignChainOrder`, dialogue snapshot restore in branching test.
 
 ## Still required for vertical-slice acceptance
 

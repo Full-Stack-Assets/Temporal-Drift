@@ -25,6 +25,15 @@ public:
     bool StartVerticalSliceMission();
 
     UFUNCTION(BlueprintCallable, Category = "Mission")
+    bool StartFirstCampaignMission();
+
+    UFUNCTION(BlueprintCallable, Category = "Mission")
+    bool StartCampaignMission(FName MissionStableId);
+
+    UFUNCTION(BlueprintPure, Category = "Mission", meta = (DisplayName = "Get Next Campaign Mission Id"))
+    static FName GetNextCampaignMissionId(FName CompletedMissionId);
+
+    UFUNCTION(BlueprintCallable, Category = "Mission")
     bool StartMissionByAssetPath(const FString& AssetPath);
 
     UFUNCTION(BlueprintCallable, Category = "Mission")
@@ -53,7 +62,13 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mission")
     bool bAutoSaveOnCheckpoint = true;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mission")
+    bool bAutoAdvanceCampaign = true;
+
 private:
+    UFUNCTION()
+    void HandleMissionCompleted(FName MissionId);
+
     UFUNCTION()
     void HandleJumpArrived(FTimeTravelRequest Request);
 

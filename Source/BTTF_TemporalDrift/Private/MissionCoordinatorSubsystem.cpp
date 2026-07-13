@@ -87,6 +87,7 @@ void UMissionCoordinatorSubsystem::BindMissionDelegates()
         return;
     }
     MissionSubsystem->OnObjectiveChanged.AddDynamic(this, &UMissionCoordinatorSubsystem::HandleObjectiveChanged);
+    MissionSubsystem->OnMissionCompleted.AddDynamic(this, &UMissionCoordinatorSubsystem::HandleMissionCompleted);
     bDelegatesBound = true;
 }
 
@@ -97,6 +98,7 @@ void UMissionCoordinatorSubsystem::UnbindMissionDelegates()
         return;
     }
     MissionSubsystem->OnObjectiveChanged.RemoveDynamic(this, &UMissionCoordinatorSubsystem::HandleObjectiveChanged);
+    MissionSubsystem->OnMissionCompleted.RemoveDynamic(this, &UMissionCoordinatorSubsystem::HandleMissionCompleted);
     bDelegatesBound = false;
 }
 
@@ -113,6 +115,59 @@ bool UMissionCoordinatorSubsystem::StartMissionByAssetPath(const FString& AssetP
 bool UMissionCoordinatorSubsystem::StartVerticalSliceMission()
 {
     return StartMissionByAssetPath(VerticalSliceMissionPath);
+}
+
+bool UMissionCoordinatorSubsystem::StartFirstCampaignMission()
+{
+    return StartCampaignMission(FName(TEXT("M01.FirstTestRun")));
+}
+
+bool UMissionCoordinatorSubsystem::StartCampaignMission(FName MissionStableId)
+{
+    if (MissionStableId.IsNone())
+    {
+        return false;
+    }
+
+    const FString Path = UBTTF_GameInstance::BuildMissionAssetPathFromStableId(MissionStableId);
+    return StartMissionByAssetPath(Path);
+}
+
+FName UMissionCoordinatorSubsystem::GetNextCampaignMissionId(FName CompletedMissionId)
+{
+    if (CompletedMissionId == FName(TEXT("M01.FirstTestRun")))
+    {
+        return FName(TEXT("M02.ClocktowerCalibration"));
+    }
+    if (CompletedMissionId == FName(TEXT("M02.ClocktowerCalibration")))
+    {
+        return FName(TEXT("M03.TownOutOfTime"));
+    }
+    if (CompletedMissionId == FName(TEXT("M03.TownOutOfTime")))
+    {
+        return FName(TEXT("M04.MissingComponent"));
+    }
+    if (CompletedMissionId == FName(TEXT("M04.MissingComponent")))
+    {
+        return FName(TEXT("M05.RaceTheLightning"));
+    }
+    return NAME_None;
+}
+
+void UMissionCoordinatorSubsystem::HandleMissionCompleted(FName MissionId)
+{
+    if (!bAutoAdvanceCampaign)
+    {
+        return;
+    }
+
+    const FName NextMissionId = GetNextCampaignMissionId(MissionId);
+    if (NextMissionId.IsNone())
+    {
+        return;
+    }
+
+    StartCampaignMission(NextMissionId);
 }
 
 bool UMissionCoordinatorSubsystem::SubmitMissionEvent(FName EventId)
