@@ -23,7 +23,10 @@ bool FBTTFEnhancedInputAssetsTest::RunTest(const FString& Parameters)
         TEXT("IA_TimeCircuits"),
         TEXT("IA_TimeJump"),
         TEXT("IA_CycleDestination"),
-        TEXT("IA_ToggleCamera")};
+        TEXT("IA_ToggleCamera"),
+        TEXT("IA_ToggleAutoChase"),
+        TEXT("IA_CameraOrbitYaw"),
+        TEXT("IA_CameraOrbitPitch")};
 
     for (const TCHAR* ActionName : ActionNames)
     {
@@ -48,6 +51,11 @@ bool FBTTFEnhancedInputAssetsTest::RunTest(const FString& Parameters)
         TestNotNull(TEXT("Reverse action is assigned on the vehicle"), Vehicle->ReverseAction);
         TestNotNull(TEXT("Hover mode action is assigned on the vehicle"), Vehicle->HoverModeAction);
     }
+    TestNotNull(
+        TEXT("Hero input mapping context loads"),
+        LoadObject<UInputMappingContext>(
+            nullptr, TEXT("/Game/Input/IMC_Hero.IMC_Hero")));
+
     return !HasAnyErrors();
 }
 

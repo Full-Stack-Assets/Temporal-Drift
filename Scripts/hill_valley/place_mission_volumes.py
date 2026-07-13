@@ -56,6 +56,7 @@ SIDE_MISSION_VOLUMES = [
 ]
 
 M04_M05_VOLUMES = [
+    ("MV_M04_WorkshopLocated", (5000, -1400, 120), (1600, 1600, 300), "WorkshopLocated"),
     ("MV_M04_WorkshopApproach", (5200, -1200, 120), (1800, 1800, 350), "WorkshopEntered"),
     ("MV_M05_LightningApproach", (-4200, 6200, 120), (2400, 2400, 400), "FinalRunStarted"),
     ("MV_M05_ReturnSquare", (0, 3000, 120), (2000, 2000, 350), "ConsequencesInspected"),
@@ -63,9 +64,18 @@ M04_M05_VOLUMES = [
 
 M04_M05_INTERACTABLES = [
     ("MI_M04_RecoverComponents", (5400, -1000, 100), "ComponentsRecovered", "Recover alloy and regulator"),
+    ("MI_M04_ResearchChoice", (5300, -1100, 100), "ResearchChoiceResolved", "Resolve Crane's research notes"),
     ("MI_M04_InstallRegulator", (-2400, 900, 100), "RegulatorInstalled", "Install temporal regulator"),
     ("MI_M05_PrepareRoute", (-4000, 6000, 100), "FinalePrepared", "Prepare lightning route"),
     ("MI_M05_FinalDialogue", (-2400, 700, 100), "CampaignResolved", "Resolve campaign with Vale"),
+]
+
+M01_COMPLETION = [
+    ("MV_M01_ReturnToVale", (-2200, 950, 100), (1200, 1200, 280), "M01Returned", False),
+]
+
+VEHICLE_ONLY_VOLUMES = [
+    ("MV_M05_LightningJump", (0, 4600, 180), (1800, 1800, 350), "LightningJumpComplete", True),
 ]
 
 
@@ -105,7 +115,7 @@ def to_world_vector(local_xyz):
     return unreal.Vector(*world_location(local_xyz[0], local_xyz[1], local_xyz[2]))
 
 
-def spawn_volume(name, location, extent, event_id, volume_class, class_path):
+def spawn_volume(name, location, extent, event_id, volume_class, class_path, require_vehicle=False):
     actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
     volume = actor_subsystem.spawn_actor_from_class(
         volume_class, to_world_vector(location), unreal.Rotator(0, 0, 0)
@@ -116,6 +126,8 @@ def spawn_volume(name, location, extent, event_id, volume_class, class_path):
 
     if class_path.endswith("MissionEventVolume"):
         volume.set_editor_property("mission_event_id", unreal.Name(event_id))
+        if require_vehicle:
+            volume.set_editor_property("b_require_vehicle_occupant", True)
         set_trigger_extent(volume, extent)
     else:
         set_trigger_extent(volume, extent)
@@ -175,6 +187,10 @@ def main():
     cleanup_generated()
 
     for spec in MISSION_VOLUMES:
+        spawn_volume(*spec, volume_class, volume_class_path)
+    for spec in M01_COMPLETION:
+        spawn_volume(*spec, volume_class, volume_class_path)
+    for spec in VEHICLE_ONLY_VOLUMES:
         spawn_volume(*spec, volume_class, volume_class_path)
     for spec in M04_M05_VOLUMES:
         spawn_volume(*spec, volume_class, volume_class_path)

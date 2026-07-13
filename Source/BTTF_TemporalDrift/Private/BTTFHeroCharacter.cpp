@@ -124,21 +124,11 @@ void ABTTFHeroCharacter::InstallHeroInputMapping()
 void ABTTFHeroCharacter::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
-    UpdateMovementFacingYaw();
 }
 
-void ABTTFHeroCharacter::UpdateMovementFacingYaw()
+float ABTTFHeroCharacter::GetMovementYaw() const
 {
-    if (!Controller || !KeyboardCamera)
-    {
-        return;
-    }
-
-    const float CameraYaw = GetActorRotation().Yaw + KeyboardCamera->GetOrbitYaw();
-    FRotator ControlRotation = Controller->GetControlRotation();
-    ControlRotation.Yaw = CameraYaw;
-    ControlRotation.Pitch = KeyboardCamera->GetOrbitPitch();
-    Controller->SetControlRotation(ControlRotation);
+    return GetActorRotation().Yaw + (KeyboardCamera ? KeyboardCamera->GetOrbitYaw() : 0.0f);
 }
 
 void ABTTFHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -203,9 +193,7 @@ void ABTTFHeroCharacter::SetSprinting(bool bEnabled)
     {
         if (!Movement->IsCrouching())
         {
-            const float TargetSpeed = bSprinting ? SprintSpeed : WalkSpeed;
-            Movement->MaxWalkSpeed = FMath::FInterpTo(Movement->MaxWalkSpeed, TargetSpeed,
-                GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.016f, 8.0f);
+            Movement->MaxWalkSpeed = bSprinting ? SprintSpeed : WalkSpeed;
         }
     }
 }
@@ -377,18 +365,18 @@ void ABTTFHeroCharacter::ResetToSafeTransform()
 
 void ABTTFHeroCharacter::MoveForward(float Value)
 {
-    if (Controller && !FMath::IsNearlyZero(Value))
+    if (!FMath::IsNearlyZero(Value))
     {
-        const FRotator Rotation(0, Controller->GetControlRotation().Yaw, 0);
+        const FRotator Rotation(0.0f, GetMovementYaw(), 0.0f);
         AddMovementInput(FRotationMatrix(Rotation).GetUnitAxis(EAxis::X), Value);
     }
 }
 
 void ABTTFHeroCharacter::MoveRight(float Value)
 {
-    if (Controller && !FMath::IsNearlyZero(Value))
+    if (!FMath::IsNearlyZero(Value))
     {
-        const FRotator Rotation(0, Controller->GetControlRotation().Yaw, 0);
+        const FRotator Rotation(0.0f, GetMovementYaw(), 0.0f);
         AddMovementInput(FRotationMatrix(Rotation).GetUnitAxis(EAxis::Y), Value);
     }
 }

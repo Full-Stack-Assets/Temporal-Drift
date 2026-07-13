@@ -1,4 +1,5 @@
 #include "SettingsWidget.h"
+#include "PauseMenuWidget.h"
 #include "BTTF_GameInstance.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Border.h"
@@ -7,6 +8,7 @@
 #include "Components/CheckBox.h"
 #include "Components/Slider.h"
 #include "Components/TextBlock.h"
+#include "Components/Button.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
 #include "Kismet/GameplayStatics.h"
@@ -74,8 +76,16 @@ void USettingsWidget::BuildWidgetTree()
     Stack->AddChildToVerticalBox(ReducedFlashCheck);
     AddLabel(Stack, FText::FromString(TEXT("Reduced flash (accessibility)")));
 
-    UTextBlock* BackText = AddLabel(Stack, FText::FromString(TEXT("[ Back ]")));
-    BackText->SetColorAndOpacity(FSlateColor(FLinearColor(0.55f, 0.85f, 1.0f)));
+    UButton* BackButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), TEXT("BackButton"));
+    UTextBlock* BackLabel = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass(), TEXT("BackLabel"));
+    BackLabel->SetText(FText::FromString(TEXT("Back")));
+    BackLabel->SetColorAndOpacity(FSlateColor(FLinearColor(0.55f, 0.85f, 1.0f)));
+    FSlateFontInfo BackFont = BackLabel->GetFont();
+    BackFont.Size = 22;
+    BackLabel->SetFont(BackFont);
+    BackButton->AddChild(BackLabel);
+    BackButton->OnClicked.AddDynamic(this, &USettingsWidget::HandleBackClicked);
+    Stack->AddChildToVerticalBox(BackButton);
 }
 
 UTextBlock* USettingsWidget::AddLabel(UVerticalBox* Parent, const FText& Label)
@@ -226,5 +236,11 @@ void USettingsWidget::HandleReducedFlashChanged(bool bChecked)
 
 void USettingsWidget::HandleBackClicked()
 {
+    if (OwnerPauseMenu)
+    {
+        OwnerPauseMenu->ShowSettings(false);
+        return;
+    }
+
     SetVisibility(ESlateVisibility::Collapsed);
 }

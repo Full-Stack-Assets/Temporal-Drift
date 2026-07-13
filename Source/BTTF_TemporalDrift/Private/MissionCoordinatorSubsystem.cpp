@@ -33,7 +33,8 @@ namespace
             Facts->SetBaseFact(FName(TEXT("C_SchoolDedication")), true);
             Facts->SetBaseFact(FName(TEXT("C_FounderMissing")), true);
         }
-        else if (MissionId == FName(TEXT("M04.MissingComponent")) && ObjectiveId == FName(TEXT("RegulatorInstalled")))
+        else if (MissionId == FName(TEXT("M04.MissingComponent"))
+            && (ObjectiveId == FName(TEXT("RegulatorInstalled")) || ObjectiveId == FName(TEXT("InstallRegulator"))))
         {
             Facts->SetBaseFact(FName(TEXT("1885.RailSurveyApproved")), true);
         }
@@ -225,8 +226,13 @@ void UMissionCoordinatorSubsystem::HandleMissionCompleted(FName MissionId)
 
 bool UMissionCoordinatorSubsystem::SubmitMissionEvent(FName EventId)
 {
+    if (!MissionSubsystem || !MissionSubsystem->SubmitMissionEvent(EventId))
+    {
+        return false;
+    }
+
     ApplyTimelineFactsForMissionEvent(EventId, GetGameInstance());
-    return MissionSubsystem && MissionSubsystem->SubmitMissionEvent(EventId);
+    return true;
 }
 
 void UMissionCoordinatorSubsystem::NotifyJumpArrived(ETimelineState DestinationEra)

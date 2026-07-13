@@ -193,6 +193,7 @@ void ADeLoreanVehicle::BeginPlay()
     if (TimeTravelSubsystem)
     {
         TimeTravelSubsystem->OnTimeTravelCompleted.AddDynamic(this, &ADeLoreanVehicle::EndTimeTravelEffects);
+        TimeTravelSubsystem->OnJumpFailed.AddDynamic(this, &ADeLoreanVehicle::HandleTimeTravelJumpFailed);
     }
 
     InstallVehicleInputMapping();
@@ -970,10 +971,26 @@ void ADeLoreanVehicle::StartTimeTravelEffects()
 void ADeLoreanVehicle::EndTimeTravelEffects()
 {
     bIsTimeTraveling = false;
+    if (TimeTravelSubsystem)
+    {
+        bTimeCircuitsOn = TimeTravelSubsystem->GetTimeTravelPhase() == ETimeTravelPhase::Armed
+            || TimeTravelSubsystem->GetTimeTravelPhase() == ETimeTravelPhase::Charging;
+    }
     if (TimeTravelPresentationComponent)
     {
         TimeTravelPresentationComponent->HandlePhaseChanged(ETimeTravelPhase::Idle);
     }
+}
+
+void ADeLoreanVehicle::HandleTimeTravelJumpFailed(FTimeTravelRequest Request, FText Reason)
+{
+    EndTimeTravelEffects();
+    bTimeCircuitsOn = false;
+    if (TimeTravelSubsystem)
+    {
+        TimeTravelSubsystem->SetTimeCircuitsArmed(false);
+    }
+    UE_LOG(LogTemp, Warning, TEXT("Time travel failed: %s"), *Reason.ToString());
 }
 
 void ADeLoreanVehicle::ApplyRadiationDamage(float Amount)

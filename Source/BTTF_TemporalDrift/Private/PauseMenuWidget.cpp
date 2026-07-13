@@ -76,6 +76,7 @@ void UPauseMenuWidget::BuildWidgetTree()
         SettingsSlot->SetAlignment(FVector2D(0.5f, 0.5f));
         SettingsSlot->SetSize(FVector2D(640.0f, 420.0f));
         SettingsWidget->SetVisibility(ESlateVisibility::Collapsed);
+        SettingsWidget->SetOwnerPauseMenu(this);
     }
 }
 

@@ -77,6 +77,7 @@ $pythonSteps = @(
     @{ Path = 'Scripts\create_ui_widgets.py'; Token = 'UI_WIDGETS_SUCCESS' },
     @{ Path = 'Scripts\create_hero_input.py'; Token = 'BTTF_HERO_INPUT_SUCCESS' },
     @{ Path = 'Scripts\create_complete_vehicle_input.py'; Token = 'BTTF_COMPLETE_VEHICLE_INPUT_SUCCESS' },
+    @{ Path = 'Scripts\create_controller_input_assets.py'; Token = 'Controller input assets' },
     @{ Path = 'Scripts\create_pbr_materials.py'; Token = 'PBR_MATERIALS_SUCCESS' },
     @{ Path = 'Scripts\create_dialogue_assets.py'; Token = 'DIALOGUE_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_era_music_assets.py'; Token = 'ERA_MUSIC_ASSETS_SUCCESS' },

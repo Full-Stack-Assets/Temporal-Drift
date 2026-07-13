@@ -135,19 +135,9 @@ void ABTTF_PlayerController::SetupInputComponent()
     // polling is not guaranteed to run while the game is in GameAndUI mode.
     InputComponent->BindKey(EKeys::G, IE_Pressed, this,
         &ABTTF_PlayerController::HandleToggleVehicleHeroPossession);
-    InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ABTTF_PlayerController::TogglePauseMenu);
-
-    if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
-    {
-        if (TimeCircuitsToggleAction)
-            EnhancedInput->BindAction(TimeCircuitsToggleAction, ETriggerEvent::Triggered, this, &ABTTF_PlayerController::ToggleTimeCircuits);
-
-        if (TimeJumpAction)
-            EnhancedInput->BindAction(TimeJumpAction, ETriggerEvent::Triggered, this, &ABTTF_PlayerController::RequestTimeJump);
-
-        if (HoverModeAction)
-            EnhancedInput->BindAction(HoverModeAction, ETriggerEvent::Triggered, this, &ABTTF_PlayerController::ToggleHoverMode);
-    }
+    FInputKeyBinding& EscapeBinding = InputComponent->BindKey(
+        EKeys::Escape, IE_Pressed, this, &ABTTF_PlayerController::TogglePauseMenu);
+    EscapeBinding.bExecuteWhenPaused = true;
 }
 
 void ABTTF_PlayerController::ToggleTimeCircuits()

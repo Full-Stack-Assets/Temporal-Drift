@@ -59,7 +59,9 @@ void AHillValleyAmbientPedestrian::SetCitizenLabel(const FText& InDisplayName)
     DisplayName = InDisplayName;
     if (!InDisplayName.IsEmpty())
     {
+#if WITH_EDITOR
         SetActorLabel(InDisplayName.ToString());
+#endif
     }
 }
 

@@ -3,6 +3,7 @@
 // Unreal Engine 5.8
 
 #include "BTTF_GameInstance.h"
+#include "EraWorldManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimeTravelSubsystem.h"
 #include "MissionSubsystem.h"
@@ -175,7 +176,7 @@ void UBTTF_GameInstance::SaveTimelineState()
 
     CurrentSavedTimelineState = Subsystem->GetCurrentEra();
     CurrentSavedParadoxLevel = Subsystem->CurrentParadoxLevel;
-    TotalTimeJumpsMade++;
+    TotalTimeJumpsMade = Subsystem->TotalJumpsMade;
 
     UE_LOG(LogTemp, Log, TEXT("Timeline state saved. Era: %s, Paradox: %.1f"),
         *UEnum::GetValueAsString(CurrentSavedTimelineState),
@@ -190,6 +191,12 @@ void UBTTF_GameInstance::LoadTimelineState()
 
     Subsystem->CurrentTimelineState = CurrentSavedTimelineState;
     Subsystem->CurrentParadoxLevel = CurrentSavedParadoxLevel;
+    Subsystem->TotalJumpsMade = TotalTimeJumpsMade;
+
+    if (UEraWorldManager* EraManager = World->GetSubsystem<UEraWorldManager>())
+    {
+        EraManager->RequestEra(CurrentSavedTimelineState);
+    }
 
     UE_LOG(LogTemp, Log, TEXT("Timeline state loaded. Era: %s"), 
         *UEnum::GetValueAsString(CurrentSavedTimelineState));
