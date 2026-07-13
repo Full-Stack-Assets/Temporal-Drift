@@ -96,12 +96,17 @@ If prompted to rebuild modules, accept. If the editor reports **0 compile action
 
 | Input | Action |
 |-------|--------|
-| WASD / arrows | Drive |
+| Arrow keys | Drive (vehicle) / move (on foot) |
+| W / A / S / D | Camera orbit (pitch / yaw) |
+| `C` | Cycle camera preset |
+| `V` | Toggle auto-chase camera |
 | `T` | Toggle time circuits |
 | `Q` / `E` | Cycle destination era |
 | `F` | Time jump (when armed) |
-| `G` | Exit vehicle (on foot) |
+| `G` | Enter / exit vehicle |
 | `Esc` | Pause + autosave |
+
+Mouse does not control movement or camera. See `Docs/Design/KeyboardCameraPhotorealism.md` for the full contract.
 
 ### Quick verification
 

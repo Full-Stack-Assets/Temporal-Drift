@@ -75,6 +75,9 @@ $pythonSteps = @(
     @{ Path = 'Scripts\create_presentation_assets.py'; Token = 'TEMPORAL_PRESENTATION_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_presentation_vfx_audio.py'; Token = 'PRESENTATION_VFX_AUDIO_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_ui_widgets.py'; Token = 'UI_WIDGETS_SUCCESS' },
+    @{ Path = 'Scripts\create_hero_input.py'; Token = 'BTTF_HERO_INPUT_SUCCESS' },
+    @{ Path = 'Scripts\create_complete_vehicle_input.py'; Token = 'BTTF_COMPLETE_VEHICLE_INPUT_SUCCESS' },
+    @{ Path = 'Scripts\create_pbr_materials.py'; Token = 'PBR_MATERIALS_SUCCESS' },
     @{ Path = 'Scripts\create_dialogue_assets.py'; Token = 'DIALOGUE_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_era_music_assets.py'; Token = 'ERA_MUSIC_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_world_consequence_signage.py'; Token = 'WORLD_CONSEQUENCE_SIGNAGE_SUCCESS' },
@@ -90,7 +93,8 @@ $pythonSteps = @(
     @{ Path = 'Scripts\hill_valley\validate_mission_placement.py'; Token = 'MISSION_PLACEMENT_VALIDATION_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\validate_hill_valley_square.py'; Token = 'HILL_VALLEY_VALIDATION_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\validate_1955_dressing.py'; Token = 'HILL_VALLEY_1955_VALIDATION_SUCCESS' },
-    @{ Path = 'Scripts\hill_valley\validate_era_dressing.py'; Token = 'ERA_DRESSING_VALIDATION_SUCCESS' }
+    @{ Path = 'Scripts\hill_valley\validate_era_dressing.py'; Token = 'ERA_DRESSING_VALIDATION_SUCCESS' },
+    @{ Path = 'Scripts\apply_photoreal_lighting.py'; Token = 'PHOTOREAL_LIGHTING_SUCCESS' }
 )
 
 foreach ($step in $pythonSteps) {

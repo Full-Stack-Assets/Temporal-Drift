@@ -24,6 +24,12 @@ public:
 
     void HandleToggleVehicleHeroPossession();
 
+    UFUNCTION(BlueprintCallable, Category="UI")
+    void ShowGameplayMessage(const FString& Message, float DurationSeconds = 3.0f);
+
+    UFUNCTION(BlueprintPure, Category="UI")
+    FString GetActiveGameplayMessage() const { return ActiveGameplayMessage; }
+
     UFUNCTION(BlueprintCallable, Category = "UI")
     void TogglePauseMenu();
 
@@ -70,4 +76,9 @@ protected:
     TObjectPtr<UPauseMenuWidget> PauseMenuWidget;
 
     bool bMenuPaused = false;
+
+    UPROPERTY(Transient)
+    FString ActiveGameplayMessage;
+
+    float GameplayMessageExpiry = 0.0f;
 };
