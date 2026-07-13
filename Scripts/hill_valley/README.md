@@ -8,6 +8,12 @@ Generated actors carry `HV_Generated` (neutral) or `HV_1955_Generated` (1955 dre
 
 | Script | Purpose |
 |--------|---------|
+| `build_1885_dressing.py` | Wild West saloon, rail survey, land dispute anchors |
+| `build_1985_alternate_dressing.py` | Casino dystopia on `DL_1985_Alternate` |
+| `build_2015_dressing.py` | Skyway + Cafe 80's on `DL_2015` |
+| `build_2045_dressing.py` | Tannen tier spire + heritage ruins on `DL_2045` |
+| `build_timeline_variants.py` | Fact-gated present-timeline signage swaps |
+| `validate_era_dressing.py` | All-era dressing validation |
 | `hill_valley_coords.py` | Shared `TOWN_OFFSET_Y` and world/local conversion |
 | `hill_valley_common.py` | Shared spawn helpers and materials |
 | `build_hill_valley_square.py` | Courthouse square + regional core + metro expansion |
@@ -30,5 +36,7 @@ Or run `build_hill_valley_square.py` via UnrealEditor-Cmd. Success token: `court
 
 ## Validate
 
-Success tokens: `HILL_VALLEY_VALIDATION_SUCCESS`, `HILL_VALLEY_1955_VALIDATION_SUCCESS`.
+Success tokens: `HILL_VALLEY_VALIDATION_SUCCESS`, `HILL_VALLEY_1955_VALIDATION_SUCCESS`, `ERA_DRESSING_VALIDATION_SUCCESS`.
+
+See `Docs/Design/TimelineRipples.md` for cross-era fact propagation.
 

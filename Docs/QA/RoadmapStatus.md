@@ -39,8 +39,8 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 |------|--------|-------|
 | 15 Dialogue | **Partial** | Subsystem + widget + M01/M02/M03 dialogue scripts; full cast graphs pending. |
 | 16 Campaign M01–M05 | **Partial** | Mission data assets, flow automation tests, M01–M05 volume/dialogue placement scripts; live playthrough pending. |
-| 17 Five-era production | **Scaffolded** | Layer mappings + era music catalog; content for 1885/1985A/2015/2045 pending. |
-| 18 Timeline facts/genealogy | **Partial** | Subsystems + tests + `create_timeline_data.py`; `UWorldConsequenceSubsystem` maps `C_*` facts to HUD labels and signage material paths. |
+| 17 Five-era production | **Partial** | All six era dressing scripts + fact-gated variant signage; 1885/1985A/2015/2045 layers authored. |
+| 18 Timeline facts/genealogy | **Partial** | Cross-era ripple graph (`1885` → `2045`), `UTimelineVariantSubsystem`, expanded consequences HUD. |
 
 ## Tasks 19–27 (Expanded master game)
 

@@ -1,4 +1,4 @@
-"""Seed timeline fact and genealogy data assets for campaign consequences."""
+"""Seed timeline fact and genealogy data assets for cross-era ripple consequences."""
 import unreal
 
 TIMELINE_DEST = "/Game/Data/Timeline"
@@ -31,10 +31,42 @@ def ensure_fact_asset():
             fact.set_editor_property("dependencies", dep_list)
         facts.append(fact)
 
+    # --- 1885 Wild West interventions (player sets these in the past) ---
+    add_fact("1885.SaloonStandoffResolved")
+    add_fact("1885.LandDisputeWon")
+    add_fact("1885.RailSurveyApproved")
+
+    # --- 1955 consequences propagated from 1885 ---
+    add_fact("1955.MallSiteOwned", deps=[("1885.LandDisputeWon", True)])
+    add_fact("1955.DinerLegacyIntact", deps=[("1885.SaloonStandoffResolved", True)])
+    add_fact("1955.ClocktowerFunded", deps=[("1885.RailSurveyApproved", True)])
+
+    # --- 1985 present: mission-set and propagated facts ---
     add_fact("C_PlaqueChanged")
-    add_fact("C_DinerRenamed")
+    add_fact("C_DinerRenamed", deps=[("1955.DinerLegacyIntact", False)])
     add_fact("C_SchoolDedication")
     add_fact("C_FounderMissing")
+    add_fact("1985.StreetRenamed", deps=[("1955.MallSiteOwned", False)])
+
+    # --- Alternate 1985 branch when timeline corrupts before campaign resolution ---
+    add_fact("A_TimelineCorrupted", deps=[
+        ("C_DinerRenamed", True),
+        ("C_FounderMissing", True),
+        ("C_CampaignComplete", False),
+    ])
+
+    # --- 2015 future state ---
+    add_fact("2015.SkywayLitigation", deps=[("1985.StreetRenamed", True)])
+    add_fact("2015.Cafe80sThriving", deps=[
+        ("C_CampaignComplete", True),
+        ("A_TimelineCorrupted", False),
+    ])
+
+    # --- 2045 deep future ---
+    add_fact("2045.TierThreeTannenOwned", default_value=True, deps=[("1985.StreetRenamed", True)], value_when_satisfied=False)
+    add_fact("2045.HeritageDistrictIntact", deps=[("2045.TierThreeTannenOwned", False)])
+
+    # --- Campaign finale stabilizes present timeline ---
     add_fact("C_CampaignComplete", deps=[
         ("C_PlaqueChanged", True),
         ("C_DinerRenamed", True),
@@ -59,7 +91,7 @@ def ensure_genealogy_asset():
 
     citizens = []
 
-    def add_citizen(citizen_id, family_id, birth, death, parents=None, schedule=None, tags=None):
+    def add_citizen(citizen_id, family_id, birth, death, parents=None, tags=None):
         record = unreal.CitizenGenealogyRecord()
         record.set_editor_property("citizen_id", citizen_id)
         record.set_editor_property("family_id", family_id)
@@ -67,8 +99,6 @@ def ensure_genealogy_asset():
         record.set_editor_property("death_year", death)
         record.set_editor_property("parent_ids", parents or [])
         record.set_editor_property("personality_tags", tags or [])
-        if schedule:
-            record.set_editor_property("era_schedule_ids", schedule)
         citizens.append(record)
 
     add_citizen("Vale.Emmett", "Vale", 1920, 2100, tags=["Inventor", "Mentor"])
@@ -77,6 +107,10 @@ def ensure_genealogy_asset():
     add_citizen("Diaz.Elena", "Diaz", 1930, 1998, tags=["DinerOwner1955"])
     add_citizen("Crane.Victor", "Crane", 1965, 2100, tags=["Rival"])
     add_citizen("Crane.Ancestor", "Crane", 1928, 1988, tags=["Industrialist1955"])
+    add_citizen("Tannen.Buford", "Tannen", 1936, 1990, tags=["Bulldog1955"])
+    add_citizen("Tannen.Biff", "Tannen", 1937, 2015, parents=["Tannen.Buford"], tags=["Dynasty"])
+    add_citizen("McFly.William", "McFly", 1880, 1950, tags=["Founder1885"])
+    add_citizen("Wilson.Goldie", "Wilson", 1930, 2010, tags=["Mayor1955"])
 
     asset.set_editor_property("citizens", citizens)
     unreal.EditorAssetLibrary.save_asset(path, only_if_is_dirty=False)

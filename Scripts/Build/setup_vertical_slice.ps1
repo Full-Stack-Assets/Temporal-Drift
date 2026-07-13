@@ -80,11 +80,17 @@ $pythonSteps = @(
     @{ Path = 'Scripts\create_world_consequence_signage.py'; Token = 'WORLD_CONSEQUENCE_SIGNAGE_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\build_hill_valley_square.py'; Token = 'courthouse square generation complete' },
     @{ Path = 'Scripts\hill_valley\build_1955_dressing.py'; Token = 'HILL_VALLEY_1955_BUILD_SUCCESS' },
+    @{ Path = 'Scripts\hill_valley\build_1885_dressing.py'; Token = 'HILL_VALLEY_1885_BUILD_SUCCESS' },
+    @{ Path = 'Scripts\hill_valley\build_1985_alternate_dressing.py'; Token = 'HILL_VALLEY_1985A_BUILD_SUCCESS' },
+    @{ Path = 'Scripts\hill_valley\build_2015_dressing.py'; Token = 'HILL_VALLEY_2015_BUILD_SUCCESS' },
+    @{ Path = 'Scripts\hill_valley\build_2045_dressing.py'; Token = 'HILL_VALLEY_2045_BUILD_SUCCESS' },
+    @{ Path = 'Scripts\hill_valley\build_timeline_variants.py'; Token = 'TIMELINE_VARIANTS_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\place_mission_volumes.py'; Token = 'MISSION_VOLUME_PLACEMENT_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\place_traffic_routes.py'; Token = 'HILL_VALLEY_TRAFFIC_ROUTES_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\validate_mission_placement.py'; Token = 'MISSION_PLACEMENT_VALIDATION_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\validate_hill_valley_square.py'; Token = 'HILL_VALLEY_VALIDATION_SUCCESS' },
-    @{ Path = 'Scripts\hill_valley\validate_1955_dressing.py'; Token = 'HILL_VALLEY_1955_VALIDATION_SUCCESS' }
+    @{ Path = 'Scripts\hill_valley\validate_1955_dressing.py'; Token = 'HILL_VALLEY_1955_VALIDATION_SUCCESS' },
+    @{ Path = 'Scripts\hill_valley\validate_era_dressing.py'; Token = 'ERA_DRESSING_VALIDATION_SUCCESS' }
 )
 
 foreach ($step in $pythonSteps) {

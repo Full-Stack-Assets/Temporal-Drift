@@ -33,9 +33,44 @@ namespace
             Facts->SetBaseFact(FName(TEXT("C_SchoolDedication")), true);
             Facts->SetBaseFact(FName(TEXT("C_FounderMissing")), true);
         }
+        else if (MissionId == FName(TEXT("M04.MissingComponent")) && ObjectiveId == FName(TEXT("RegulatorInstalled")))
+        {
+            Facts->SetBaseFact(FName(TEXT("1885.RailSurveyApproved")), true);
+        }
         else if (MissionId == FName(TEXT("M05.RaceTheLightning")) && ObjectiveId == FName(TEXT("FinalDialogue")))
         {
             Facts->SetBaseFact(FName(TEXT("C_CampaignComplete")), true);
+        }
+    }
+
+    void ApplyTimelineFactsForMissionEvent(FName EventId, UGameInstance* GameInstance)
+    {
+        if (!GameInstance)
+        {
+            return;
+        }
+
+        UTimelineFactSubsystem* Facts = GameInstance->GetSubsystem<UTimelineFactSubsystem>();
+        if (!Facts)
+        {
+            return;
+        }
+
+        if (EventId == FName(TEXT("1885LandDisputeResolved")))
+        {
+            Facts->SetBaseFact(FName(TEXT("1885.LandDisputeWon")), true);
+        }
+        else if (EventId == FName(TEXT("1885SaloonStandoffResolved")))
+        {
+            Facts->SetBaseFact(FName(TEXT("1885.SaloonStandoffResolved")), true);
+        }
+        else if (EventId == FName(TEXT("1885RailSurveyApproved")))
+        {
+            Facts->SetBaseFact(FName(TEXT("1885.RailSurveyApproved")), true);
+        }
+        else if (EventId == FName(TEXT("1955ClocktowerFunded")))
+        {
+            Facts->SetBaseFact(FName(TEXT("1955.ClocktowerFunded")), true);
         }
     }
 }
@@ -190,6 +225,7 @@ void UMissionCoordinatorSubsystem::HandleMissionCompleted(FName MissionId)
 
 bool UMissionCoordinatorSubsystem::SubmitMissionEvent(FName EventId)
 {
+    ApplyTimelineFactsForMissionEvent(EventId, GetGameInstance());
     return MissionSubsystem && MissionSubsystem->SubmitMissionEvent(EventId);
 }
 

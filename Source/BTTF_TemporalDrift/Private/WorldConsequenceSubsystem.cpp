@@ -49,6 +49,16 @@ void UWorldConsequenceSubsystem::RegisterDefaultConsequences()
         TEXT("/Game/Environment/HillValley/Signage/MI_Consequence_Portrait.MI_Consequence_Portrait"));
     Add(TEXT("C_CampaignComplete"), TEXT("Timeline stabilized"),
         TEXT("First campaign resolved; Hill Valley enters post-story free roam."));
+    Add(TEXT("1985.StreetRenamed"), TEXT("Street renamed"),
+        TEXT("Courthouse Square was renamed after the mall site dispute resolved differently."));
+    Add(TEXT("1955.MallSiteOwned"), TEXT("Mall site lost"),
+        TEXT("The Twin Pines mall site was secured in an alternate 1885 land ruling."));
+    Add(TEXT("A_TimelineCorrupted"), TEXT("Timeline branch"),
+        TEXT("Present timeline diverged toward the 1985-A industrial branch."));
+    Add(TEXT("2045.TierThreeTannenOwned"), TEXT("Tannen dynasty"),
+        TEXT("Tier-three corporate control dominates the 2045 skyline."));
+    Add(TEXT("2015.Cafe80sThriving"), TEXT("Stable future"),
+        TEXT("The repaired timeline keeps Cafe 80's open in 2015."));
 }
 
 void UWorldConsequenceSubsystem::HandleFactChanged(FName FactId, bool PreviousValue, bool NewValue)
