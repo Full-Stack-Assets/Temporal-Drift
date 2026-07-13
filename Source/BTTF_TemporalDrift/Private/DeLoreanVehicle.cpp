@@ -594,7 +594,9 @@ void ADeLoreanVehicle::UpdateFluxCapacitor(float DeltaTime)
     if (!TimeTravelSubsystem || bIsTimeTraveling) return;
 
     const UTemporalDriftSettings* TravelSettings = GetDefault<UTemporalDriftSettings>();
-    if (CurrentSpeedMph >= TravelSettings->FluxChargeStartSpeedMph)
+    const bool bAboveChargeSpeed = CurrentSpeedMph >= TravelSettings->FluxChargeStartSpeedMph;
+    TimeTravelSubsystem->SetFluxCharging(bAboveChargeSpeed);
+    if (bAboveChargeSpeed)
     {
         float ChargeRate = TravelSettings->EnergyPerSecondAtThreshold * DeltaTime;
 

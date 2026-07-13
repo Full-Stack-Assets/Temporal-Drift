@@ -80,19 +80,55 @@ void UTimeTravelSubsystem::SetTimeCircuitsArmed(bool bArmed)
     bTimeCircuitsArmed = bArmed;
     if (!bIsTimeTraveling)
     {
+        LastJumpFailureReason = FText::GetEmpty();
         SetTimeTravelPhase(bArmed ? ETimeTravelPhase::Armed : ETimeTravelPhase::Idle);
     }
 }
 
+void UTimeTravelSubsystem::SetFluxCharging(bool bCharging)
+{
+    if (bIsTimeTraveling || !bTimeCircuitsArmed)
+    {
+        return;
+    }
+
+    SetTimeTravelPhase(bCharging ? ETimeTravelPhase::Charging : ETimeTravelPhase::Armed);
+}
+
+bool UTimeTravelSubsystem::FailTimeTravelRequest(const FTimeTravelRequest& Request, const FText& Reason)
+{
+    LastJumpFailureReason = Reason;
+    SetTimeTravelPhase(ETimeTravelPhase::Failed);
+    OnJumpFailed.Broadcast(Request, Reason);
+    return false;
+}
+
 bool UTimeTravelSubsystem::RequestTimeTravel(const FTimeTravelRequest& Request)
 {
-    if (!bTimeCircuitsArmed || bIsTimeTraveling || TimeTravelPhase == ETimeTravelPhase::Cooldown ||
-        Request.Destination == CurrentTimelineState || Request.EntrySpeedMph < GetJumpSpeedThresholdMph() || !HasEnoughEnergyForJump())
+    if (bIsTimeTraveling || TimeTravelPhase == ETimeTravelPhase::Cooldown)
     {
         return false;
     }
+    if (!bTimeCircuitsArmed)
+    {
+        return FailTimeTravelRequest(Request, FText::FromString(TEXT("Arm the time circuits first.")));
+    }
+    if (Request.Destination == CurrentTimelineState)
+    {
+        return FailTimeTravelRequest(Request, FText::FromString(TEXT("Select a different destination era.")));
+    }
+    if (Request.EntrySpeedMph < GetJumpSpeedThresholdMph())
+    {
+        return FailTimeTravelRequest(Request, FText::FromString(
+            FString::Printf(TEXT("Reach %.0f MPH to initiate time travel."), GetJumpSpeedThresholdMph())));
+    }
+    if (!HasEnoughEnergyForJump())
+    {
+        return FailTimeTravelRequest(Request, FText::FromString(TEXT("Flux energy is below the jump requirement.")));
+    }
 
     ActiveTravelRequest = Request;
+    LastJumpFailureReason = FText::GetEmpty();
     bIsTimeTraveling = true;
     SetTimeTravelPhase(ETimeTravelPhase::ThresholdReached);
     ConsumeEnergyForTimeTravel();
@@ -142,6 +178,7 @@ void UTimeTravelSubsystem::ResetTimeTravelState()
     PreviousTimelineState = ETimelineState::Present1985;
     CurrentFluxEnergy = 0.0f;
     TotalJumpsMade = 0;
+    LastJumpFailureReason = FText::GetEmpty();
 }
 
 void UTimeTravelSubsystem::SetTimeTravelPhase(ETimeTravelPhase NewPhase)

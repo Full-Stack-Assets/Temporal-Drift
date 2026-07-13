@@ -22,15 +22,24 @@ bool FBTTFTimeTravelStateMachineTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Default jump threshold is map-friendly"), System->GetJumpSpeedThresholdMph(), 40.0f);
     Request.EntrySpeedMph = 39.9f;
     TestFalse(TEXT("Unarmed request is rejected"), System->RequestTimeTravel(Request));
+    TestEqual(TEXT("Rejected request enters failed phase"), System->GetTimeTravelPhase(), ETimeTravelPhase::Failed);
+    TestFalse(TEXT("Rejected request exposes a reason"), System->GetLastJumpFailureReason().IsEmpty());
 
     System->SetTimeCircuitsArmed(true);
     TestEqual(TEXT("Arming enters Armed phase"), System->GetTimeTravelPhase(), ETimeTravelPhase::Armed);
+    System->SetFluxCharging(true);
+    TestEqual(TEXT("Flux buildup enters Charging phase"), System->GetTimeTravelPhase(), ETimeTravelPhase::Charging);
+    System->SetFluxCharging(false);
+    TestEqual(TEXT("Stopping buildup returns to Armed phase"), System->GetTimeTravelPhase(), ETimeTravelPhase::Armed);
     TestFalse(TEXT("Sub-threshold request is rejected"), System->RequestTimeTravel(Request));
+    TestEqual(TEXT("Sub-threshold request enters failed phase"), System->GetTimeTravelPhase(), ETimeTravelPhase::Failed);
 
+    System->SetTimeCircuitsArmed(true);
     Request.EntrySpeedMph = 40.0f;
     TestTrue(TEXT("Valid request begins departure"), System->RequestTimeTravel(Request));
     TestEqual(TEXT("Threshold is reached first"), System->GetTimeTravelPhase(), ETimeTravelPhase::ThresholdReached);
     TestFalse(TEXT("Duplicate request is rejected"), System->RequestTimeTravel(Request));
+    TestEqual(TEXT("Duplicate rejection does not disrupt active jump"), System->GetTimeTravelPhase(), ETimeTravelPhase::ThresholdReached);
 
     TestTrue(TEXT("Advance to departing"), System->AdvanceTimeTravelPhase());
     TestEqual(TEXT("Departing phase"), System->GetTimeTravelPhase(), ETimeTravelPhase::Departing);

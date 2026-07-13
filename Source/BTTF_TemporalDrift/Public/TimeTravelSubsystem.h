@@ -34,6 +34,7 @@ DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimelineInstability, float, Parad
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnTimeTravelCompleted);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTimeTravelPhaseChanged, ETimeTravelPhase, PreviousPhase, ETimeTravelPhase, NewPhase);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTimeTravelRequestEvent, FTimeTravelRequest, Request);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnTimeTravelFailed, FTimeTravelRequest, Request, FText, Reason);
 
 UCLASS(Blueprintable, BlueprintType)
 class BTTF_TEMPORALDRIFT_API UTimeTravelSubsystem : public UTickableWorldSubsystem
@@ -78,8 +79,14 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Time Travel")
     void SetTimeCircuitsArmed(bool bArmed);
 
+    UFUNCTION(BlueprintCallable, Category = "Time Travel")
+    void SetFluxCharging(bool bCharging);
+
     UFUNCTION(BlueprintPure, Category = "Time Travel")
     ETimeTravelPhase GetTimeTravelPhase() const { return TimeTravelPhase; }
+
+    UFUNCTION(BlueprintPure, Category = "Time Travel")
+    FText GetLastJumpFailureReason() const { return LastJumpFailureReason; }
 
     UFUNCTION(BlueprintCallable, Category = "Time Travel")
     bool RequestTimeTravel(const FTimeTravelRequest& Request);
@@ -158,6 +165,9 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "Events")
     FOnTimeTravelRequestEvent OnJumpArrived;
 
+    UPROPERTY(BlueprintAssignable, Category = "Events")
+    FOnTimeTravelFailed OnJumpFailed;
+
     // ==================== HAWKING RADIATION ====================
     UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Hawking Radiation")
     float WormholeStability = 100.0f;
@@ -188,6 +198,7 @@ private:
     // Shared jump core used by both flux-capacitor and Tipler jump paths.
     void ExecuteJumpInternal(ETimelineState TargetEra, UEraDataAsset* EraData);
     void SetTimeTravelPhase(ETimeTravelPhase NewPhase);
+    bool FailTimeTravelRequest(const FTimeTravelRequest& Request, const FText& Reason);
 
     FTimerHandle TimeTravelResetHandle;
     bool bIsTimeTraveling = false;
@@ -196,6 +207,7 @@ private:
     ETimeTravelPhase TimeTravelPhase = ETimeTravelPhase::Idle;
 
     FTimeTravelRequest ActiveTravelRequest;
+    FText LastJumpFailureReason;
     bool bTimeCircuitsArmed = false;
     float PhaseElapsedSeconds = 0.0f;
 };
