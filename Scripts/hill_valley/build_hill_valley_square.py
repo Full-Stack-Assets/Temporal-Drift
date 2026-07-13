@@ -330,8 +330,17 @@ def build_storefronts(materials):
 
 def spawn_tree(name, location, materials, scale=1.0):
     x, y, z = location
-    spawn_static_mesh(name + "_Trunk", CYLINDER, (x, y, z + 220 * scale), (0.6 * scale, 0.6 * scale, 4.5 * scale), material=materials["trunk"], tags=("HV_Landscape", "HV_Prop"))
-    spawn_static_mesh(name + "_Crown", SPHERE, (x, y, z + 520 * scale), (2.8 * scale, 2.8 * scale, 3.2 * scale), material=materials["leaves"], tags=("HV_Landscape", "HV_Prop"))
+    spawn_static_mesh(name + "_Trunk", CYLINDER, (x, y, z + 220 * scale), (0.6 * scale, 0.6 * scale, 4.5 * scale), material=materials["trunk"], tags=("HV_Landscape", "HV_Foliage", "HV_Prop"))
+    spawn_static_mesh(name + "_Crown", SPHERE, (x, y, z + 520 * scale), (2.8 * scale, 2.8 * scale, 3.2 * scale), material=materials["leaves"], tags=("HV_Landscape", "HV_Foliage", "HV_Prop"))
+
+
+def spawn_marker(name, location, tags):
+    world_location = (location[0], location[1] + TOWN_OFFSET_Y, location[2])
+    actor = actor_subsystem.spawn_actor_from_class(unreal.TargetPoint, unreal.Vector(*world_location))
+    actor.set_actor_label(name)
+    actor.set_editor_property("tags", [GENERATED_TAG] + [unreal.Name(tag) for tag in tags])
+    actor.set_editor_property("is_spatially_loaded", False)
+    return actor
 
 
 def build_streetscape(materials):
@@ -431,6 +440,12 @@ def build_complete_region(materials):
     for name, location, size in road_specs:
         spawn_block(name, location, size, materials["asphalt"], tags=("HV_Road", "HV_Regional"))
 
+    for index, (x, y, sx, sy) in enumerate((
+        (-11500, 0, 900, 1800), (11500, 0, 900, 1800),
+        (0, 10500, 1800, 900), (0, -10500, 1800, 900))):
+        spawn_block(f"HV_RegionalCrossing_{index}", (x, y, 38),
+                    (sx, sy, 6), materials["concrete"], tags=("HV_Crossing", "HV_RoadMarking"))
+
     # Terrain basin and surrounding hills establish a readable town boundary.
     spawn_block("HV_RegionalGround", (0, 0, -135), (36000, 43000, 250), materials["grass"], tags=("HV_Landscape", "HV_Regional"))
     hill_specs = ((-17000,-15000,2.2),(17000,-15000,2.0),(-17000,14500,2.5),(17000,14500,2.3),(0,20500,2.8))
@@ -449,6 +464,15 @@ def build_complete_region(materials):
         spawn_block(name+"_Roof", (x,y,size[2]+110), (size[0]+180,size[1]+180,220), materials["roof"], tags=("HV_Building",district))
         sign_y = y - size[1]/2 - 30
         spawn_text_sign(name+"_Sign", sign, (x,sign_y,size[2]*0.72), rotation=(0,0,90), tags=(district,"HV_DestinationSign"), scale=3.0)
+
+        # Mission-critical buildings receive a collision-safe readable lobby.
+        interior_y = y - size[1] * 0.2
+        spawn_block(name+"_InteriorFloor", (x, interior_y, 35),
+                    (size[0]*0.62, size[1]*0.45, 35), materials["concrete"],
+                    tags=("HV_Interior", "HV_MissionAccess", district))
+        spawn_block(name+"_InteriorBackWall", (x, interior_y+size[1]*0.225, 360),
+                    (size[0]*0.62, 35, 650), material,
+                    tags=("HV_InteriorCollision", "HV_MissionAccess", district))
 
     # Residential blocks with varied houses, porches, garages, yards, and unique street signs.
     for side in (-1, 1):
@@ -473,6 +497,19 @@ def build_complete_region(materials):
         spawn_block(f"HV_Industrial_{index}",(x,y,600),(2800,2100,1200),materials["brick_dark"],tags=("HV_Building","HV_District_Industrial"))
     spawn_block("HV_TwinPinesBarn",(-10500,-17800,700),(4200,2800,1400),materials["brick_red"],tags=("HV_Building","HV_District_Rural","HV_Destination"))
     spawn_text_sign("HV_TwinPinesBarn_Sign","TWIN PINES RANCH",(-10500,-19220,900),rotation=(0,0,90),tags=("HV_District_Rural","HV_DestinationSign"),scale=2.6)
+
+    # Authoritative route/reset markers consumed by later population and mission systems.
+    navigation_points = (
+        (0,-19000),(0,-15000),(0,-10500),(0,-6000),(0,-1500),(0,2500),
+        (0,8000),(0,12000),(-11500,0),(11500,0),(-11200,7600),(9800,7800))
+    for index, (x, y) in enumerate(navigation_points):
+        spawn_marker(f"HV_Navigation_{index:02d}", (x,y,120), ("HV_Navigation", "HV_PedestrianNode"))
+
+    for index, (x, y) in enumerate(((0,-18000),(0,-9000),(0,0),(0,9000),(-11000,0),(11000,0))):
+        spawn_marker(f"HV_TrafficRoute_{index:02d}", (x,y,90), ("HV_TrafficRoute", "HV_ParkingNode"))
+
+    for index, (x, y) in enumerate(((0,-20500),(0,13500),(-14500,0),(14500,0))):
+        spawn_marker(f"HV_ResetVolume_{index:02d}", (x,y,100), ("HV_ResetVolume", "HV_EmergencyRecovery"))
 
     # Regional vegetation and street furniture.
     for index in range(44):
