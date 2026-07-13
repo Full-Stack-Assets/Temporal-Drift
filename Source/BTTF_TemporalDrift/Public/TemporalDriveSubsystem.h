@@ -41,7 +41,13 @@ public:
     UFUNCTION(BlueprintCallable) void ArmLightningCapture(bool bArmed);
     UFUNCTION(BlueprintPure) bool CanPowerJump(ETemporalFuelType Fuel,float SpeedMph,const FTemporalDestinationDate& Date,FText& Error)const;
     UFUNCTION(BlueprintCallable) bool ConsumeJumpFuel(ETemporalFuelType Fuel);
-    UFUNCTION(BlueprintPure) FTemporalDriveSnapshot GetSnapshot()const{return State;}
+    UFUNCTION(BlueprintPure, Category="Temporal Drive")
+    static FTemporalDestinationDate GetDefaultDateForEra(ETimelineState Era);
+
+    UFUNCTION(BlueprintPure, Category="Temporal Drive")
+    static FText FormatDestinationDate(const FTemporalDestinationDate& Date);
+
+    UFUNCTION(BlueprintPure) FTemporalDriveSnapshot GetSnapshot() const { return State; }
     UFUNCTION(BlueprintCallable) bool RestoreSnapshot(const FTemporalDriveSnapshot& Snapshot);
 private:
     UPROPERTY() FTemporalDriveSnapshot State;

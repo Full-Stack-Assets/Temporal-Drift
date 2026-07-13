@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 #include "TimeTravelTypes.h"
+#include "TemporalDriveSubsystem.h"
 #include "TimeCircuitsViewModel.generated.h"
 
 USTRUCT(BlueprintType)
@@ -17,6 +18,12 @@ struct FTimeCircuitsDisplayState
     UPROPERTY(BlueprintReadOnly) FText PhaseText;
     UPROPERTY(BlueprintReadOnly) FText WarningText;
     UPROPERTY(BlueprintReadOnly) FText MissionObjectiveText;
+    UPROPERTY(BlueprintReadOnly) FText NowPlayingText;
+    UPROPERTY(BlueprintReadOnly) FText PhotographStatusText;
+    UPROPERTY(BlueprintReadOnly) FText DestinationDateText;
+    UPROPERTY(BlueprintReadOnly) FText LightningCountdownText;
+    UPROPERTY(BlueprintReadOnly) FText ConsequenceSummaryText;
+    UPROPERTY(BlueprintReadOnly) float PhotographOpacity = 1.0f;
     UPROPERTY(BlueprintReadOnly) float FluxPercent = 0.0f;
     UPROPERTY(BlueprintReadOnly) bool bJumpReady = false;
     UPROPERTY(BlueprintReadOnly) bool bDangerWarning = false;
@@ -35,7 +42,13 @@ public:
     void UpdateDisplay(float SpeedMph, float FluxPercent, ETimelineState CurrentEra,
         ETimelineState DestinationEra, ETimeTravelPhase Phase, float ParadoxPercent,
         float StabilityPercent, const FText& ExplicitFailureReason,
-        const FText& MissionObjective = FText::GetEmpty());
+        const FText& MissionObjective = FText::GetEmpty(),
+        const FText& NowPlaying = FText::GetEmpty(),
+        const FText& PhotographStatus = FText::GetEmpty(),
+        float PhotographOpacity = 1.0f,
+        const FText& DestinationDate = FText::GetEmpty(),
+        const FText& LightningCountdown = FText::GetEmpty(),
+        const FText& ConsequenceSummary = FText::GetEmpty());
 
     UFUNCTION(BlueprintPure, Category="Time Circuits")
     FTimeCircuitsDisplayState GetDisplayState() const { return DisplayState; }

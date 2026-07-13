@@ -3,6 +3,11 @@
 #include "BTTF_SaveGame.h"
 #include "MissionSubsystem.h"
 #include "MissionDataAsset.h"
+#include "MissionCoordinatorSubsystem.h"
+#include "BTTF_GameInstance.h"
+#include "CraftingSubsystem.h"
+#include "TimelineFactSubsystem.h"
+#include "TimelineFactDataAsset.h"
 #include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -23,9 +28,10 @@ bool FBTTFSaveSchemaTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Mission stable ID stored"),Save->MissionProgress.MissionId,FName(TEXT("M02.ClocktowerCalibration")));TestEqual(TEXT("Hero progression stored"),Save->HeroProgression.Temperance,6);TestEqual(TEXT("Fuel stored"),Save->TemporalDrive.PlutoniumCells,2);
     const FString MissingSlot=TEXT("BTTF_Automation_MissingSlot_9E827");UGameplayStatics::DeleteGameInSlot(MissingSlot,0);TestFalse(TEXT("Missing file detected"),UGameplayStatics::DoesSaveGameExist(MissingSlot,0));
     UBTTF_ProfileSaveGame* Profile=NewObject<UBTTF_ProfileSaveGame>();
-    Profile->bReducedFlash=true;Profile->UIScale=1.25f;
+    Profile->bReducedFlash=true;Profile->UIScale=1.25f;Profile->DialogueVolume=0.85f;
     TestTrue(TEXT("Profile reduced flash stored"),Profile->bReducedFlash);
     TestEqual(TEXT("Profile UI scale stored"),Profile->UIScale,1.25f);
+    TestEqual(TEXT("Profile dialogue volume stored"),Profile->DialogueVolume,0.85f);
     return !HasAnyErrors();
 }
 
@@ -73,4 +79,75 @@ bool FBTTFMissionCheckpointSnapshotTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Restored objective index"), Restored->GetActiveObjectiveId(), Reach.ObjectiveId);
     return !HasAnyErrors();
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFMissionAssetPathTest,
+    "BTTF.Save.MissionAssetPathResolution",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFMissionAssetPathTest::RunTest(const FString& Parameters)
+{
+    const FString Path = UBTTF_GameInstance::BuildMissionAssetPathFromStableId(
+        FName(TEXT("M02.ClocktowerCalibration")));
+    TestEqual(TEXT("Stable ID maps to underscore asset path"), Path,
+        TEXT("/Game/Data/Missions/Campaign/DA_Mission_M02_ClocktowerCalibration.DA_Mission_M02_ClocktowerCalibration"));
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFSubsystemSnapshotRoundTripTest,
+    "BTTF.Save.SubsystemSnapshotRoundTrip",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFSubsystemSnapshotRoundTripTest::RunTest(const FString& Parameters)
+{
+    UGameInstance* GameInstance = NewObject<UGameInstance>();
+    GameInstance->Init();
+
+    UCraftingSubsystem* Crafting = GameInstance->GetSubsystem<UCraftingSubsystem>();
+    TestTrue(TEXT("Crafting adds item"), Crafting->AddItem(TEXT("CoolantCell"), 2));
+    Crafting->UnlockRecipe(TEXT("SensorPackage"));
+    const FCraftingSnapshot CraftingBefore = Crafting->GetSnapshot();
+
+    UGameInstance* GameInstance2 = NewObject<UGameInstance>();
+    GameInstance2->Init();
+    UCraftingSubsystem* Crafting2 = GameInstance2->GetSubsystem<UCraftingSubsystem>();
+    TestTrue(TEXT("Crafting restores"), Crafting2->RestoreSnapshot(CraftingBefore));
+    TestEqual(TEXT("Crafting quantity restored"), Crafting2->GetItemQuantity(TEXT("CoolantCell")), 2);
+
+    UTimelineFactSubsystem* Facts = GameInstance->GetSubsystem<UTimelineFactSubsystem>();
+    UTimelineFactDataAsset* FactData = NewObject<UTimelineFactDataAsset>();
+    FTimelineFactDefinition Plaque;
+    Plaque.FactId = TEXT("C_PlaqueChanged");
+    FactData->Facts = {Plaque};
+    Facts->LoadDefinitions(FactData);
+    Facts->SetBaseFact(TEXT("C_PlaqueChanged"), true);
+    const TMap<FName, bool> FactSnapshot = Facts->GetOverrideSnapshot();
+
+    UTimelineFactSubsystem* Facts2 = GameInstance2->GetSubsystem<UTimelineFactSubsystem>();
+    Facts2->LoadDefinitions(FactData);
+    TestTrue(TEXT("Timeline facts restore"), Facts2->RestoreOverrideSnapshot(FactSnapshot));
+    bool bFound = false;
+    TestTrue(TEXT("Plaque fact true after restore"), Facts2->GetFact(TEXT("C_PlaqueChanged"), bFound) && bFound);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFMissionCampaignChainTest,
+    "BTTF.Mission.CampaignChainOrder",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFMissionCampaignChainTest::RunTest(const FString& Parameters)
+{
+    TestEqual(TEXT("M01 advances to M02"),
+        UMissionCoordinatorSubsystem::GetNextCampaignMissionId(FName(TEXT("M01.FirstTestRun"))),
+        FName(TEXT("M02.ClocktowerCalibration")));
+    TestEqual(TEXT("M02 advances to M03"),
+        UMissionCoordinatorSubsystem::GetNextCampaignMissionId(FName(TEXT("M02.ClocktowerCalibration"))),
+        FName(TEXT("M03.TownOutOfTime")));
+    TestEqual(TEXT("M04 advances to M05"),
+        UMissionCoordinatorSubsystem::GetNextCampaignMissionId(FName(TEXT("M04.MissingComponent"))),
+        FName(TEXT("M05.RaceTheLightning")));
+    TestTrue(TEXT("M05 is campaign finale"),
+        UMissionCoordinatorSubsystem::GetNextCampaignMissionId(FName(TEXT("M05.RaceTheLightning"))).IsNone());
+    return !HasAnyErrors();
+}
+
 #endif

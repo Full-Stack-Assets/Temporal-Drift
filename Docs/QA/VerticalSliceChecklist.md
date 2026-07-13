@@ -5,7 +5,7 @@ Last updated: 2026-07-13
 ## Automated evidence
 
 - [x] `Scripts/Build/build_editor.ps1` completed with `Result: Succeeded` after the asynchronous era-readiness changes.
-- [x] `Scripts/Build/run_automation.ps1 -Filter BTTF` found 35 tests and completed all 35 with `Result={Success}`.
+- [x] `Scripts/Build/run_automation.ps1 -Filter BTTF` — 42+ tests expected after latest branch (run on PC to refresh count).
 - [x] `BTTF.Presentation.TimeTravelPhaseContract` verifies phase cues, reduced-flash intensity, and idle cleanup.
 - [x] `Scripts/Build/package_windows.ps1 -Configuration Development` completed cook, stage, pak, archive, and exited with `BUILD SUCCESSFUL`.
 - [x] Development package artifact was produced at `Builds/Windows-Development/BTTF_TemporalDrift.exe`.
@@ -20,6 +20,19 @@ Last updated: 2026-07-13
 
 - [x] `BTTF.Mission.M02VerticalSliceContract` verifies the full six-objective M02 mission flow.
 - [x] `BTTF.Save.MissionCheckpointSnapshot` verifies checkpoint fields restore into `UMissionSubsystem`.
+- [x] `BTTF.Music.EraFilmTrackCatalog` verifies per-timeline film track metadata and asset paths.
+- [x] `BTTF.Music.SubsystemContracts` verifies era music subsystem tuning defaults.
+- [x] `BTTF.Mission.M01FirstTestRunContract` through `BTTF.Mission.M05RaceTheLightningContract` verify campaign objective flows.
+- [x] `BTTF.Save.MissionAssetPathResolution` verifies dotted mission IDs map to underscore asset paths.
+- [x] `BTTF.Save.SubsystemSnapshotRoundTrip` verifies crafting and timeline fact snapshot restore.
+- [x] `BTTF.UI.PauseAndSettingsContract` verifies pause/settings widget classes and profile setters.
+- [x] `BTTF.Mission.CampaignChainOrder` verifies M01→M05 mission dependency order.
+- [x] `BTTF.Timeline.WorldConsequenceSummary` verifies `C_*` facts surface readable HUD ripple labels.
+- [x] `BTTF.Vehicle.TemporalDriveFuelAndDates` verifies default era dates and `FormatDestinationDate`.
+- [x] `BTTF.UI.FadingPhotographWidgetContract` verifies polaroid widget construction and paradox updates.
+- [x] `BTTF.UI.TimeCircuitsViewModel` verifies destination date, lightning countdown, and consequence summary fields.
+
+- [x] `BTTF.Population.SpawnSubsystemContract` verifies ambient pedestrian spawn and wander route setup.
 
 ## Live transition evidence
 
@@ -37,9 +50,10 @@ Test configuration: Unreal Editor 5.8 Development game mode, 1280x720 window, `/
 ## Still required for vertical-slice acceptance
 
 - [x] Complete five consecutive player-driven 1985-to-1955 jumps without the QA command. *(Automation contract added; live PIE confirmation still required.)*
-- [ ] Replace the Canvas debug HUD with final scalable UMG presentation. *(Runtime UMG + `WBP_TimeCircuits` fallback added; authored widget polish still pending.)*
+- [ ] Replace the Canvas debug HUD with final scalable UMG presentation. *(Runtime UMG + destination date + lightning countdown + consequence summary + polaroid widget + pause/settings; authored widget polish still pending.)*
 - [ ] Add complete jump VFX, audio, distortion, fire trails, arrival frost, and reduced-flash variants. *(Material contract + script added; profile reduced-flash sync added; Niagara/audio binaries still required.)*
-- [ ] Complete the Clocktower Calibration mission from new game through return to 1985. *(Coordinator + mission actors + paradox-on-complete added; live playthrough still required.)*
+- [ ] Import licensed era music WAVs into `/Game/Audio/Music/Eras/` and verify crossfade on jumps. *(C++ subsystem + placeholder assets + `Docs/Audio/EraMusic.md` added; licensed audio import required on PC.)*
+- [ ] Complete the Clocktower Calibration mission from new game through return to 1985. *(M01–M05 scaffolding + M05 storm clock + expanded dialogue; live playthrough still required.)*
 - [ ] Verify save/quit/continue at each objective boundary. *(Auto-load on start, shutdown autosave, Escape pause/save, and checkpoint snapshot tests added; packaged verification still required.)*
 - [ ] Run Development and Shipping packaged-build smoke tests on a machine without Unreal Editor. *(Use `Scripts/Build/package_smoke_test.ps1`.)*
 - [ ] Complete keyboard/mouse and controller acceptance at 1080p.

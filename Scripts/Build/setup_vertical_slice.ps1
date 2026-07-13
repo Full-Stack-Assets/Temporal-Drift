@@ -69,10 +69,19 @@ if (-not $SkipBuild) {
 
 $pythonSteps = @(
     @{ Path = 'Scripts\create_campaign_missions.py'; Token = 'CAMPAIGN_MISSION_SAVED' },
+    @{ Path = 'Scripts\create_timeline_data.py'; Token = 'TIMELINE_DATA_SUCCESS' },
+    @{ Path = 'Scripts\create_side_missions.py'; Token = 'SIDE_MISSIONS_SUCCESS' },
+    @{ Path = 'Scripts\create_crafting_recipes.py'; Token = 'CRAFTING_RECIPES_SUCCESS' },
     @{ Path = 'Scripts\create_presentation_assets.py'; Token = 'TEMPORAL_PRESENTATION_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_presentation_vfx_audio.py'; Token = 'PRESENTATION_VFX_AUDIO_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_ui_widgets.py'; Token = 'UI_WIDGETS_SUCCESS' },
+    @{ Path = 'Scripts\create_dialogue_assets.py'; Token = 'DIALOGUE_ASSETS_SUCCESS' },
+    @{ Path = 'Scripts\create_era_music_assets.py'; Token = 'ERA_MUSIC_ASSETS_SUCCESS' },
+    @{ Path = 'Scripts\create_world_consequence_signage.py'; Token = 'WORLD_CONSEQUENCE_SIGNAGE_SUCCESS' },
+    @{ Path = 'Scripts\hill_valley\build_hill_valley_square.py'; Token = 'courthouse square generation complete' },
+    @{ Path = 'Scripts\hill_valley\build_1955_dressing.py'; Token = 'HILL_VALLEY_1955_BUILD_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\place_mission_volumes.py'; Token = 'MISSION_VOLUME_PLACEMENT_SUCCESS' },
+    @{ Path = 'Scripts\hill_valley\place_traffic_routes.py'; Token = 'HILL_VALLEY_TRAFFIC_ROUTES_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\validate_mission_placement.py'; Token = 'MISSION_PLACEMENT_VALIDATION_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\validate_hill_valley_square.py'; Token = 'HILL_VALLEY_VALIDATION_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\validate_1955_dressing.py'; Token = 'HILL_VALLEY_1955_VALIDATION_SUCCESS' }

@@ -7,7 +7,16 @@
 #include "BTTF_GameInstance.h"
 #include "TimeCircuitsViewModel.h"
 #include "TimeCircuitsWidget.h"
-#include "BTTF_PlayerController.h"
+#include "DialogueSubsystem.h"
+#include "DialogueViewModel.h"
+#include "DialogueWidget.h"
+#include "DialogueDataAsset.h"
+#include "EraMusicSubsystem.h"
+#include "FadingPhotographViewModel.h"
+#include "FadingPhotographWidget.h"
+#include "WorldConsequenceSubsystem.h"
+#include "EraWeatherSubsystem.h"
+#include "TemporalDriveSubsystem.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "UObject/ConstructorHelpers.h"
@@ -21,10 +30,20 @@ void ABTTF_HUD::BeginPlay()
 {
     Super::BeginPlay();
     EnsureRuntimeWidget();
+    EnsureDialogueWidget();
+    EnsurePhotographWidget();
+
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UEraMusicSubsystem* Music = GameInstance->GetSubsystem<UEraMusicSubsystem>())
+        {
+            Music->OnEraMusicChanged.AddDynamic(this, &ABTTF_HUD::HandleEraMusicChanged);
+        }
+    }
 
     if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))
     {
-        ApplyAccessibilitySettings(GameInstance->GetUIScale());
+        ApplyAccessibilitySettings(GameInstance->GetUIScale(), GameInstance->GetSubtitleScale());
         if (UWorld* World = GetWorld())
         {
             GameInstance->ApplyProfileAccessibility(World);
@@ -32,11 +51,15 @@ void ABTTF_HUD::BeginPlay()
     }
 }
 
-void ABTTF_HUD::ApplyAccessibilitySettings(float UIScale)
+void ABTTF_HUD::ApplyAccessibilitySettings(float UIScale, float SubtitleScale)
 {
     if (TimeCircuitsWidget)
     {
         TimeCircuitsWidget->TextScale = FMath::Clamp(UIScale, 0.75f, 2.0f);
+    }
+    if (DialogueWidget)
+    {
+        DialogueWidget->TextScale = FMath::Clamp(SubtitleScale, 0.75f, 2.0f);
     }
 }
 
@@ -76,6 +99,101 @@ void ABTTF_HUD::EnsureRuntimeWidget()
     }
 }
 
+void ABTTF_HUD::EnsureDialogueWidget()
+{
+    if (!DialogueViewModel)
+    {
+        DialogueViewModel = NewObject<UDialogueViewModel>(this);
+    }
+    if (DialogueWidget)
+    {
+        return;
+    }
+
+    if (APlayerController* Controller = GetOwningPlayerController())
+    {
+        TSubclassOf<UDialogueWidget> WidgetClass = UDialogueWidget::StaticClass();
+        if (UClass* AuthoredClass = LoadClass<UDialogueWidget>(
+                nullptr, TEXT("/Game/UI/WBP_Dialogue.WBP_Dialogue")))
+        {
+            WidgetClass = AuthoredClass;
+        }
+
+        DialogueWidget = CreateWidget<UDialogueWidget>(Controller, WidgetClass);
+        if (DialogueWidget)
+        {
+            DialogueWidget->BindViewModel(DialogueViewModel);
+            DialogueWidget->AddToPlayerScreen(90);
+            DialogueWidget->SetVisibility(ESlateVisibility::Collapsed);
+        }
+    }
+
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UDialogueSubsystem* Dialogue = GameInstance->GetSubsystem<UDialogueSubsystem>())
+        {
+            Dialogue->OnNodeChanged.AddDynamic(this, &ABTTF_HUD::HandleDialogueNodeChanged);
+            Dialogue->OnDialogueEnded.AddDynamic(this, &ABTTF_HUD::HandleDialogueConversationEnded);
+        }
+    }
+}
+
+void ABTTF_HUD::EnsurePhotographWidget()
+{
+    if (PhotographWidget)
+    {
+        return;
+    }
+
+    if (APlayerController* Controller = GetOwningPlayerController())
+    {
+        TSubclassOf<UFadingPhotographWidget> WidgetClass = UFadingPhotographWidget::StaticClass();
+        if (UClass* AuthoredClass = LoadClass<UFadingPhotographWidget>(
+                nullptr, TEXT("/Game/UI/WBP_FadingPhotograph.WBP_FadingPhotograph")))
+        {
+            WidgetClass = AuthoredClass;
+        }
+
+        PhotographWidget = CreateWidget<UFadingPhotographWidget>(Controller, WidgetClass);
+        if (PhotographWidget)
+        {
+            PhotographWidget->AddToViewport(95);
+            PhotographWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+        }
+    }
+}
+
+void ABTTF_HUD::HandleDialogueNodeChanged(FDialogueNode Node)
+{
+    if (!DialogueViewModel)
+    {
+        return;
+    }
+
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UDialogueSubsystem* Dialogue = GameInstance->GetSubsystem<UDialogueSubsystem>())
+        {
+            DialogueViewModel->UpdateFromNode(Node, Dialogue->GetAvailableChoices(),
+                Dialogue->CanAdvanceConversation(),
+                Node.bWaitForVoiceBeforeAdvance && !Dialogue->CanAdvanceConversation());
+        }
+    }
+}
+
+void ABTTF_HUD::HandleDialogueConversationEnded()
+{
+    if (DialogueViewModel)
+    {
+        DialogueViewModel->ClearDisplay();
+    }
+}
+
+void ABTTF_HUD::HandleEraMusicChanged(FEraMusicTrackInfo ActiveTrack)
+{
+    RefreshTimeCircuitsDisplay();
+}
+
 void ABTTF_HUD::RefreshTimeCircuitsDisplay()
 {
     if (!TimeCircuitsViewModel)
@@ -93,19 +211,79 @@ void ABTTF_HUD::RefreshTimeCircuitsDisplay()
 
     float Speed = 0.0f;
     ETimelineState DestinationEra = ETimelineState::Present1985;
+    FText DestinationDate = FText::GetEmpty();
     if (const ADeLoreanVehicle* Vehicle = Cast<ADeLoreanVehicle>(GetOwningPawn()))
     {
         Speed = Vehicle->GetCurrentSpeedMph();
         DestinationEra = Vehicle->InputTargetEra;
+        DestinationDate = UTemporalDriveSubsystem::FormatDestinationDate(Vehicle->InputTargetDate);
     }
 
     const FText MissionObjective = Mission ? Mission->GetActiveObjectiveDescription() : FText::GetEmpty();
+    FText NowPlaying = FText::GetEmpty();
+    FText PhotographStatus = FText::GetEmpty();
+    FText LightningCountdown = FText::GetEmpty();
+    FText ConsequenceSummary = FText::GetEmpty();
+    float PhotographOpacity = 1.0f;
+    bool bReducedFlash = false;
+
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UEraMusicSubsystem* Music = GameInstance->GetSubsystem<UEraMusicSubsystem>())
+        {
+            const FEraMusicTrackInfo Track = Music->GetActiveTrackInfo();
+            if (!Track.TrackTitle.IsEmpty())
+            {
+                NowPlaying = FText::Format(FText::FromString(TEXT("NOW PLAYING: {0} — {1}")),
+                    Track.TrackTitle, Track.ArtistName);
+            }
+        }
+
+        if (UEraWeatherSubsystem* Weather = GameInstance->GetSubsystem<UEraWeatherSubsystem>())
+        {
+            const float Seconds = Weather->GetClocktowerLightningCountdown();
+            if (Seconds >= 0.0f)
+            {
+                const int32 Minutes = FMath::FloorToInt(Seconds / 60.0f);
+                const int32 Secs = FMath::FloorToInt(Seconds) % 60;
+                LightningCountdown = FText::Format(
+                    FText::FromString(TEXT("LIGHTNING IN {0}:{1}")),
+                    FText::AsNumber(Minutes), FText::FromString(FString::Printf(TEXT("%02d"), Secs)));
+            }
+        }
+
+        if (UWorldConsequenceSubsystem* Consequences = GameInstance->GetSubsystem<UWorldConsequenceSubsystem>())
+        {
+            ConsequenceSummary = Consequences->GetActiveConsequencesSummary();
+        }
+
+        if (!PhotographViewModel)
+        {
+            PhotographViewModel = NewObject<UFadingPhotographViewModel>(this);
+        }
+        if (UBTTF_GameInstance* BTTFInstance = Cast<UBTTF_GameInstance>(GameInstance))
+        {
+            bReducedFlash = BTTFInstance->IsReducedFlashEnabled();
+            const float ParadoxPercent = Subsystem ? Subsystem->CurrentParadoxLevel : 0.0f;
+            PhotographViewModel->UpdatePhotograph(ParadoxPercent, true, bReducedFlash);
+            PhotographStatus = PhotographViewModel->StatusText;
+            PhotographOpacity = PhotographViewModel->SubjectOpacity;
+        }
+    }
+
+    if (PhotographWidget)
+    {
+        PhotographWidget->UpdateFromParadox(
+            Subsystem ? Subsystem->CurrentParadoxLevel : 0.0f, true, bReducedFlash);
+    }
+
     if (Subsystem)
     {
         TimeCircuitsViewModel->UpdateDisplay(Speed, Subsystem->GetFluxChargePercent(),
             Subsystem->GetCurrentEra(), DestinationEra, Subsystem->GetTimeTravelPhase(),
             Subsystem->CurrentParadoxLevel, Subsystem->WormholeStability,
-            Subsystem->GetLastJumpFailureReason(), MissionObjective);
+            Subsystem->GetLastJumpFailureReason(), MissionObjective, NowPlaying, PhotographStatus,
+            PhotographOpacity, DestinationDate, LightningCountdown, ConsequenceSummary);
     }
 }
 

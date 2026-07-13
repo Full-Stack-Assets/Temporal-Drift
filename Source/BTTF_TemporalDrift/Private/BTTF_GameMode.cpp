@@ -9,6 +9,8 @@
 #include "BTTF_HUD.h"
 #include "MissionCoordinatorSubsystem.h"
 #include "MissionSubsystem.h"
+#include "PopulationSpawnSubsystem.h"
+#include "EraWorldManager.h"
 
 ABTTF_GameMode::ABTTF_GameMode()
 {
@@ -38,6 +40,16 @@ void ABTTF_GameMode::BeginPlay()
     }
     InitializeTimeTravelSubsystem();
 
+    if (UPopulationSpawnSubsystem* PopulationSpawn = GetWorld()->GetSubsystem<UPopulationSpawnSubsystem>())
+    {
+        ETimelineState StartEra = ETimelineState::Present1985;
+        if (UEraWorldManager* EraManager = GetWorld()->GetSubsystem<UEraWorldManager>())
+        {
+            StartEra = EraManager->GetActiveEra();
+        }
+        PopulationSpawn->RefreshPopulationForEra(StartEra);
+    }
+
     bool bContinuedFromSave = false;
     if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))
     {
@@ -51,7 +63,14 @@ void ABTTF_GameMode::BeginPlay()
 
     if (!bContinuedFromSave)
     {
-        StartVerticalSliceMission();
+        if (bStartFullCampaignOnNewGame)
+        {
+            StartFullCampaign();
+        }
+        else
+        {
+            StartVerticalSliceMission();
+        }
     }
 }
 
@@ -105,6 +124,25 @@ void ABTTF_GameMode::StartNewGame()
 
     StartVerticalSliceMission();
     UE_LOG(LogTemp, Log, TEXT("New game started."));
+}
+
+void ABTTF_GameMode::StartFullCampaign()
+{
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UMissionSubsystem* Mission = GameInstance->GetSubsystem<UMissionSubsystem>())
+        {
+            if (Mission->IsMissionActive())
+            {
+                return;
+            }
+        }
+    }
+
+    if (UMissionCoordinatorSubsystem* Coordinator = GetWorld()->GetSubsystem<UMissionCoordinatorSubsystem>())
+    {
+        Coordinator->StartFirstCampaignMission();
+    }
 }
 
 void ABTTF_GameMode::SaveCurrentProgress()

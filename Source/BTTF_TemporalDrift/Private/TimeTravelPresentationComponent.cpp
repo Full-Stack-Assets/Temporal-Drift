@@ -244,7 +244,23 @@ void UTimeTravelPresentationComponent::HandlePhaseChanged(ETimeTravelPhase NewPh
 
 void UTimeTravelPresentationComponent::HandleSubsystemPhaseChanged(ETimeTravelPhase PreviousPhase, ETimeTravelPhase NewPhase)
 {
+    if (PresentationAudioComponent && PresentationAudioComponent->IsPlaying() && PreviousPhase != NewPhase)
+    {
+        PresentationAudioComponent->FadeOut(0.15f, 0.0f);
+    }
     HandlePhaseChanged(NewPhase);
+}
+
+void UTimeTravelPresentationComponent::UpdateVehicleDrivingContext(
+    float SpeedMph, float FluxPercent, float ParadoxPercent)
+{
+    CachedSpeedMph = SpeedMph;
+    CachedFluxPercent = FluxPercent;
+    CachedParadoxPercent = ParadoxPercent;
+    if (bCueActive)
+    {
+        ApplyPresentationEffects();
+    }
 }
 
 void UTimeTravelPresentationComponent::ApplyPresentationEffects()
@@ -283,6 +299,9 @@ void UTimeTravelPresentationComponent::ApplyPresentationEffects()
         {
             PresentationNiagaraComponent->SetAsset(NiagaraSystem);
             PresentationNiagaraComponent->SetFloatParameter(TEXT("CueIntensity"), CueIntensity);
+            PresentationNiagaraComponent->SetFloatParameter(TEXT("SpeedMph"), CachedSpeedMph);
+            PresentationNiagaraComponent->SetFloatParameter(TEXT("FluxPercent"), CachedFluxPercent);
+            PresentationNiagaraComponent->SetFloatParameter(TEXT("ParadoxPercent"), CachedParadoxPercent);
             if (!PresentationNiagaraComponent->IsActive())
             {
                 PresentationNiagaraComponent->Activate(true);

@@ -77,8 +77,40 @@ public:
     UFUNCTION(BlueprintPure, Category = "Profile")
     float GetUIScale() const;
 
+    UFUNCTION(BlueprintPure, Category = "Profile")
+    float GetSubtitleScale() const;
+
+    UFUNCTION(BlueprintPure, Category = "Profile")
+    float GetDialogueVolume() const;
+
+    UFUNCTION(BlueprintPure, Category = "Profile")
+    float GetMusicVolume() const;
+
+    UFUNCTION(BlueprintPure, Category = "Profile")
+    float GetEffectsVolume() const;
+
+    UFUNCTION(BlueprintCallable, Category = "Profile")
+    void SetUIScale(float Scale);
+
+    UFUNCTION(BlueprintCallable, Category = "Profile")
+    void SetSubtitleScale(float Scale);
+
+    UFUNCTION(BlueprintCallable, Category = "Profile")
+    void SetMusicVolume(float Volume);
+
+    UFUNCTION(BlueprintCallable, Category = "Profile")
+    void SetDialogueVolume(float Volume);
+
+    UFUNCTION(BlueprintCallable, Category = "Profile")
+    void SetEffectsVolume(float Volume);
+
     UFUNCTION(BlueprintCallable, Category = "Profile")
     void ApplyProfileAccessibility(UWorld* World);
+
+    UFUNCTION(BlueprintCallable, Category = "Campaign")
+    void BootstrapCampaignSystems();
+
+    static FString BuildMissionAssetPathFromStableId(const FName& MissionStableId);
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Save System")
     FString DefaultSaveSlot = TEXT("BTTF_SaveSlot");

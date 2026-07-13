@@ -33,6 +33,14 @@ bool FBTTFDialogueBranchingTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("End node reached"),System->GetCurrentNode().NodeId,FName(TEXT("End")));
     TestTrue(TEXT("Terminal node ends"),System->AdvanceConversation());
     TestFalse(TEXT("Conversation ended"),System->IsConversationActive());
+
+    FDialogueProgressSnapshot Snapshot = System->GetProgressSnapshot();
+    TestTrue(TEXT("Story flag captured in snapshot"), Snapshot.StoryFlags.Contains(FName(TEXT("AskedRules"))));
+
+    UGameInstance* GameInstance2 = NewObject<UGameInstance>();
+    UDialogueSubsystem* Restored = NewObject<UDialogueSubsystem>(GameInstance2);
+    TestTrue(TEXT("Dialogue snapshot restores flags"), Restored->RestoreProgressSnapshot(Snapshot));
+    TestTrue(TEXT("Restored story flag"), Restored->HasStoryFlag(TEXT("AskedRules")));
     return !HasAnyErrors();
 }
 

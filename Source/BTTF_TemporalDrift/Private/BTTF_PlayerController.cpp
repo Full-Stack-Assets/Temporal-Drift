@@ -1,5 +1,6 @@
 // BTTF_PlayerController.cpp
 #include "BTTF_PlayerController.h"
+#include "PauseMenuWidget.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "DeLoreanVehicle.h"
@@ -79,6 +80,30 @@ void ABTTF_PlayerController::BeginPlay()
             Subsystem->AddMappingContext(DefaultMappingContext, 0);
         }
     }
+
+    EnsurePauseMenuWidget();
+}
+
+void ABTTF_PlayerController::EnsurePauseMenuWidget()
+{
+    if (PauseMenuWidget)
+    {
+        return;
+    }
+
+    TSubclassOf<UPauseMenuWidget> WidgetClass = UPauseMenuWidget::StaticClass();
+    if (UClass* AuthoredClass = LoadClass<UPauseMenuWidget>(
+            nullptr, TEXT("/Game/UI/WBP_PauseMenu.WBP_PauseMenu")))
+    {
+        WidgetClass = AuthoredClass;
+    }
+
+    PauseMenuWidget = CreateWidget<UPauseMenuWidget>(this, WidgetClass);
+    if (PauseMenuWidget)
+    {
+        PauseMenuWidget->AddToViewport(200);
+        PauseMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
+    }
 }
 
 void ABTTF_PlayerController::SetupInputComponent()
@@ -135,10 +160,21 @@ void ABTTF_PlayerController::HandleToggleVehicleHeroPossession()
 
 void ABTTF_PlayerController::TogglePauseMenu()
 {
+    if (PauseMenuWidget && PauseMenuWidget->IsSettingsVisible())
+    {
+        PauseMenuWidget->ShowSettings(false);
+        return;
+    }
+
     if (bMenuPaused)
     {
         SetPause(false);
         bMenuPaused = false;
+        if (PauseMenuWidget)
+        {
+            PauseMenuWidget->ShowSettings(false);
+            PauseMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
+        }
         bShowMouseCursor = true;
         FInputModeGameAndUI InputMode;
         InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
@@ -155,6 +191,14 @@ void ABTTF_PlayerController::TogglePauseMenu()
     SetPause(true);
     bMenuPaused = true;
     bShowMouseCursor = true;
+    if (PauseMenuWidget)
+    {
+        const bool bHasSave = Cast<UBTTF_GameInstance>(GetGameInstance())
+            && Cast<UBTTF_GameInstance>(GetGameInstance())->HasSaveGame();
+        PauseMenuWidget->RefreshMenuState(bHasSave);
+        PauseMenuWidget->ShowSettings(false);
+        PauseMenuWidget->SetVisibility(ESlateVisibility::Visible);
+    }
     FInputModeGameAndUI InputMode;
     InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
     InputMode.SetHideCursorDuringCapture(false);

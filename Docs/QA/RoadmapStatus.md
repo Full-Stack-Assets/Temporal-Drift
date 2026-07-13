@@ -10,44 +10,86 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 |------|--------|-------|
 | 1 Stable baseline | **Code complete** | Build/automation/package scripts and configuration tests exist. Live PIE ×3 gate still requires editor verification. |
 | 2 Input contract | **Code complete** | Enhanced Input assets, vehicle tests, reset/camera/destination cycling implemented. Live controller gate pending. |
-| 3 Hero vehicle | **Partial** | Tuning data, hero mesh contract, and cameras implemented. SportsCar physics chassis remains; live course tuning gate pending. |
+| 3 Hero vehicle | **Partial** | Full tuning apply (suspension/steer), input smoothing, speed-responsive chase camera, reverse action binding. SportsCar physics chassis remains. |
 | 4 Time travel SM | **Code complete** | Deterministic state machine plus `BTTF.TimeTravel.FiveConsecutivePlayerJumps` automation added. |
-| 5 Era switching | **Partial** | `EraWorldManager` async switching works. `UEraDataAsset` now includes data-layer and arrival fields; deeper era tests still thin. |
+| 5 Era switching | **Partial** | `EraWorldManager` async switching works. `UEraDataAsset` includes data-layer and arrival fields; deeper era tests still thin. |
 | 6 1955 dressing | **Code complete** | Python builders/validators pass; live blind-comparison screenshots still outstanding. |
-| 7 Time-circuit UI | **Partial** | Runtime UMG + view model + mission objective row; `WBP_TimeCircuits` load fallback and profile UI scale added. Full accessibility pass still pending. |
-| 8 Presentation | **Partial** | Phase contract, material paths, disable switch, profile reduced-flash sync, and asset script added. Niagara/audio asset binaries still editor-authored. |
+| 7 Time-circuit UI | **Partial** | Runtime UMG + view model + destination date, lightning countdown, consequence summary, polaroid widget; pause/settings C++ widgets; `WBP_*` fallbacks. |
+| 8 Presentation | **Partial** | Phase contract, vehicle-driven Niagara parameters, audio fade, profile reduced-flash sync, and asset scripts added. |
+
+## Tasks 9–12 (Mission, population, save, alpha)
+
+| Task | Status | Notes |
+|------|--------|-------|
+| 9 Vertical-slice mission | **Partial** | M02 full flow; M01–M05 automation + volumes; campaign auto-advance chain. |
+| 10 NPCs/traffic | **Partial** | `UPopulationSpawnSubsystem` + `AHillValleyAmbientPedestrian` wander NPCs; 60+ pedestrian nodes, named citizens, traffic route anchors; spline traffic vehicles pending. |
+| 11 Save/load/settings | **Partial** | Schema v3 + crafting/timeline facts/dialogue restore; pause/settings UI. |
+| 12 Windows alpha | **Partial** | Dev package scripts + checklist; Shipping smoke and 1080p controller acceptance pending on PC. |
 
 ## Tasks 13–14 (Region + hero)
 
 | Task | Status | Notes |
 |------|--------|-------|
-| 13 Complete Hill Valley region | **Partial** | C++ validator + Python regional builder pass. Live full-circuit/streaming gate still open in `HillValleyRegionEvidence.md`. |
-| 14 On-foot hero | **Partial** | Movement, vehicle handoff, interaction priority, and `BTTF.Hero.VehicleHandoff` test added. NPC/item dialogue gate still open. |
+| 13 Complete Hill Valley region | **Partial** | Metro expansion (~920m basin): civic, schools, suburbs, industrial, river/rail; C++ validator updated; live streaming perf gate still open. |
+| 14 On-foot hero | **Partial** | Movement tuning, camera lag, dialogue interactables with subtitles/audio hooks, mission interact priority, vehicle enter range check. |
 
-## New in this branch
+## Tasks 15–18 (Dialogue, campaign, facts)
 
-- `UMissionCoordinatorSubsystem` bridges jump arrivals to mission events and auto-saves checkpoints.
-- `AMissionEventVolume` and `AMissionInteractable` wire M02 objectives in-world.
-- `Scripts/hill_valley/place_mission_volumes.py` places courthouse briefing, sensor install, clocktower reach, and calibration interactables.
-- `UBTTF_GameInstance` now captures/restores hero and vehicle transforms during save/load, and persists profile accessibility settings (`BTTF_Profile` slot).
-- `UTimeTravelPresentationComponent` exposes per-phase material/Niagara/audio contracts, a presentation disable switch, and reduced-flash profile sync.
-- `ABTTF_HUD` loads authored `WBP_TimeCircuits` when present and surfaces active mission objectives.
-- `ABTTF_PlayerController` Escape pause saves progress before pausing.
-- `ABTTF_GameMode` auto-continues from `BTTF_SaveSlot` on startup when a save exists.
-- `UBTTF_GameInstance` auto-saves active missions on shutdown.
-- Hero `Interact()` can complete objectives on actors tagged `MissionEvent_*`.
-- `BTTF.Mission.M02VerticalSliceContract` automation covers the full six-objective M02 flow.
+| Task | Status | Notes |
+|------|--------|-------|
+| 15 Dialogue | **Partial** | Subsystem + widget + M01/M02/M03 dialogue scripts; full cast graphs pending. |
+| 16 Campaign M01–M05 | **Partial** | Mission data assets, flow automation tests, M01–M05 volume/dialogue placement scripts; live playthrough pending. |
+| 17 Five-era production | **Scaffolded** | Layer mappings + era music catalog; content for 1885/1985A/2015/2045 pending. |
+| 18 Timeline facts/genealogy | **Partial** | Subsystems + tests + `create_timeline_data.py`; `UWorldConsequenceSubsystem` maps `C_*` facts to HUD labels and signage material paths. |
+
+## Tasks 19–27 (Expanded master game)
+
+Combat/stealth components, temporal drive, crafting, hero progression, and era music are scaffolded with automation tests. Marty outfits, skill trees, five-act endings, 40+ side missions, multiplayer, photo mode, mod support, and final AV polish remain design-scaffold or content-only.
+
+## New in this branch (latest)
+
+- `Docs/Design/GameElevation.md` — priority stack for spectacle, readability, and content density.
+- `UWorldConsequenceSubsystem` — active `C_*` fact labels, HUD ripple summary, signage material paths.
+- `UFadingPhotographWidget` — polaroid panel with opacity bar and paradox pulse (pairs with time-circuits HUD row).
+- Time-circuits HUD: destination date (`InputTargetDate`), M05 lightning countdown, consequence summary.
+- `DeLoreanVehicle` cycles destination era + default film date via `UTemporalDriveSubsystem::GetDefaultDateForEra`.
+- M05 start sets Nov 12 1955 storm clock (~9:30 PM) for lightning countdown.
+- `Scripts/create_world_consequence_signage.py` — placeholder consequence signage materials.
+- Expanded dialogue scaffolding: M04 workshop (Vale), M05 finale (Vale, Elena, Crane).
+- Side A/B mission volumes in `place_mission_volumes.py`; `WBP_FadingPhotograph` in `create_ui_widgets.py`.
+- Automation: `BTTF.Timeline.WorldConsequenceSummary`, destination date formatting, elevated time-circuits fields, `BTTF.UI.FadingPhotographWidgetContract`.
+
+## Prior branch additions
+
+- `UPauseMenuWidget` / `USettingsWidget` — Resume, Continue, New Game, Quit, profile sliders (music, dialogue, UI/subtitle scale, reduced flash).
+- Campaign mission stable IDs (`M01.FirstTestRun` … `M05.RaceTheLightning`) aligned with save/restore via `BuildMissionAssetPathFromStableId`.
+- Save/load restores crafting inventory and timeline fact overrides.
+- `Scripts/create_timeline_data.py` — timeline fact + genealogy seed assets.
+- Mission coordinator applies `C_PlaqueChanged`, `C_DinerRenamed`, `C_SchoolDedication`, `C_FounderMissing`, `C_CampaignComplete` on objective completion.
+- Expanded `place_mission_volumes.py` and `create_dialogue_assets.py` for M01/M03 scaffolding.
+- Campaign mission chaining (`M01` → `M05`) with `bAutoAdvanceCampaign` and optional `bStartFullCampaignOnNewGame` on GameMode.
+- Dialogue progress snapshots saved/restored with story flags and conversation state.
+- Fading photograph status row on time-circuits HUD driven by paradox level.
+- `BootstrapCampaignSystems()` loads timeline facts, genealogy, and default crafting recipes on init.
+- M04/M05 mission volume scaffolding + `Scripts/create_side_missions.py` (Side A/B).
+- Automation: `BTTF.Mission.CampaignChainOrder`, dialogue snapshot restore in branching test.
 
 ## Still required for vertical-slice acceptance
 
 See `Docs/QA/VerticalSliceChecklist.md`:
 
-- Live five player-driven jumps in PIE (automation contract now exists).
+- Live five player-driven jumps in PIE.
 - Full M02 playthrough using placed mission actors.
 - Save/quit/continue at each checkpoint in a packaged build.
 - Shipping package and clean-machine smoke tests.
 - 1080p keyboard/mouse and controller acceptance.
+- Licensed music import and live crossfade verification.
 
-## Tasks 9–27
+## On your PC
 
-Campaign systems (dialogue, genealogy, combat, multiplayer, five-era production, etc.) remain scaffolded in C++ with content and live QA still outstanding. Complete the vertical-slice gates above before expanding scope.
+```powershell
+git pull origin cursor/visuals-audio-movement-dialogue-492a
+.\Scripts\Build\setup_vertical_slice.ps1
+```
+
+Rebuild if the editor reports 0 compile actions (touch a `.cpp` and rebuild). Run PIE, automation (`run_automation.ps1 -Filter BTTF`), and `package_smoke_test.ps1`.
