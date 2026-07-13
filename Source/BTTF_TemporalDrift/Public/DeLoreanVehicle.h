@@ -108,6 +108,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vehicle|Tuning")
     UDeLoreanTuningData* TuningDataAsset;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vehicle|Tuning", meta=(ClampMin="100.0"))
+    float ReverseAssistAcceleration = 650.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vehicle|Tuning", meta=(ClampMin="1.0"))
+    float ReverseAssistMaxSpeedMph = 15.0f;
+
     UPROPERTY(BlueprintReadOnly, Category = "Time Travel")
     UTimeTravelSubsystem* TimeTravelSubsystem;
 

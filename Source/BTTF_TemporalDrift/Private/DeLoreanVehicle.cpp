@@ -410,11 +410,26 @@ void ADeLoreanVehicle::UpdateHoverMode(float DeltaTime)
         GetActorUpVector(), Body->GetPhysicsAngularVelocityInRadians(), Body->GetMass());
     Body->AddTorqueInRadians(StabilizationTorque);
 
-    const float ForwardCommand = (bForwardKeyPressed ? 1.0f : 0.0f) - (bReverseKeyPressed ? 1.0f : 0.0f);
+    const APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    const bool bLiveForward = bForwardKeyPressed ||
+        (PlayerController && PlayerController->IsInputKeyDown(EKeys::Up));
+    const bool bLiveReverse = bReverseKeyPressed ||
+        (PlayerController && PlayerController->IsInputKeyDown(EKeys::Down));
+    const bool bLiveLeft = bLeftKeyPressed ||
+        (PlayerController && PlayerController->IsInputKeyDown(EKeys::Left));
+    const bool bLiveRight = bRightKeyPressed ||
+        (PlayerController && PlayerController->IsInputKeyDown(EKeys::Right));
+
+    const float ForwardCommand = (bLiveForward ? 1.0f : 0.0f) - (bLiveReverse ? 1.0f : 0.0f);
     Body->AddForce(GetActorForwardVector() * ForwardCommand * HoverForwardAcceleration * Body->GetMass());
 
-    const float YawCommand = (bRightKeyPressed ? 1.0f : 0.0f) - (bLeftKeyPressed ? 1.0f : 0.0f);
-    Body->AddTorqueInRadians(FVector::UpVector * YawCommand * HoverYawAcceleration * Body->GetMass());
+    const float DigitalYaw = (bLiveRight ? 1.0f : 0.0f) - (bLiveLeft ? 1.0f : 0.0f);
+    const float AnalogYaw = GetVehicleMovementComponent()
+        ? GetVehicleMovementComponent()->GetSteeringInput() : 0.0f;
+    const float YawCommand = FMath::Clamp(
+        FMath::Abs(DigitalYaw) > KINDA_SMALL_NUMBER ? DigitalYaw : AnalogYaw, -1.0f, 1.0f);
+    Body->AddTorqueInRadians(
+        FVector::UpVector * YawCommand * HoverYawAcceleration, NAME_None, true);
 }
 
 FVector ADeLoreanVehicle::CalculateHoverStabilizationTorque(const FVector& CurrentUp,
@@ -448,6 +463,21 @@ void ADeLoreanVehicle::Tick(float DeltaTime)
             Movement->SetTargetGear(-1, true);
             Movement->SetBrakeInput(0.0f);
             Movement->SetThrottleInput(1.0f);
+        }
+
+        // The prototype Chaos rig can select reverse without producing usable
+        // wheel torque on every machine. Apply a bounded physical assist so the
+        // reverse control always results in visible backward motion while still
+        // retaining steering, collision, suspension, and the configured gearbox.
+        if (USkeletalMeshComponent* Body = GetMesh(); Body && Body->IsSimulatingPhysics())
+        {
+            const float BackwardSpeedCmPerSecond =
+                -FVector::DotProduct(Body->GetPhysicsLinearVelocity(), GetActorForwardVector());
+            const float MaxReverseSpeedCmPerSecond = ReverseAssistMaxSpeedMph * 44.704f;
+            if (BackwardSpeedCmPerSecond < MaxReverseSpeedCmPerSecond)
+            {
+                Body->AddForce(-GetActorForwardVector() * ReverseAssistAcceleration * Body->GetMass());
+            }
         }
     }
 
