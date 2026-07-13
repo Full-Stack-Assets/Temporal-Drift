@@ -22,7 +22,7 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 | Task | Status | Notes |
 |------|--------|-------|
 | 9 Vertical-slice mission | **Partial** | M02 full flow; M01–M05 automation + volumes; campaign auto-advance chain. |
-| 10 NPCs/traffic | **Partial** | `EraPopulationManager` + budget tests; live splines/population sets pending. |
+| 10 NPCs/traffic | **Partial** | `UPopulationSpawnSubsystem` + `AHillValleyAmbientPedestrian` wander NPCs; 60+ pedestrian nodes, named citizens, traffic route anchors; spline traffic vehicles pending. |
 | 11 Save/load/settings | **Partial** | Schema v3 + crafting/timeline facts/dialogue restore; pause/settings UI. |
 | 12 Windows alpha | **Partial** | Dev package scripts + checklist; Shipping smoke and 1080p controller acceptance pending on PC. |
 
@@ -30,7 +30,7 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 
 | Task | Status | Notes |
 |------|--------|-------|
-| 13 Complete Hill Valley region | **Partial** | C++ validator + Python regional builder pass. Live full-circuit/streaming gate still open in `HillValleyRegionEvidence.md`. |
+| 13 Complete Hill Valley region | **Partial** | Metro expansion (~920m basin): civic, schools, suburbs, industrial, river/rail; C++ validator updated; live streaming perf gate still open. |
 | 14 On-foot hero | **Partial** | Movement tuning, camera lag, dialogue interactables with subtitles/audio hooks, mission interact priority, vehicle enter range check. |
 
 ## Tasks 15–18 (Dialogue, campaign, facts)

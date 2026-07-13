@@ -32,6 +32,8 @@ Last updated: 2026-07-13
 - [x] `BTTF.UI.FadingPhotographWidgetContract` verifies polaroid widget construction and paradox updates.
 - [x] `BTTF.UI.TimeCircuitsViewModel` verifies destination date, lightning countdown, and consequence summary fields.
 
+- [x] `BTTF.Population.SpawnSubsystemContract` verifies ambient pedestrian spawn and wander route setup.
+
 ## Live transition evidence
 
 Test configuration: Unreal Editor 5.8 Development game mode, 1280x720 window, `/Game/Levels/LVL_TimeTravelTest`.

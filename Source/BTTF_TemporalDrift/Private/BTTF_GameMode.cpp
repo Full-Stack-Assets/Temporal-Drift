@@ -9,6 +9,8 @@
 #include "BTTF_HUD.h"
 #include "MissionCoordinatorSubsystem.h"
 #include "MissionSubsystem.h"
+#include "PopulationSpawnSubsystem.h"
+#include "EraWorldManager.h"
 
 ABTTF_GameMode::ABTTF_GameMode()
 {
@@ -37,6 +39,16 @@ void ABTTF_GameMode::BeginPlay()
         GameInstance->ApplyProfileAccessibility(GetWorld());
     }
     InitializeTimeTravelSubsystem();
+
+    if (UPopulationSpawnSubsystem* PopulationSpawn = GetWorld()->GetSubsystem<UPopulationSpawnSubsystem>())
+    {
+        ETimelineState StartEra = ETimelineState::Present1985;
+        if (UEraWorldManager* EraManager = GetWorld()->GetSubsystem<UEraWorldManager>())
+        {
+            StartEra = EraManager->GetActiveEra();
+        }
+        PopulationSpawn->RefreshPopulationForEra(StartEra);
+    }
 
     bool bContinuedFromSave = false;
     if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))

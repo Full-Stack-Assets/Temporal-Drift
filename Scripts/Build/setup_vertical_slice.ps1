@@ -78,7 +78,10 @@ $pythonSteps = @(
     @{ Path = 'Scripts\create_dialogue_assets.py'; Token = 'DIALOGUE_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_era_music_assets.py'; Token = 'ERA_MUSIC_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_world_consequence_signage.py'; Token = 'WORLD_CONSEQUENCE_SIGNAGE_SUCCESS' },
+    @{ Path = 'Scripts\hill_valley\build_hill_valley_square.py'; Token = 'courthouse square generation complete' },
+    @{ Path = 'Scripts\hill_valley\build_1955_dressing.py'; Token = 'HILL_VALLEY_1955_BUILD_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\place_mission_volumes.py'; Token = 'MISSION_VOLUME_PLACEMENT_SUCCESS' },
+    @{ Path = 'Scripts\hill_valley\place_traffic_routes.py'; Token = 'HILL_VALLEY_TRAFFIC_ROUTES_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\validate_mission_placement.py'; Token = 'MISSION_PLACEMENT_VALIDATION_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\validate_hill_valley_square.py'; Token = 'HILL_VALLEY_VALIDATION_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\validate_1955_dressing.py'; Token = 'HILL_VALLEY_1955_VALIDATION_SUCCESS' }

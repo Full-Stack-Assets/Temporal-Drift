@@ -1,5 +1,13 @@
 """Place mission trigger volumes and interactables for campaign scaffolding."""
+import os
+import sys
 import unreal
+
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if _SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPT_DIR)
+
+from hill_valley_coords import world_location
 
 LEVEL = "/Game/Levels/LVL_TimeTravelTest"
 GENERATED_TAG = unreal.Name("HV_MissionGenerated")
@@ -93,10 +101,14 @@ def set_trigger_extent(actor, extent):
     actor.set_actor_scale3d(scale)
 
 
+def to_world_vector(local_xyz):
+    return unreal.Vector(*world_location(local_xyz[0], local_xyz[1], local_xyz[2]))
+
+
 def spawn_volume(name, location, extent, event_id, volume_class, class_path):
     actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
     volume = actor_subsystem.spawn_actor_from_class(
-        volume_class, unreal.Vector(*location), unreal.Rotator(0, 0, 0)
+        volume_class, to_world_vector(location), unreal.Rotator(0, 0, 0)
     )
     volume.set_actor_label(name)
     tags = [GENERATED_TAG, unreal.Name("HV_MissionVolume"), unreal.Name(f"MissionEvent_{event_id}")]
@@ -114,7 +126,7 @@ def spawn_volume(name, location, extent, event_id, volume_class, class_path):
 def spawn_interactable(name, location, event_id, prompt, interactable_class, class_path):
     actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
     actor = actor_subsystem.spawn_actor_from_class(
-        interactable_class, unreal.Vector(*location), unreal.Rotator(0, 0, 0)
+        interactable_class, to_world_vector(location), unreal.Rotator(0, 0, 0)
     )
     actor.set_actor_label(name)
     actor.tags = [
@@ -137,7 +149,7 @@ def spawn_interactable(name, location, event_id, prompt, interactable_class, cla
 def spawn_dialogue_interactable(name, location, asset_path, dialogue_class, class_path):
     actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
     actor = actor_subsystem.spawn_actor_from_class(
-        dialogue_class, unreal.Vector(*location), unreal.Rotator(0, 0, 0)
+        dialogue_class, to_world_vector(location), unreal.Rotator(0, 0, 0)
     )
     actor.set_actor_label(name)
     actor.tags = [GENERATED_TAG, unreal.Name("HV_DialogueInteractable")]
