@@ -7,6 +7,7 @@
 #include "VehicleInteractionComponent.h"
 #include "EngineUtils.h"
 #include "InputCoreTypes.h"
+#include "TimeTravelSubsystem.h"
 
 ABTTF_PlayerController::ABTTF_PlayerController()
 {
@@ -118,4 +119,28 @@ void ABTTF_PlayerController::ToggleHoverMode()
     {
         Vehicle->ToggleHoverMode();
     }
+}
+
+void ABTTF_PlayerController::QAJumpTo1955()
+{
+#if !UE_BUILD_SHIPPING
+    UWorld* World = GetWorld();
+    UTimeTravelSubsystem* TimeTravel = World ? World->GetSubsystem<UTimeTravelSubsystem>() : nullptr;
+    if (!TimeTravel)
+    {
+        UE_LOG(LogTemp, Error, TEXT("BTTF QA jump failed: time-travel subsystem is unavailable."));
+        return;
+    }
+
+    TimeTravel->AddFluxEnergy(TimeTravel->FluxCapacitorMaxEnergy);
+    TimeTravel->SetTimeCircuitsArmed(true);
+
+    FTimeTravelRequest Request;
+    Request.Destination = ETimelineState::Past1955;
+    Request.EntrySpeedMph = TimeTravel->GetJumpSpeedThresholdMph();
+    Request.Origin = GetPawn() ? GetPawn()->GetActorLocation() : FVector::ZeroVector;
+    const bool bAccepted = TimeTravel->RequestTimeTravel(Request);
+    UE_LOG(LogTemp, Display, TEXT("BTTF QA jump to 1955 accepted=%s threshold=%.0f MPH"),
+        bAccepted ? TEXT("true") : TEXT("false"), Request.EntrySpeedMph);
+#endif
 }

@@ -24,6 +24,9 @@ public:
     UFUNCTION(BlueprintPure, Category="Vehicle")
     ABTTFHeroCharacter* GetCachedHero() const { return CachedHero; }
 
+    UFUNCTION(Exec)
+    void QAJumpTo1955();
+
 protected:
     virtual void BeginPlay() override;
     virtual void SetupInputComponent() override;
