@@ -2,7 +2,9 @@
 
 #include "EraPopulationManager.h"
 #include "EraWorldManager.h"
+#include "TimelineFactSubsystem.h"
 #include "HillValleyAmbientPedestrian.h"
+#include "Engine/GameInstance.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "GameFramework/PlayerController.h"
@@ -16,10 +18,27 @@ void UPopulationSpawnSubsystem::Initialize(FSubsystemCollectionBase& Collection)
         EraManager->OnEraReady.AddDynamic(this, &UPopulationSpawnSubsystem::HandleEraReady);
         ActiveEra = EraManager->GetActiveEra();
     }
+
+    // TimelineFactSubsystem is a GameInstanceSubsystem sibling; reach it through the game
+    // instance (this is a world subsystem). Guard against null in case of init ordering.
+    if (UGameInstance* GameInstance = GetWorld() ? GetWorld()->GetGameInstance() : nullptr)
+    {
+        if (UTimelineFactSubsystem* Facts = GameInstance->GetSubsystem<UTimelineFactSubsystem>())
+        {
+            Facts->OnFactChanged.AddDynamic(this, &UPopulationSpawnSubsystem::HandleTimelineFactChanged);
+            BoundFactSubsystem = Facts;
+        }
+    }
 }
 
 void UPopulationSpawnSubsystem::Deinitialize()
 {
+    if (UTimelineFactSubsystem* Facts = BoundFactSubsystem.Get())
+    {
+        Facts->OnFactChanged.RemoveDynamic(this, &UPopulationSpawnSubsystem::HandleTimelineFactChanged);
+    }
+    BoundFactSubsystem.Reset();
+
     ClearSpawnedPopulation();
     Super::Deinitialize();
 }
@@ -45,6 +64,13 @@ TStatId UPopulationSpawnSubsystem::GetStatId() const
 void UPopulationSpawnSubsystem::HandleEraReady(ETimelineState ReadyEra)
 {
     RefreshPopulationForEra(ReadyEra);
+}
+
+void UPopulationSpawnSubsystem::HandleTimelineFactChanged(FName FactId, bool PreviousValue, bool NewValue)
+{
+    // A critical historical fact changed; re-run the population refresh for the current era so
+    // ambient schedules (and named-citizen placement) reflect the altered timeline.
+    RefreshPopulationForEra(ActiveEra);
 }
 
 void UPopulationSpawnSubsystem::CollectWorldAnchors()
@@ -167,7 +193,6 @@ void UPopulationSpawnSubsystem::SpawnAmbientPopulation(ETimelineState Era)
         return;
     }
 
-    Population->SetActiveEra(Era);
     const FEraPopulationProfile Profile = Population->GetActiveProfile();
     int32 Spawned = 0;
     const int32 TargetCount = FMath::Min(Profile.MaxPedestrians / 2, MaxAmbientPedestriansNearPlayer);
@@ -203,6 +228,16 @@ void UPopulationSpawnSubsystem::RefreshPopulationForEra(ETimelineState Era)
     ActiveEra = Era;
     ClearSpawnedPopulation();
     CollectWorldAnchors();
+
+    // Activate the era on the population manager BEFORE any citizens are reserved for it.
+    // SetActiveEra() resets the per-era reservation state (ReservedNamedCitizens, counters),
+    // so it must run first; otherwise it would wipe the fresh named-citizen reservations made
+    // by SpawnNamedCitizens() and allow later duplicate reservations for the same era.
+    if (UEraPopulationManager* Population = GetWorld()->GetSubsystem<UEraPopulationManager>())
+    {
+        Population->SetActiveEra(Era);
+    }
+
     SpawnNamedCitizens();
     SpawnAmbientPopulation(Era);
 }

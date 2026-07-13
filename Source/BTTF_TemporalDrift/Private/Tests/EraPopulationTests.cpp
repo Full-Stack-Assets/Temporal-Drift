@@ -16,4 +16,28 @@ bool FBTTFEraPopulationBudgetTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Outside zone allows spawn"),Manager->ReserveAmbientPedestrian(FVector(2000,0,0)));
     World->DestroyWorld(false);return !HasAnyErrors();
 }
+
+// Covers the PopulationSpawnSubsystem reservation-wipe fix at the manager-contract level:
+// era activation must precede named-citizen reservations. When it does, a reservation made for
+// the active era survives and duplicate reservations for the same id are rejected. When a
+// reservation is (incorrectly) made before activation, SetActiveEra wipes it -- which is exactly
+// the ordering hazard the subsystem fix removes.
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFNamedCitizenReservationOrderTest,"BTTF.Population.NamedCitizenReservationOrder",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
+bool FBTTFNamedCitizenReservationOrderTest::RunTest(const FString& Parameters)
+{
+    UWorld* World=UWorld::CreateWorld(EWorldType::None,false);UEraPopulationManager* Manager=NewObject<UEraPopulationManager>(World);
+
+    // Corrected ordering: activate the era first, then reserve. The reservation must persist.
+    Manager->SetActiveEra(ETimelineState::Past1955);
+    TestTrue(TEXT("Named citizen reserved after era activation"),Manager->ReserveNamedCitizen(TEXT("McFly.George"),FVector::ZeroVector));
+    TestTrue(TEXT("Reservation survives era activation"),Manager->IsNamedCitizenReserved(TEXT("McFly.George")));
+    TestFalse(TEXT("Duplicate reservation for same id rejected"),Manager->ReserveNamedCitizen(TEXT("McFly.George"),FVector::ZeroVector));
+
+    // Contract that motivates the fix: activating an era clears reservations, so a reservation
+    // made BEFORE activation is wiped. The subsystem now always calls SetActiveEra first.
+    Manager->SetActiveEra(ETimelineState::Past1955);
+    TestFalse(TEXT("Reservation made before activation is wiped"),Manager->IsNamedCitizenReserved(TEXT("McFly.George")));
+
+    World->DestroyWorld(false);return !HasAnyErrors();
+}
 #endif

@@ -177,12 +177,16 @@ bool UMissionCoordinatorSubsystem::StartCampaignMission(FName MissionStableId)
         {
             if (UEraWeatherSubsystem* Weather = GameInstance->GetSubsystem<UEraWeatherSubsystem>())
             {
+                // Derive the mission's starting clock from the single canonical strike schedule so the
+                // race and the storm countdown can never disagree. Seed at the storm lead-in so the
+                // thunderstorm is already rolling when M05 begins.
+                const FClocktowerLightningSchedule Schedule = Weather->GetLightningSchedule();
                 FEraWorldClock Clock;
-                Clock.Era = ETimelineState::Past1955;
-                Clock.Year = 1955;
-                Clock.Month = 11;
-                Clock.Day = 12;
-                Clock.SecondsSinceMidnight = 21.5f * 3600.0f;
+                Clock.Era = Schedule.Era;
+                Clock.Year = Schedule.Year;
+                Clock.Month = Schedule.Month;
+                Clock.Day = Schedule.Day;
+                Clock.SecondsSinceMidnight = FMath::Max(0.0f, Schedule.StrikeSecondsSinceMidnight - Schedule.StormLeadSeconds);
                 Weather->SetWorldClock(Clock);
             }
         }
