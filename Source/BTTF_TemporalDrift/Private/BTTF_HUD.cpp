@@ -11,6 +11,7 @@
 #include "DialogueViewModel.h"
 #include "DialogueWidget.h"
 #include "DialogueDataAsset.h"
+#include "EraMusicSubsystem.h"
 #include "BTTF_PlayerController.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
@@ -26,6 +27,14 @@ void ABTTF_HUD::BeginPlay()
     Super::BeginPlay();
     EnsureRuntimeWidget();
     EnsureDialogueWidget();
+
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UEraMusicSubsystem* Music = GameInstance->GetSubsystem<UEraMusicSubsystem>())
+        {
+            Music->OnEraMusicChanged.AddDynamic(this, &ABTTF_HUD::HandleEraMusicChanged);
+        }
+    }
 
     if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))
     {
@@ -150,6 +159,11 @@ void ABTTF_HUD::HandleDialogueConversationEnded()
     }
 }
 
+void ABTTF_HUD::HandleEraMusicChanged(FEraMusicTrackInfo ActiveTrack)
+{
+    RefreshTimeCircuitsDisplay();
+}
+
 void ABTTF_HUD::RefreshTimeCircuitsDisplay()
 {
     if (!TimeCircuitsViewModel)
@@ -174,12 +188,25 @@ void ABTTF_HUD::RefreshTimeCircuitsDisplay()
     }
 
     const FText MissionObjective = Mission ? Mission->GetActiveObjectiveDescription() : FText::GetEmpty();
+    FText NowPlaying = FText::GetEmpty();
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UEraMusicSubsystem* Music = GameInstance->GetSubsystem<UEraMusicSubsystem>())
+        {
+            const FEraMusicTrackInfo Track = Music->GetActiveTrackInfo();
+            if (!Track.TrackTitle.IsEmpty())
+            {
+                NowPlaying = FText::Format(FText::FromString(TEXT("NOW PLAYING: {0} — {1}")),
+                    Track.TrackTitle, Track.ArtistName);
+            }
+        }
+    }
     if (Subsystem)
     {
         TimeCircuitsViewModel->UpdateDisplay(Speed, Subsystem->GetFluxChargePercent(),
             Subsystem->GetCurrentEra(), DestinationEra, Subsystem->GetTimeTravelPhase(),
             Subsystem->CurrentParadoxLevel, Subsystem->WormholeStability,
-            Subsystem->GetLastJumpFailureReason(), MissionObjective);
+            Subsystem->GetLastJumpFailureReason(), MissionObjective, NowPlaying);
     }
 }
 

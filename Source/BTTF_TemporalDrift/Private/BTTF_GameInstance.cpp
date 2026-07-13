@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimeTravelSubsystem.h"
 #include "MissionSubsystem.h"
+#include "EraMusicSubsystem.h"
 #include "DialogueSubsystem.h"
 #include "HeroProgressionSubsystem.h"
 #include "TemporalDriveSubsystem.h"
@@ -330,6 +331,11 @@ float UBTTF_GameInstance::GetDialogueVolume() const
     return ProfileSave ? ProfileSave->DialogueVolume : 1.0f;
 }
 
+float UBTTF_GameInstance::GetMusicVolume() const
+{
+    return ProfileSave ? ProfileSave->MusicVolume : 1.0f;
+}
+
 void UBTTF_GameInstance::ApplyProfileAccessibility(UWorld* World)
 {
     if (!World || !EnsureProfileLoaded())
@@ -356,5 +362,10 @@ void UBTTF_GameInstance::ApplyProfileAccessibility(UWorld* World)
     if (UDialogueSubsystem* Dialogue = GetSubsystem<UDialogueSubsystem>())
     {
         Dialogue->SetDialogueVolume(ProfileSave->DialogueVolume);
+    }
+
+    if (UEraMusicSubsystem* Music = GetSubsystem<UEraMusicSubsystem>())
+    {
+        Music->SetMusicVolume(ProfileSave->MusicVolume);
     }
 }

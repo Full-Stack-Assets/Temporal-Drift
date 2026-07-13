@@ -83,6 +83,9 @@ public:
     UFUNCTION(BlueprintPure, Category = "Profile")
     float GetDialogueVolume() const;
 
+    UFUNCTION(BlueprintPure, Category = "Profile")
+    float GetMusicVolume() const;
+
     UFUNCTION(BlueprintCallable, Category = "Profile")
     void ApplyProfileAccessibility(UWorld* World);
 

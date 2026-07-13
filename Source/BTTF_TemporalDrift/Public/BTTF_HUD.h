@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/HUD.h"
 #include "DialogueDataAsset.h"
+#include "EraMusicTypes.h"
 #include "BTTF_HUD.generated.h"
 
 class UTimeCircuitsViewModel;
@@ -33,6 +34,10 @@ private:
 
     UFUNCTION()
     void HandleDialogueConversationEnded();
+
+    UFUNCTION()
+    void HandleEraMusicChanged(FEraMusicTrackInfo ActiveTrack);
+
     void DrawBar(float X, float Y, float Width, float Height, float Percent, const FLinearColor& FillColor);
 
     UPROPERTY(Transient)

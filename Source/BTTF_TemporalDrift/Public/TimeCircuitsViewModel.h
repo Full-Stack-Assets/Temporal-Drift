@@ -17,6 +17,7 @@ struct FTimeCircuitsDisplayState
     UPROPERTY(BlueprintReadOnly) FText PhaseText;
     UPROPERTY(BlueprintReadOnly) FText WarningText;
     UPROPERTY(BlueprintReadOnly) FText MissionObjectiveText;
+    UPROPERTY(BlueprintReadOnly) FText NowPlayingText;
     UPROPERTY(BlueprintReadOnly) float FluxPercent = 0.0f;
     UPROPERTY(BlueprintReadOnly) bool bJumpReady = false;
     UPROPERTY(BlueprintReadOnly) bool bDangerWarning = false;
@@ -35,7 +36,8 @@ public:
     void UpdateDisplay(float SpeedMph, float FluxPercent, ETimelineState CurrentEra,
         ETimelineState DestinationEra, ETimeTravelPhase Phase, float ParadoxPercent,
         float StabilityPercent, const FText& ExplicitFailureReason,
-        const FText& MissionObjective = FText::GetEmpty());
+        const FText& MissionObjective = FText::GetEmpty(),
+        const FText& NowPlaying = FText::GetEmpty());
 
     UFUNCTION(BlueprintPure, Category="Time Circuits")
     FTimeCircuitsDisplayState GetDisplayState() const { return DisplayState; }

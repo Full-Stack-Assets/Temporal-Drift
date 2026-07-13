@@ -1,4 +1,5 @@
 #include "MissionCoordinatorSubsystem.h"
+#include "EraMusicSubsystem.h"
 #include "BTTF_GameInstance.h"
 #include "MissionSubsystem.h"
 #include "DialogueSubsystem.h"
@@ -128,6 +129,17 @@ void UMissionCoordinatorSubsystem::HandleObjectiveChanged(FName ObjectiveId, EMi
         if (!FMath::IsNearlyZero(ParadoxDelta))
         {
             TimeTravelSubsystem->ApplyDirectParadoxDelta(ParadoxDelta);
+        }
+    }
+
+    if (State == EMissionObjectiveState::Completed && ObjectiveId == FName(TEXT("ReachClocktower")))
+    {
+        if (UGameInstance* GameInstance = GetGameInstance())
+        {
+            if (UEraMusicSubsystem* Music = GameInstance->GetSubsystem<UEraMusicSubsystem>())
+            {
+                Music->PlayMusicForEra(ETimelineState::Past1955, true);
+            }
         }
     }
 

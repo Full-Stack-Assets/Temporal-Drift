@@ -37,6 +37,10 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 - `UBTTF_GameInstance` auto-saves active missions on shutdown.
 - Hero `Interact()` can complete objectives on actors tagged `MissionEvent_*`.
 - `BTTF.Mission.M02VerticalSliceContract` automation covers the full six-objective M02 flow.
+- `UDialogueSubsystem` + `UDialogueWidget` deliver subtitles, voice playback hooks, and mission event bridging.
+- `ADialogueInteractable` and `Scripts/create_dialogue_assets.py` scaffold M02 courthouse briefing content.
+- `UEraMusicSubsystem` crossfades film-track music per timeline (Huey Lewis, Earth Angel, Johnny B. Goode, Silvestri-style underscores), HUD now-playing row, and M02 clocktower alternate track.
+- Vehicle tuning, input smoothing, speed-responsive FOV, and presentation vehicle parameters.
 
 ## Still required for vertical-slice acceptance
 

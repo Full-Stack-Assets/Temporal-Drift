@@ -39,6 +39,30 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
     TSoftObjectPtr<USoundBase> AmbientLoop;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+    TSoftObjectPtr<USoundBase> EraMusicPrimary;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+    TSoftObjectPtr<USoundBase> EraMusicAlternate;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+    FText MusicPrimaryTitle;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+    FText MusicPrimaryArtist;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+    FText MusicAlternateTitle;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+    FText MusicAlternateArtist;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio")
+    FText MusicFilmReference;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Audio", meta = (ClampMin = "0.0", ClampMax = "1.0"))
+    float MusicDefaultVolume = 0.65f;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gameplay")
     float ParadoxMultiplier = 1.0f;
 
