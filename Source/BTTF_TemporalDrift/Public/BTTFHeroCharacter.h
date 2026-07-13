@@ -43,8 +43,13 @@ protected:
     void EndSprint();
     void ToggleCrouch();
     void Interact();
+    bool TryInteractMissionTaggedActor();
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Hero|Movement") float WalkSpeed = 500.0f;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Hero|Interaction")
+    float MissionTagInteractRadius = 250.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Hero|Movement")
+    float WalkSpeed = 500.0f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Hero|Movement") float SprintSpeed = 760.0f;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Hero|Movement") float CrouchSpeed = 260.0f;
     UPROPERTY(BlueprintReadOnly, Category="Hero|Movement") bool bSprinting = false;

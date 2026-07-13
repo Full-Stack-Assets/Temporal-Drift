@@ -1,5 +1,9 @@
 #include "BTTFHeroCharacter.h"
 #include "VehicleInteractionComponent.h"
+#include "MissionInteractable.h"
+#include "DialogueInteractable.h"
+#include "DialogueSubsystem.h"
+#include "MissionCoordinatorSubsystem.h"
 #include "HeroCombatComponent.h"
 #include "HeroStealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -19,6 +23,9 @@ ABTTFHeroCharacter::ABTTFHeroCharacter()
     GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
     GetCharacterMovement()->JumpZVelocity = 520.0f;
     GetCharacterMovement()->AirControl = 0.35f;
+    GetCharacterMovement()->MaxAcceleration = 1800.0f;
+    GetCharacterMovement()->BrakingDecelerationWalking = 1400.0f;
+    GetCharacterMovement()->GroundFriction = 7.5f;
 
     static ConstructorHelpers::FObjectFinder<USkeletalMesh> MannyMesh(
         TEXT("/Game/Characters/Hero/SK_Hero1985.SK_Hero1985"));
@@ -33,6 +40,9 @@ ABTTFHeroCharacter::ABTTFHeroCharacter()
     CameraBoom->SetupAttachment(RootComponent);
     CameraBoom->TargetArmLength = 350.0f;
     CameraBoom->bUsePawnControlRotation = true;
+    CameraBoom->bEnableCameraLag = true;
+    CameraBoom->CameraLagSpeed = 10.0f;
+    CameraBoom->bDoCollisionTest = true;
 
     FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
     FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
@@ -68,9 +78,14 @@ void ABTTFHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 void ABTTFHeroCharacter::SetSprinting(bool bEnabled)
 {
     bSprinting = bEnabled;
-    if (GetCharacterMovement() && !GetCharacterMovement()->IsCrouching())
+    if (UCharacterMovementComponent* Movement = GetCharacterMovement())
     {
-        GetCharacterMovement()->MaxWalkSpeed = bSprinting ? SprintSpeed : WalkSpeed;
+        if (!Movement->IsCrouching())
+        {
+            const float TargetSpeed = bSprinting ? SprintSpeed : WalkSpeed;
+            Movement->MaxWalkSpeed = FMath::FInterpTo(Movement->MaxWalkSpeed, TargetSpeed,
+                GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.016f, 8.0f);
+        }
     }
 }
 
@@ -95,6 +110,68 @@ void ABTTFHeroCharacter::ToggleCrouch()
 void ABTTFHeroCharacter::Interact()
 {
     if (!GetWorld()) return;
+
+    if (UGameInstance* GameInstance = GetWorld()->GetGameInstance())
+    {
+        if (UDialogueSubsystem* Dialogue = GameInstance->GetSubsystem<UDialogueSubsystem>())
+        {
+            if (Dialogue->IsConversationActive())
+            {
+                if (!Dialogue->GetAvailableChoices().IsEmpty())
+                {
+                    const TArray<FDialogueChoice> Choices = Dialogue->GetAvailableChoices();
+                    Dialogue->SelectChoice(Choices[0].ChoiceId);
+                }
+                else if (Dialogue->CanAdvanceConversation())
+                {
+                    Dialogue->AdvanceConversation();
+                }
+                return;
+            }
+        }
+    }
+
+    ADialogueInteractable* NearestDialogue = nullptr;
+    float NearestDialogueDistanceSq = TNumericLimits<float>::Max();
+    for (TActorIterator<ADialogueInteractable> It(GetWorld()); It; ++It)
+    {
+        const float DistanceSq = FVector::DistSquared(GetActorLocation(), It->GetActorLocation());
+        if (DistanceSq < NearestDialogueDistanceSq)
+        {
+            NearestDialogueDistanceSq = DistanceSq;
+            NearestDialogue = *It;
+        }
+    }
+    if (NearestDialogue && NearestDialogue->TryStartConversation(this))
+    {
+        return;
+    }
+
+    AMissionInteractable* NearestInteractable = nullptr;
+    float NearestInteractableDistanceSq = TNumericLimits<float>::Max();
+    for (TActorIterator<AMissionInteractable> It(GetWorld()); It; ++It)
+    {
+        if (!It->CanInteract(this))
+        {
+            continue;
+        }
+        const float DistanceSq = FVector::DistSquared(GetActorLocation(), It->GetActorLocation());
+        if (DistanceSq < NearestInteractableDistanceSq)
+        {
+            NearestInteractableDistanceSq = DistanceSq;
+            NearestInteractable = *It;
+        }
+    }
+    if (NearestInteractable && NearestInteractable->Interact(this))
+    {
+        return;
+    }
+
+    if (TryInteractMissionTaggedActor())
+    {
+        return;
+    }
+
     ADeLoreanVehicle* NearestVehicle = nullptr;
     float NearestDistanceSq = TNumericLimits<float>::Max();
     for (TActorIterator<ADeLoreanVehicle> It(GetWorld()); It; ++It)
@@ -106,10 +183,65 @@ void ABTTFHeroCharacter::Interact()
             NearestVehicle = *It;
         }
     }
-    if (NearestVehicle)
+    if (NearestVehicle && VehicleInteraction->CanEnterVehicle(NearestVehicle))
     {
         VehicleInteraction->EnterVehicle(NearestVehicle);
     }
+}
+
+bool ABTTFHeroCharacter::TryInteractMissionTaggedActor()
+{
+    if (!GetWorld())
+    {
+        return false;
+    }
+
+    UMissionCoordinatorSubsystem* Coordinator = GetWorld()->GetSubsystem<UMissionCoordinatorSubsystem>();
+    if (!Coordinator)
+    {
+        return false;
+    }
+
+    const float RadiusSq = FMath::Square(MissionTagInteractRadius);
+    AActor* NearestTaggedActor = nullptr;
+    FName NearestEventId = NAME_None;
+    float NearestDistanceSq = TNumericLimits<float>::Max();
+
+    for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+    {
+        if (It->IsA<AMissionInteractable>() || *It == this)
+        {
+            continue;
+        }
+
+        FName EventId = NAME_None;
+        for (const FName& Tag : It->Tags)
+        {
+            const FString TagString = Tag.ToString();
+            if (TagString.StartsWith(TEXT("MissionEvent_")))
+            {
+                EventId = FName(*TagString.RightChop(13));
+                break;
+            }
+        }
+
+        if (EventId.IsNone())
+        {
+            continue;
+        }
+
+        const float DistanceSq = FVector::DistSquared(GetActorLocation(), It->GetActorLocation());
+        if (DistanceSq > RadiusSq || DistanceSq >= NearestDistanceSq)
+        {
+            continue;
+        }
+
+        NearestDistanceSq = DistanceSq;
+        NearestTaggedActor = *It;
+        NearestEventId = EventId;
+    }
+
+    return NearestTaggedActor && Coordinator->SubmitMissionEvent(NearestEventId);
 }
 
 void ABTTFHeroCharacter::ResetToSafeTransform()

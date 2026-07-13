@@ -36,6 +36,18 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Game State")
     void SaveCurrentProgress();
 
+    UFUNCTION(BlueprintCallable, Category = "Game State")
+    void StartVerticalSliceMission();
+
+    UFUNCTION(BlueprintCallable, Category = "Game State")
+    void StartFullCampaign();
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game State")
+    bool bAutoLoadSaveOnStart = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game State")
+    bool bStartFullCampaignOnNewGame = false;
+
 protected:
     UPROPERTY()
     UTimeTravelSubsystem* TimeTravelSubsystem;

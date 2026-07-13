@@ -10,8 +10,8 @@ UDeLoreanWheelFront::UDeLoreanWheelFront()
     bAffectedByHandbrake = false;
     bAffectedByEngine = false;
     MaxSteerAngle = 40.0f;
-    SuspensionMaxRaise = 8.0f;
-    SuspensionMaxDrop = 12.0f;
+    SuspensionMaxRaise = 10.0f;
+    SuspensionMaxDrop = 18.0f;
 }
 
 UDeLoreanWheelRear::UDeLoreanWheelRear()
@@ -22,6 +22,6 @@ UDeLoreanWheelRear::UDeLoreanWheelRear()
     bAffectedBySteering = false;
     bAffectedByHandbrake = true;
     bAffectedByEngine = true;
-    SuspensionMaxRaise = 8.0f;
-    SuspensionMaxDrop = 12.0f;
+    SuspensionMaxRaise = 10.0f;
+    SuspensionMaxDrop = 18.0f;
 }

@@ -26,6 +26,9 @@ struct FDialogueNode
     UPROPERTY(EditAnywhere, BlueprintReadWrite) FName SpeakerId;
     UPROPERTY(EditAnywhere, BlueprintReadWrite) FText Line;
     UPROPERTY(EditAnywhere, BlueprintReadWrite) FName LocalizationKey;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite) FText SpeakerDisplayName;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite) FSoftObjectPath VoiceAudioPath;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite) bool bWaitForVoiceBeforeAdvance = false;
     UPROPERTY(EditAnywhere, BlueprintReadWrite) TArray<FDialogueChoice> Choices;
     UPROPERTY(EditAnywhere, BlueprintReadWrite) FName AutomaticNextNodeId;
     UPROPERTY(EditAnywhere, BlueprintReadWrite) FName MissionEvent;

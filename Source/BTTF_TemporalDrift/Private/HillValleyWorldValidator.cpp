@@ -8,24 +8,28 @@
 
 const TMap<FName, int32>& UHillValleyWorldValidator::GetRequiredTagMinimums()
 {
-    static const TMap<FName, int32> Requirements = {
-        {TEXT("HV_District_Civic"), 1},
-        {TEXT("HV_District_Commercial"), 2},
-        {TEXT("HV_District_Residential"), 16},
-        {TEXT("HV_District_School"), 1},
-        {TEXT("HV_District_Industrial"), 4},
-        {TEXT("HV_District_Rural"), 1},
-        {TEXT("HV_Road"), 10},
+    static     const TMap<FName, int32> Requirements = {
+        {TEXT("HV_District_Civic"), 6},
+        {TEXT("HV_District_Commercial"), 4},
+        {TEXT("HV_District_Residential"), 48},
+        {TEXT("HV_District_School"), 3},
+        {TEXT("HV_District_Industrial"), 12},
+        {TEXT("HV_District_Rural"), 8},
+        {TEXT("HV_Road"), 18},
         {TEXT("HV_Sidewalk"), 12},
-        {TEXT("HV_Crossing"), 6},
-        {TEXT("HV_Landscape"), 30},
-        {TEXT("HV_Foliage"), 40},
-        {TEXT("HV_Building"), 45},
-        {TEXT("HV_DestinationSign"), 6},
-        {TEXT("HV_Interior"), 5},
-        {TEXT("HV_Navigation"), 10},
-        {TEXT("HV_TrafficRoute"), 5},
-        {TEXT("HV_ResetVolume"), 4},
+        {TEXT("HV_Crossing"), 10},
+        {TEXT("HV_Landscape"), 80},
+        {TEXT("HV_Foliage"), 100},
+        {TEXT("HV_Building"), 120},
+        {TEXT("HV_DestinationSign"), 12},
+        {TEXT("HV_Interior"), 8},
+        {TEXT("HV_Infrastructure"), 6},
+        {TEXT("HV_Navigation"), 40},
+        {TEXT("HV_PedestrianNode"), 40},
+        {TEXT("HV_NamedCitizen"), 4},
+        {TEXT("HV_TrafficRoute"), 15},
+        {TEXT("HV_ResetVolume"), 8},
+        {TEXT("HV_Metro"), 20},
     };
     return Requirements;
 }
@@ -97,9 +101,9 @@ FHillValleyValidationReport UHillValleyWorldValidator::ValidateWorld(UWorld* Wor
     {
         Report.Failures.Add(TEXT("World Partition is not enabled"));
     }
-    if (!RegionBounds.IsValid || RegionBounds.GetSize().X < 30000.0 || RegionBounds.GetSize().Y < 35000.0)
+    if (!RegionBounds.IsValid || RegionBounds.GetSize().X < 70000.0 || RegionBounds.GetSize().Y < 80000.0)
     {
-        Report.Failures.Add(TEXT("Playable region does not cover the required town and rural bounds"));
+        Report.Failures.Add(TEXT("Playable region does not cover the required metro town and rural bounds"));
     }
 
     static const TCHAR* RequiredAssets[] = {

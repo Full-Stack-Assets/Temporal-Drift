@@ -23,12 +23,15 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFMissionProgressTest,"BTTF.Mission.Progress
 bool FBTTFMissionProgressTest::RunTest(const FString& Parameters)
 {
     UMissionDataAsset* Mission=NewObject<UMissionDataAsset>();Mission->MissionId=TEXT("M02.ClocktowerCalibration");
-    FMissionObjectiveDefinition Brief;Brief.ObjectiveId=TEXT("Briefing");Brief.CompletionEvent=TEXT("TalkedToVale");Brief.CheckpointId=TEXT("M02_Briefing");
+    FMissionObjectiveDefinition Brief;Brief.ObjectiveId=TEXT("Briefing");Brief.CompletionEvent=TEXT("TalkedToVale");Brief.CheckpointId=TEXT("M02_Briefing");Brief.Description=FText::FromString(TEXT("Meet Doc at the courthouse"));
     FMissionObjectiveDefinition Jump;Jump.ObjectiveId=TEXT("Jump1955");Jump.CompletionEvent=TEXT("Arrived1955");Jump.CheckpointId=TEXT("M02_Arrived1955");Jump.ParadoxDelta=3.0f;
     FMissionObjectiveDefinition Sensor;Sensor.ObjectiveId=TEXT("InstallSensor");Sensor.CompletionEvent=TEXT("SensorInstalled");Sensor.CheckpointId=TEXT("M02_Calibrated");
     Mission->Objectives={Brief,Jump,Sensor};
     UGameInstance* GI=NewObject<UGameInstance>();UMissionSubsystem* System=NewObject<UMissionSubsystem>(GI);
     TestTrue(TEXT("Mission starts"),System->StartMission(Mission));TestEqual(TEXT("First objective active"),System->GetActiveObjectiveId(),Brief.ObjectiveId);
+    TestEqual(TEXT("Active objective description"),System->GetActiveObjectiveDescription().ToString(),FString(TEXT("Meet Doc at the courthouse")));
+    TestEqual(TEXT("Paradox delta lookup"),System->GetObjectiveParadoxDelta(Jump.ObjectiveId),3.0f);
+    TestEqual(TEXT("Missing paradox delta returns zero"),System->GetObjectiveParadoxDelta(TEXT("Missing")),0.0f);
     TestFalse(TEXT("Out-of-order event rejected"),System->SubmitMissionEvent(TEXT("Arrived1955")));
     TestTrue(TEXT("Briefing completes"),System->SubmitMissionEvent(TEXT("TalkedToVale")));TestEqual(TEXT("Jump objective active"),System->GetActiveObjectiveId(),Jump.ObjectiveId);
     TestFalse(TEXT("Duplicate event rejected"),System->SubmitMissionEvent(TEXT("TalkedToVale")));

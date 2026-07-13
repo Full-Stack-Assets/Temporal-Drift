@@ -14,6 +14,7 @@ bool FBTTFPlayerControllerCursorTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Mouse cursor is visible by default"), Controller->bShowMouseCursor);
     TestTrue(TEXT("Mouse clicks remain enabled"), Controller->bEnableClickEvents);
     TestTrue(TEXT("Mouse-over events remain enabled"), Controller->bEnableMouseOverEvents);
+    TestFalse(TEXT("Pause menu starts closed"), Controller->IsMenuPaused());
     return !HasAnyErrors();
 }
 

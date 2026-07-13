@@ -28,6 +28,10 @@ bool FBTTFVehicleTuningDefaultsTest::RunTest(const FString& Parameters)
         Tuning->SuspensionMaxDropCm > Tuning->SuspensionMaxRaiseCm);
     TestTrue(TEXT("Target top speed clears time-travel threshold"),
         Tuning->TargetTopSpeedMph >= 50.0f);
+    TestTrue(TEXT("Steering angle is roadworthy"),
+        Tuning->MaxSteerAngleDegrees >= 30.0f && Tuning->MaxSteerAngleDegrees <= 45.0f);
+    TestTrue(TEXT("Chase camera FOV range configured"),
+        Tuning->ChaseHighSpeedFov > Tuning->ChaseBaseFov);
     return !HasAnyErrors();
 }
 

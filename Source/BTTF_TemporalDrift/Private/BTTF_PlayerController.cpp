@@ -1,9 +1,11 @@
 // BTTF_PlayerController.cpp
 #include "BTTF_PlayerController.h"
+#include "PauseMenuWidget.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "DeLoreanVehicle.h"
 #include "BTTFHeroCharacter.h"
+#include "BTTF_GameInstance.h"
 #include "VehicleInteractionComponent.h"
 #include "EngineUtils.h"
 #include "InputCoreTypes.h"
@@ -78,6 +80,30 @@ void ABTTF_PlayerController::BeginPlay()
             Subsystem->AddMappingContext(DefaultMappingContext, 0);
         }
     }
+
+    EnsurePauseMenuWidget();
+}
+
+void ABTTF_PlayerController::EnsurePauseMenuWidget()
+{
+    if (PauseMenuWidget)
+    {
+        return;
+    }
+
+    TSubclassOf<UPauseMenuWidget> WidgetClass = UPauseMenuWidget::StaticClass();
+    if (UClass* AuthoredClass = LoadClass<UPauseMenuWidget>(
+            nullptr, TEXT("/Game/UI/WBP_PauseMenu.WBP_PauseMenu")))
+    {
+        WidgetClass = AuthoredClass;
+    }
+
+    PauseMenuWidget = CreateWidget<UPauseMenuWidget>(this, WidgetClass);
+    if (PauseMenuWidget)
+    {
+        PauseMenuWidget->AddToViewport(200);
+        PauseMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
+    }
 }
 
 void ABTTF_PlayerController::SetupInputComponent()
@@ -88,6 +114,7 @@ void ABTTF_PlayerController::SetupInputComponent()
     // polling is not guaranteed to run while the game is in GameAndUI mode.
     InputComponent->BindKey(EKeys::G, IE_Pressed, this,
         &ABTTF_PlayerController::HandleToggleVehicleHeroPossession);
+    InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ABTTF_PlayerController::TogglePauseMenu);
 
     if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
     {
@@ -129,6 +156,53 @@ void ABTTF_PlayerController::ToggleHoverMode()
 void ABTTF_PlayerController::HandleToggleVehicleHeroPossession()
 {
     ToggleVehicleHeroPossession();
+}
+
+void ABTTF_PlayerController::TogglePauseMenu()
+{
+    if (PauseMenuWidget && PauseMenuWidget->IsSettingsVisible())
+    {
+        PauseMenuWidget->ShowSettings(false);
+        return;
+    }
+
+    if (bMenuPaused)
+    {
+        SetPause(false);
+        bMenuPaused = false;
+        if (PauseMenuWidget)
+        {
+            PauseMenuWidget->ShowSettings(false);
+            PauseMenuWidget->SetVisibility(ESlateVisibility::Collapsed);
+        }
+        bShowMouseCursor = true;
+        FInputModeGameAndUI InputMode;
+        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        InputMode.SetHideCursorDuringCapture(false);
+        SetInputMode(InputMode);
+        return;
+    }
+
+    if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))
+    {
+        GameInstance->SaveGameToSlot();
+    }
+
+    SetPause(true);
+    bMenuPaused = true;
+    bShowMouseCursor = true;
+    if (PauseMenuWidget)
+    {
+        const bool bHasSave = Cast<UBTTF_GameInstance>(GetGameInstance())
+            && Cast<UBTTF_GameInstance>(GetGameInstance())->HasSaveGame();
+        PauseMenuWidget->RefreshMenuState(bHasSave);
+        PauseMenuWidget->ShowSettings(false);
+        PauseMenuWidget->SetVisibility(ESlateVisibility::Visible);
+    }
+    FInputModeGameAndUI InputMode;
+    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+    InputMode.SetHideCursorDuringCapture(false);
+    SetInputMode(InputMode);
 }
 
 void ABTTF_PlayerController::QAJumpTo1955()

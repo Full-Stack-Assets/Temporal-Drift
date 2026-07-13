@@ -5,6 +5,7 @@
 #include "TimeTravelSubsystem.h"
 #include "ChaosVehicleMovementComponent.h"
 #include "ChaosWheeledVehicleMovementComponent.h"
+#include "ChaosVehicleWheel.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -19,13 +20,14 @@
 #include "GameFramework/PlayerController.h"
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "DeLoreanTuningData.h"
+#include "TemporalDriveSubsystem.h"
 
 ADeLoreanVehicle::ADeLoreanVehicle()
 {
-    // Required for speedometer + flux charging; AActor defaults this to false.
     PrimaryActorTick.bCanEverTick = true;
 
     CurrentSpeedMph = 0.0f;
+    InputTargetDate = UTemporalDriveSubsystem::GetDefaultDateForEra(InputTargetEra);
     // Redundant with the on-screen HUD and causes overlapping/ghosted world-space
     // text at certain camera angles, so keep it off by default. Toggle in the
     // editor per-instance if you need raw debug values while tuning.
@@ -130,6 +132,20 @@ void ADeLoreanVehicle::ApplyTuningData(const UDeLoreanTuningData* TuningData)
     Movement->TransmissionSetup.ReverseGearRatios = {
         FMath::Abs(TuningData->ReverseGearRatio)};
     Movement->TransmissionSetup.FinalRatio = TuningData->FinalDriveRatio;
+
+    const int32 WheelCount = Movement->GetNumWheels();
+    for (int32 WheelIndex = 0; WheelIndex < WheelCount; ++WheelIndex)
+    {
+        if (UChaosVehicleWheel* Wheel = Movement->GetWheel(WheelIndex))
+        {
+            Wheel->SuspensionMaxRaise = TuningData->SuspensionMaxRaiseCm;
+            Wheel->SuspensionMaxDrop = TuningData->SuspensionMaxDropCm;
+            if (Wheel->AxleType == EAxleType::Front)
+            {
+                Wheel->MaxSteerAngle = TuningData->MaxSteerAngleDegrees;
+            }
+        }
+    }
 }
 
 void ADeLoreanVehicle::BeginPlay()
@@ -234,6 +250,11 @@ void ADeLoreanVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
             EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleHandbrake);
             EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Completed, this, &ADeLoreanVehicle::HandleHandbrake);
         }
+        if (ReverseAction)
+        {
+            EnhancedInputComponent->BindAction(ReverseAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleReverse);
+            EnhancedInputComponent->BindAction(ReverseAction, ETriggerEvent::Completed, this, &ADeLoreanVehicle::HandleReverse);
+        }
         if (ResetVehicleAction)
             EnhancedInputComponent->BindAction(ResetVehicleAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::ResetVehicle);
         if (TimeCircuitsAction)
@@ -280,26 +301,17 @@ void ADeLoreanVehicle::SelectNextDestination()
 
 void ADeLoreanVehicle::HandleThrottle(const FInputActionValue& Value)
 {
-    if (UChaosVehicleMovementComponent* Movement = Cast<UChaosVehicleMovementComponent>(GetVehicleMovementComponent()))
-    {
-        Movement->SetThrottleInput(Value.Get<float>());
-    }
+    TargetThrottleInput = Value.Get<float>();
 }
 
 void ADeLoreanVehicle::HandleSteering(const FInputActionValue& Value)
 {
-    if (UChaosVehicleMovementComponent* Movement = Cast<UChaosVehicleMovementComponent>(GetVehicleMovementComponent()))
-    {
-        Movement->SetSteeringInput(Value.Get<float>());
-    }
+    TargetSteeringInput = Value.Get<float>();
 }
 
 void ADeLoreanVehicle::HandleBrake(const FInputActionValue& Value)
 {
-    if (UChaosVehicleMovementComponent* Movement = Cast<UChaosVehicleMovementComponent>(GetVehicleMovementComponent()))
-    {
-        Movement->SetBrakeInput(Value.Get<float>());
-    }
+    TargetBrakeInput = Value.Get<float>();
 }
 
 void ADeLoreanVehicle::HandleHandbrake(const FInputActionValue& Value)
@@ -482,6 +494,12 @@ void ADeLoreanVehicle::Tick(float DeltaTime)
     UpdateSpeedometer();
     UpdateFluxCapacitor(DeltaTime);
     UpdateHoverMode(DeltaTime);
+    if (!bReverseKeyPressed && !bHoverModeActive)
+    {
+        ApplySmoothedVehicleInput(DeltaTime);
+    }
+    UpdateSpeedResponsiveCamera(DeltaTime);
+    UpdateSafeTransformIfStable();
 
     if (bReverseKeyPressed && !bHoverModeActive)
     {
@@ -512,6 +530,12 @@ void ADeLoreanVehicle::Tick(float DeltaTime)
     if (bShowDebugInfo && TimeTravelSubsystem)
     {
         TimeTravelSubsystem->DebugDrawFluxStatus(this);
+    }
+
+    if (TimeTravelPresentationComponent && TimeTravelSubsystem)
+    {
+        TimeTravelPresentationComponent->UpdateVehicleDrivingContext(
+            CurrentSpeedMph, TimeTravelSubsystem->GetFluxChargePercent(), TimeTravelSubsystem->CurrentParadoxLevel);
     }
 }
 
@@ -602,12 +626,61 @@ void ADeLoreanVehicle::ApplyVehicleInput(
     float Brake,
     bool bHandbrake)
 {
+    TargetThrottleInput = FMath::Clamp(Throttle, -1.0f, 1.0f);
+    TargetSteeringInput = FMath::Clamp(Steering, -1.0f, 1.0f);
+    TargetBrakeInput = FMath::Clamp(Brake, 0.0f, 1.0f);
     if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
     {
-        Movement->SetThrottleInput(FMath::Clamp(Throttle, -1.0f, 1.0f));
-        Movement->SetSteeringInput(FMath::Clamp(Steering, -1.0f, 1.0f));
-        Movement->SetBrakeInput(FMath::Clamp(Brake, 0.0f, 1.0f));
         Movement->SetHandbrakeInput(bHandbrake);
+    }
+}
+
+void ADeLoreanVehicle::ApplySmoothedVehicleInput(float DeltaTime)
+{
+    const float Alpha = FMath::Clamp(InputSmoothingRate * DeltaTime, 0.0f, 1.0f);
+    SmoothedThrottleInput = FMath::Lerp(SmoothedThrottleInput, TargetThrottleInput, Alpha);
+    SmoothedSteeringInput = FMath::Lerp(SmoothedSteeringInput, TargetSteeringInput, Alpha);
+    SmoothedBrakeInput = FMath::Lerp(SmoothedBrakeInput, TargetBrakeInput, Alpha);
+
+    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+    {
+        Movement->SetThrottleInput(SmoothedThrottleInput);
+        Movement->SetSteeringInput(SmoothedSteeringInput);
+        Movement->SetBrakeInput(SmoothedBrakeInput);
+    }
+}
+
+void ADeLoreanVehicle::UpdateSpeedResponsiveCamera(float DeltaTime)
+{
+    if (!ChaseCamera || ActiveCameraIndex != 0)
+    {
+        return;
+    }
+
+    const UDeLoreanTuningData* Tuning = TuningDataAsset ? TuningDataAsset : GetDefault<UDeLoreanTuningData>();
+    const float SpeedAlpha = FMath::Clamp(
+        (CurrentSpeedMph - 20.0f) / FMath::Max(Tuning->ChaseHighSpeedMph - 20.0f, 1.0f), 0.0f, 1.0f);
+    const float TargetFov = FMath::Lerp(Tuning->ChaseBaseFov, Tuning->ChaseHighSpeedFov, SpeedAlpha);
+    ChaseCamera->FieldOfView = FMath::FInterpTo(ChaseCamera->FieldOfView, TargetFov, DeltaTime, 4.0f);
+
+    if (CameraSpringArm)
+    {
+        const float TargetLag = FMath::Lerp(8.0f, 5.0f, SpeedAlpha);
+        CameraSpringArm->CameraLagSpeed = FMath::FInterpTo(CameraSpringArm->CameraLagSpeed, TargetLag, DeltaTime, 3.0f);
+        if (TimeTravelPresentationComponent && TimeTravelPresentationComponent->IsCueActive())
+        {
+            const float Shake = FMath::Sin(GetWorld()->GetTimeSeconds() * 24.0f)
+                * TimeTravelPresentationComponent->GetCueIntensity() * 0.35f;
+            CameraSpringArm->SetRelativeRotation(FRotator(-7.0f + Shake, 0.0f, Shake * 0.25f));
+        }
+    }
+}
+
+void ADeLoreanVehicle::UpdateSafeTransformIfStable()
+{
+    if (CurrentSpeedMph < 3.0f && !bIsTimeTraveling && !bHoverModeActive)
+    {
+        LastSafeTransform = GetActorTransform();
     }
 }
 
@@ -632,14 +705,11 @@ void ADeLoreanVehicle::ApplyDigitalDriveInput(bool bForward, bool bReverse, bool
         }
         if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
         {
-            Movement->SetThrottleInput(bForward ? 1.0f : 0.0f);
+            TargetThrottleInput = bForward ? 1.0f : 0.0f;
         }
     }
 
-    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
-    {
-        Movement->SetSteeringInput((bRight ? 1.0f : 0.0f) - (bLeft ? 1.0f : 0.0f));
-    }
+    TargetSteeringInput = (bRight ? 1.0f : 0.0f) - (bLeft ? 1.0f : 0.0f);
 }
 
 void ADeLoreanVehicle::ApplyReverseInput(bool bPressed)
@@ -733,6 +803,7 @@ void ADeLoreanVehicle::CycleDestinationEra(int32 Direction)
     const int32 Step = Direction < 0 ? -1 : 1;
     CurrentIndex = (CurrentIndex + Step + UE_ARRAY_COUNT(SupportedEras)) % UE_ARRAY_COUNT(SupportedEras);
     InputTargetEra = SupportedEras[CurrentIndex];
+    InputTargetDate = UTemporalDriveSubsystem::GetDefaultDateForEra(InputTargetEra);
 }
 
 void ADeLoreanVehicle::InitializeTimeTravelSubsystem()
@@ -794,18 +865,19 @@ void ADeLoreanVehicle::TryTimeTravel(ETimelineState TargetEra)
 void ADeLoreanVehicle::StartTimeTravelEffects()
 {
     bIsTimeTraveling = true;
-    if (TimeTravelNiagaraComponent)
+    if (TimeTravelPresentationComponent)
     {
-        TimeTravelNiagaraComponent->Activate(true);
+        TimeTravelPresentationComponent->HandlePhaseChanged(
+            TimeTravelSubsystem ? TimeTravelSubsystem->GetTimeTravelPhase() : ETimeTravelPhase::Departing);
     }
 }
 
 void ADeLoreanVehicle::EndTimeTravelEffects()
 {
     bIsTimeTraveling = false;
-    if (TimeTravelNiagaraComponent)
+    if (TimeTravelPresentationComponent)
     {
-        TimeTravelNiagaraComponent->Deactivate();
+        TimeTravelPresentationComponent->HandlePhaseChanged(ETimeTravelPhase::Idle);
     }
 }
 

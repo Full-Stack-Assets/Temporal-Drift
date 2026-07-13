@@ -1,23 +1,42 @@
-# Hill Valley Square Builder
+# Hill Valley World Builders
 
-This folder contains the deterministic neutral-base builder and read-only validator for `/Game/Levels/LVL_TimeTravelTest`.
+Deterministic procedural builders for `/Game/Levels/LVL_TimeTravelTest`.
 
-Generated actors always carry the `HV_Generated` tag. Rebuilds delete only loaded actors with that tag and never delete the DeLorean, Player Start, lighting, sky, post-process actors, or Data Layer assets.
+Generated actors carry `HV_Generated` (neutral) or `HV_1955_Generated` (1955 dressing). Rebuilds delete only tagged generated actors.
+
+## Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `build_1885_dressing.py` | Wild West saloon, rail survey, land dispute anchors |
+| `build_1985_alternate_dressing.py` | Casino dystopia on `DL_1985_Alternate` |
+| `build_2015_dressing.py` | Skyway + Cafe 80's on `DL_2015` |
+| `build_2045_dressing.py` | Tannen tier spire + heritage ruins on `DL_2045` |
+| `build_timeline_variants.py` | Fact-gated present-timeline signage swaps |
+| `validate_era_dressing.py` | All-era dressing validation |
+| `hill_valley_coords.py` | Shared `TOWN_OFFSET_Y` and world/local conversion |
+| `hill_valley_common.py` | Shared spawn helpers and materials |
+| `build_hill_valley_square.py` | Courthouse square + regional core + metro expansion |
+| `build_hill_valley_metro.py` | Metro districts (also invoked by square builder) |
+| `build_1955_dressing.py` | 1955 era overlay on `DL_1955` |
+| `place_mission_volumes.py` | Campaign mission volumes (offset-aware) |
+| `place_traffic_routes.py` | Traffic route spline anchors |
+| `validate_hill_valley_square.py` | Tag/asset validation |
+| `validate_1955_dressing.py` | 1955 dressing validation |
+
+See `Docs/Design/HillValleyMetro.md` for district and NPC details.
 
 ## Build
 
 ```powershell
-& 'C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe' 'C:\Users\Shadow\Downloads\BTTF_TemporalDrift_v3\BTTF_TemporalDrift.uproject' -unattended -nop4 -nosplash -NullRHI -run=pythonscript '-script=C:\Users\Shadow\Downloads\BTTF_TemporalDrift_v3\Scripts\hill_valley\build_hill_valley_square.py' -log
+.\Scripts\Build\setup_vertical_slice.ps1
 ```
+
+Or run `build_hill_valley_square.py` via UnrealEditor-Cmd. Success token: `courthouse square generation complete`.
 
 ## Validate
 
-```powershell
-& 'C:\Program Files\Epic Games\UE_5.8\Engine\Binaries\Win64\UnrealEditor-Cmd.exe' 'C:\Users\Shadow\Downloads\BTTF_TemporalDrift_v3\BTTF_TemporalDrift.uproject' -unattended -nop4 -nosplash -NullRHI -run=pythonscript '-script=C:\Users\Shadow\Downloads\BTTF_TemporalDrift_v3\Scripts\hill_valley\validate_hill_valley_square.py' -log
-```
+Success tokens: `HILL_VALLEY_VALIDATION_SUCCESS`, `HILL_VALLEY_1955_VALIDATION_SUCCESS`, `ERA_DRESSING_VALIDATION_SUCCESS`.
 
-The final validator must emit `HILL_VALLEY_VALIDATION_SUCCESS` without Python errors.
+See `Docs/Design/TimelineRipples.md` for cross-era fact propagation.
 
-## Backup
-
-The pre-build map backup is `Saved/Backups/LVL_TimeTravelTest_pre_hill_valley.umap`.
