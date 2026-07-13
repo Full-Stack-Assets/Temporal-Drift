@@ -5,6 +5,8 @@
 #include "GameFramework/HUD.h"
 #include "BTTF_HUD.generated.h"
 
+class UTimeCircuitsViewModel;
+
 UCLASS()
 class BTTF_TEMPORALDRIFT_API ABTTF_HUD : public AHUD
 {
@@ -15,4 +17,7 @@ public:
 
 private:
     void DrawBar(float X, float Y, float Width, float Height, float Percent, const FLinearColor& FillColor);
+
+    UPROPERTY(Transient)
+    TObjectPtr<UTimeCircuitsViewModel> TimeCircuitsViewModel;
 };

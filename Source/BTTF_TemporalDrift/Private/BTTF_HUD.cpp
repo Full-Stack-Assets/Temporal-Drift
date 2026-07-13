@@ -3,6 +3,7 @@
 #include "TemporalDriftSettings.h"
 #include "DeLoreanVehicle.h"
 #include "TimeTravelSubsystem.h"
+#include "TimeCircuitsViewModel.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "UObject/ConstructorHelpers.h"
@@ -20,16 +21,30 @@ void ABTTF_HUD::DrawHUD()
     UTimeTravelSubsystem* Subsystem = GetWorld()->GetSubsystem<UTimeTravelSubsystem>();
     UFont* Font = GEngine->GetLargeFont();
 
+    if (!TimeCircuitsViewModel)
+    {
+        TimeCircuitsViewModel = NewObject<UTimeCircuitsViewModel>(this);
+    }
+
+    const float Speed = Vehicle->GetCurrentSpeedMph();
+    if (Subsystem)
+    {
+        TimeCircuitsViewModel->UpdateDisplay(Speed, Subsystem->GetFluxChargePercent(),
+            Subsystem->GetCurrentEra(), Vehicle->InputTargetEra, Subsystem->GetTimeTravelPhase(),
+            Subsystem->CurrentParadoxLevel, Subsystem->WormholeStability,
+            Subsystem->GetLastJumpFailureReason());
+    }
+    const FTimeCircuitsDisplayState Display = TimeCircuitsViewModel->GetDisplayState();
+
     const float Margin = 40.0f;
     const float BarWidth = 300.0f;
     const float BarHeight = 18.0f;
-    float Y = Canvas->SizeY - 170.0f;
+    float Y = Canvas->SizeY - 230.0f;
 
     // Speed - highlight when the configured jump threshold is reached.
-    const float Speed = Vehicle->GetCurrentSpeedMph();
     const float JumpThreshold = GetDefault<UTemporalDriftSettings>()->JumpSpeedThresholdMph;
     const FLinearColor SpeedColor = Speed >= JumpThreshold ? FLinearColor::Yellow : FLinearColor::White;
-    FCanvasTextItem SpeedText(FVector2D(Margin, Y), FText::FromString(FString::Printf(TEXT("%.0f MPH"), Speed)), Font, SpeedColor);
+    FCanvasTextItem SpeedText(FVector2D(Margin, Y), Display.SpeedText, Font, SpeedColor);
     SpeedText.Scale = FVector2D(2.5f, 2.5f);
     Canvas->DrawItem(SpeedText);
     Y += 55.0f;
@@ -39,7 +54,7 @@ void ABTTF_HUD::DrawHUD()
     {
         const float Charge = Subsystem->GetFluxChargePercent();
         const FLinearColor FluxColor = Subsystem->HasEnoughEnergyForJump() ? FLinearColor::Green : FLinearColor(1.0f, 0.5f, 0.0f);
-        DrawText(FString::Printf(TEXT("FLUX %.0f%%"), Charge * 100.0f), FluxColor, Margin, Y, Font);
+        DrawText(FString::Printf(TEXT("FLUX %s"), *Display.FluxText.ToString()), FluxColor, Margin, Y, Font);
         DrawBar(Margin + 110.0f, Y + 2.0f, BarWidth, BarHeight, Charge, FluxColor);
         Y += 30.0f;
     }
@@ -52,9 +67,16 @@ void ABTTF_HUD::DrawHUD()
     // Current era + destination
     if (Subsystem)
     {
-        DrawText(FString::Printf(TEXT("ERA: %s"), *Subsystem->GetCurrentEraName()), FLinearColor::White, Margin, Y, Font);
+        DrawText(FString::Printf(TEXT("ERA: %s"), *Display.CurrentEraText.ToString()), FLinearColor::White, Margin, Y, Font);
         Y += 25.0f;
-        DrawText(FString::Printf(TEXT("DESTINATION: %s"), *UEnum::GetDisplayValueAsText(Vehicle->InputTargetEra).ToString()), FLinearColor(0.6f, 0.8f, 1.0f), Margin, Y, Font);
+        DrawText(FString::Printf(TEXT("DESTINATION: %s"), *Display.DestinationEraText.ToString()), FLinearColor(0.6f, 0.8f, 1.0f), Margin, Y, Font);
+        Y += 25.0f;
+        DrawText(Display.PhaseText.ToString(), Display.bJumpReady ? FLinearColor::Green : FLinearColor::White, Margin, Y, Font);
+        if (!Display.WarningText.IsEmpty())
+        {
+            Y += 25.0f;
+            DrawText(Display.WarningText.ToString(), FLinearColor(1.0f, 0.35f, 0.1f), Margin, Y, Font);
+        }
     }
 }
 
