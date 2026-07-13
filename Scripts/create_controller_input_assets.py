@@ -7,13 +7,12 @@ BP_PATH = "/Game/Blueprints"
 asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
 
 
-def load_or_create_action(name, value_type):
+def load_or_create_context(name):
     path = f"{ASSET_PATH}/{name}.{name}"
-    action = unreal.load_object(None, path)
-    if action is None:
-        action = asset_tools.create_asset(name, ASSET_PATH, unreal.InputAction, unreal.DataAssetFactory())
-    action.set_editor_property("value_type", value_type)
-    return action
+    context = unreal.load_object(None, path)
+    if context is None:
+        context = asset_tools.create_asset(name, ASSET_PATH, unreal.InputMappingContext, unreal.DataAssetFactory())
+    return context
 
 
 imc_path = f"{ASSET_PATH}/IMC_PlayerController.IMC_PlayerController"
@@ -24,6 +23,9 @@ if imc is None:
 
 # Controller context is intentionally empty — time circuits, jump, and hover bind on the DeLorean pawn.
 imc.set_editor_property("mappings", [])
+
+movement_context = load_or_create_context("IMC_Movement")
+camera_context = load_or_create_context("IMC_CameraOrbit")
 
 bp_path = f"{BP_PATH}/BP_BTTF_PlayerController.BP_BTTF_PlayerController_C"
 bp_gc = unreal.load_object(None, bp_path)
@@ -37,6 +39,8 @@ if bp_gc is None:
 
 cdo = unreal.get_default_object(bp_gc)
 cdo.set_editor_property("DefaultMappingContext", imc)
+cdo.set_editor_property("MovementMappingContext", movement_context)
+cdo.set_editor_property("CameraMappingContext", camera_context)
 cdo.set_editor_property("TimeCircuitsToggleAction", None)
 cdo.set_editor_property("TimeJumpAction", None)
 cdo.set_editor_property("HoverModeAction", None)

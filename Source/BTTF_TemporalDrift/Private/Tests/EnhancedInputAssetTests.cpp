@@ -55,6 +55,14 @@ bool FBTTFEnhancedInputAssetsTest::RunTest(const FString& Parameters)
         TEXT("Hero input mapping context loads"),
         LoadObject<UInputMappingContext>(
             nullptr, TEXT("/Game/Input/IMC_Hero.IMC_Hero")));
+    TestNotNull(
+        TEXT("Movement input mapping context loads"),
+        LoadObject<UInputMappingContext>(
+            nullptr, TEXT("/Game/Input/IMC_Movement.IMC_Movement")));
+    TestNotNull(
+        TEXT("Camera orbit input mapping context loads"),
+        LoadObject<UInputMappingContext>(
+            nullptr, TEXT("/Game/Input/IMC_CameraOrbit.IMC_CameraOrbit")));
 
     return !HasAnyErrors();
 }

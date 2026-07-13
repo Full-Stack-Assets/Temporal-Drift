@@ -2,6 +2,7 @@
 
 #include "Misc/AutomationTest.h"
 #include "KeyboardCameraComponent.h"
+#include "KeyboardCameraStateComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Components/SceneComponent.h"
 
@@ -79,6 +80,22 @@ bool FBTTFKeyboardCameraAutoChaseToggleTest::RunTest(const FString& Parameters)
     TestFalse(TEXT("Toggle disables auto-chase"), Camera->IsAutoChaseEnabled());
     Camera->ToggleAutoChase();
     TestTrue(TEXT("Second toggle re-enables auto-chase"), Camera->IsAutoChaseEnabled());
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FBTTFKeyboardCameraStateAliasTest,
+    "BTTF.Camera.Keyboard.StateComponentAlias",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFKeyboardCameraStateAliasTest::RunTest(const FString& Parameters)
+{
+    UKeyboardCameraStateComponent* Camera = NewObject<UKeyboardCameraStateComponent>();
+    const float InitialYaw = Camera->GetOrbitYaw();
+    Camera->ReceiveManualInput(0.0f, 15.0f);
+    TestTrue(TEXT("ReceiveManualInput updates orbit yaw"), !FMath::IsNearlyEqual(Camera->GetOrbitYaw(), InitialYaw));
+    Camera->SetAutoChaseEnabled(false);
+    TestFalse(TEXT("SetAutoChaseEnabled disables chase"), Camera->IsAutoChaseEnabled());
     return !HasAnyErrors();
 }
 

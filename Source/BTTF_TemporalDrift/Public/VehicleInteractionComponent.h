@@ -22,6 +22,12 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle")
     float ExitBehindOffset = 220.0f;
 
+    UPROPERTY(EditDefaultsOnly, Category="Collision Constraints")
+    float TraceRadius = 45.0f;
+
+    UFUNCTION(BlueprintCallable, Category="Interaction")
+    bool AttemptVehicleExit(AActor* DriverActor, FTransform& OutSafeTransform);
+
     UFUNCTION(BlueprintPure, Category="Vehicle")
     bool CanEnterVehicle(const ADeLoreanVehicle* Vehicle) const;
 
@@ -35,6 +41,12 @@ public:
     FString GetLastExitFailureReason() const { return LastExitFailureReason; }
 
 private:
+    bool TryFindSafeExitTransform(
+        ADeLoreanVehicle* Vehicle,
+        ABTTFHeroCharacter* Hero,
+        FVector& OutLocation,
+        FRotator& OutRotation) const;
+
     UPROPERTY(Transient)
     FString LastExitFailureReason;
 };

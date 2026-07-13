@@ -80,6 +80,7 @@ $pythonSteps = @(
     @{ Path = 'Scripts\create_controller_input_assets.py'; Token = 'Controller input assets' },
     @{ Path = 'Scripts\hill_valley\create_photoreal_material_library.py'; Token = 'PHOTOREAL_MATERIAL_LIBRARY_SUCCESS' },
     @{ Path = 'Scripts\hill_valley\validate_photoreal_materials.py'; Token = 'PHOTOREAL_MATERIAL_VALIDATION_SUCCESS' },
+    @{ Path = 'Scripts\hill_valley\apply_photoreal_materials.py'; Token = 'PHOTOREAL_MATERIALS_APPLY_SUCCESS' },
     @{ Path = 'Scripts\create_dialogue_assets.py'; Token = 'DIALOGUE_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_era_music_assets.py'; Token = 'ERA_MUSIC_ASSETS_SUCCESS' },
     @{ Path = 'Scripts\create_world_consequence_signage.py'; Token = 'WORLD_CONSEQUENCE_SIGNAGE_SUCCESS' },

@@ -9,11 +9,11 @@ Execution order follows `Docs/superpowers/plans/2026-07-13-temporal-drift-compre
 | Task | Status | Notes |
 |------|--------|-------|
 | 1 Baseline verification | **In progress** | UE 5.8 compile fixes, Hill Valley generators, automation catalog documented. Live editor automation counts require PC run. |
-| 2 Keyboard input contract | **Code complete** | Arrow movement, WASD camera-only orbit, mouse look removed, possession mapping swap, Enhanced Input + fallback handlers. Live PIE gate pending. |
-| 3 G enter/exit | **Code complete** | Controller-owned `G`, left/right/behind exit, blocked-exit feedback, handoff automation. |
-| 4 Shared keyboard camera | **Code complete** | `UKeyboardCameraComponent`: clamps, 1.5s auto-chase, `C`/`V`, hero + DeLorean presets, hover roll isolation. |
+| 2 Keyboard input contract | **Code complete** | Possession-safe `OnPossess`/`OnUnPossess` mapping layers (`IMC_Movement`/`IMC_CameraOrbit`), arrow movement, WASD camera-only orbit, mouse look removed. `BTTF.Vehicle.InputContractVerification`. Live PIE gate pending. |
+| 3 G enter/exit | **Code complete** | Controller-owned `G`, left/right/behind exit with sweep + ground snap, `AttemptVehicleExit`, blocked-exit feedback. |
+| 4 Shared keyboard camera | **Code complete** | `UKeyboardCameraComponent` + `UKeyboardCameraStateComponent` alias: clamps, 1.5s auto-chase, `C`/`V`, hero + DeLorean presets, hover roll isolation. |
 | 5 Hero DeLorean gameplay | **Code complete** | Tuning data drives reverse/hover/input; `BTTF.Vehicle.Gameplay.ReverseHoverAndResetContracts` + `Docs/QA/HeroVehicleAcceptance.md`. Live PIE pending. |
-| 6 Photoreal materials/lighting | **Code complete** | `photoreal_material_library.py`, builder migration, validator; `apply_photoreal_lighting.py`. Screenshots pending. |
+| 6 Photoreal materials/lighting | **Code complete** | `photoreal_material_library.py`, builder migration, validator; `apply_photoreal_materials.py` upgrades legacy flat materials on placed actors. Screenshots pending. |
 | 7 Hill Valley region gaps | **Partial** | Metro basin, six era dressings, mission volumes (incl. M01 return, M04/M05 producers). Streaming perf evidence open. |
 | 8 1985→1955 loop | **Partial** | Five-jump automation, M02 bridge, presentation scaffold. Live player jumps + full M02 playthrough pending. |
 | 9 Save/packaging acceptance | **Partial** | Schema v3, era restore on load, dynamic fact restore, jump-failure recovery. Packaged smoke + force-close recovery pending. |
@@ -60,7 +60,7 @@ Tasks 11–12 remain design scaffolds. Detailed tasks 13–33 (hero animation, t
 | Branch | Focus |
 |--------|-------|
 | `cursor/keyboard-camera-photorealism-492a` | Keyboard camera, photoreal scripts, input contract (PR #10) |
-| `cursor/code-review-fixes-492a` | Showstopper fixes from 2026-07-13 code review |
+| `cursor/code-review-fixes-492a` | Showstopper fixes + Gate A Tasks 5–6 + Release Gate A architecture integration (PR #13) |
 
 ## On your PC
 
