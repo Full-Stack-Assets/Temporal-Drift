@@ -1,4 +1,4 @@
-"""Place mission trigger volumes and interactables for the M02 vertical slice."""
+"""Place mission trigger volumes and interactables for campaign scaffolding."""
 import unreal
 
 LEVEL = "/Game/Levels/LVL_TimeTravelTest"
@@ -11,18 +11,29 @@ TRIGGER_BOX_CLASS = "/Script/Engine.TriggerBox"
 TARGET_POINT_CLASS = "/Script/Engine.TargetPoint"
 
 MISSION_VOLUMES = [
+    ("MV_M01_ValeGarage", (-2400, 800, 120), (1400, 1400, 300), "TalkedToVale"),
+    ("MV_M01_CourseFinish", (0, 5200, 120), (1600, 1600, 300), "TestCourseComplete"),
     ("MV_M02_CourthouseBriefing", (0, 3000, 200), (1800, 1800, 400), "TalkedToValeAndJune"),
     ("MV_M02_ClocktowerReach", (0, 4100, 200), (2200, 2200, 500), "ClocktowerReached"),
+    ("MV_M03_DinerSign", (1800, 2600, 120), (1200, 1200, 300), "DiscrepanciesInspected"),
+    ("MV_M03_SchoolDedication", (-2200, 3400, 120), (1200, 1200, 300), "WitnessesInterviewed"),
 ]
 
 MISSION_INTERACTABLES = [
+    ("MI_M01_PartsBench", (-2500, 600, 100), "CalibrationPartsCollected", "Collect calibration parts"),
+    ("MI_M01_VehicleInstall", (-2300, 900, 100), "VehicleReady", "Install calibration parts"),
     ("MI_M02_SensorVehicle", (-800, 1200, 120), "SensorInstalledVehicle", "Install clocktower sensor"),
     ("MI_M02_ClocktowerCalibrate", (0, 4100, 220), "ClocktowerCalibrated", "Calibrate clocktower sensor"),
+    ("MI_M03_FounderPortrait", (400, 3600, 180), "AlterationIdentified", "Identify the altered event"),
 ]
 
 DIALOGUE_INTERACTABLES = [
+    ("DI_M01_ValeGarage", (-2400, 800, 100),
+     "/Game/Dialogue/DA_Dialogue_M01_GarageTutorial.DA_Dialogue_M01_GarageTutorial"),
     ("DI_M02_CourthouseBriefing", (0, 3000, 120),
      "/Game/Dialogue/DA_Dialogue_M02_CourthouseBriefing.DA_Dialogue_M02_CourthouseBriefing"),
+    ("DI_M03_ArchiveBriefing", (200, 3200, 120),
+     "/Game/Dialogue/DA_Dialogue_M03_ArchiveBriefing.DA_Dialogue_M03_ArchiveBriefing"),
 ]
 
 

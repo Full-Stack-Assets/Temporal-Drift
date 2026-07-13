@@ -12,6 +12,8 @@
 #include "TemporalDriveSubsystem.h"
 #include "EraWeatherSubsystem.h"
 #include "CraftingSubsystem.h"
+#include "TimelineFactSubsystem.h"
+#include "TimelineFactDataAsset.h"
 #include "BTTFHeroCharacter.h"
 #include "DeLoreanVehicle.h"
 #include "TimeTravelPresentationComponent.h"
@@ -212,6 +214,7 @@ bool UBTTF_GameInstance::SaveGameToSlot(const FString& SlotName)
         if(UTemporalDriveSubsystem* Drive=GetSubsystem<UTemporalDriveSubsystem>())CurrentSaveGame->TemporalDrive=Drive->GetSnapshot();
         if(UEraWeatherSubsystem* Weather=GetSubsystem<UEraWeatherSubsystem>())CurrentSaveGame->WorldClock=Weather->GetWorldClock();
         if(UCraftingSubsystem* Crafting=GetSubsystem<UCraftingSubsystem>())CurrentSaveGame->Crafting=Crafting->GetSnapshot();
+        if(UTimelineFactSubsystem* Facts=GetSubsystem<UTimelineFactSubsystem>())CurrentSaveGame->TimelineFactOverrides=Facts->GetOverrideSnapshot();
 
         const FString TempSlot=SlotName+TEXT("__tmp");
         UGameplayStatics::DeleteGameInSlot(TempSlot,0);
@@ -244,14 +247,23 @@ bool UBTTF_GameInstance::LoadGameFromSlot(const FString& SlotName)
             {
                 if(!CurrentSaveGame->MissionProgress.MissionId.IsNone())
                 {
-                    const FString AssetName=TEXT("DA_Mission_")+CurrentSaveGame->MissionProgress.MissionId.ToString().Replace(TEXT("."),TEXT("_"));
-                    const FString Path=FString::Printf(TEXT("/Game/Data/Missions/Campaign/%s.%s"),*AssetName,*AssetName);
+                    const FString Path = BuildMissionAssetPathFromStableId(CurrentSaveGame->MissionProgress.MissionId);
                     if(UMissionDataAsset* Data=LoadObject<UMissionDataAsset>(nullptr,*Path))Mission->RestoreProgress(Data,CurrentSaveGame->MissionProgress);
                 }
             }
             if(UHeroProgressionSubsystem* Hero=GetSubsystem<UHeroProgressionSubsystem>())Hero->RestoreSnapshot(CurrentSaveGame->HeroProgression);
             if(UTemporalDriveSubsystem* Drive=GetSubsystem<UTemporalDriveSubsystem>())Drive->RestoreSnapshot(CurrentSaveGame->TemporalDrive);
             if(UEraWeatherSubsystem* Weather=GetSubsystem<UEraWeatherSubsystem>())Weather->SetWorldClock(CurrentSaveGame->WorldClock);
+            if(UCraftingSubsystem* Crafting=GetSubsystem<UCraftingSubsystem>())Crafting->RestoreSnapshot(CurrentSaveGame->Crafting);
+            if(UTimelineFactSubsystem* Facts=GetSubsystem<UTimelineFactSubsystem>())
+            {
+                if(const UTimelineFactDataAsset* Data=LoadObject<UTimelineFactDataAsset>(nullptr,
+                    TEXT("/Game/Data/Timeline/DA_TimelineFacts.DA_TimelineFacts")))
+                {
+                    Facts->LoadDefinitions(const_cast<UTimelineFactDataAsset*>(Data));
+                }
+                Facts->RestoreOverrideSnapshot(CurrentSaveGame->TimelineFactOverrides);
+            }
 
             LoadTimelineState();
             RestorePlayerState();
@@ -368,4 +380,69 @@ void UBTTF_GameInstance::ApplyProfileAccessibility(UWorld* World)
     {
         Music->SetMusicVolume(ProfileSave->MusicVolume);
     }
+}
+
+FString UBTTF_GameInstance::BuildMissionAssetPathFromStableId(const FName& MissionStableId)
+{
+    const FString AssetName = TEXT("DA_Mission_") + MissionStableId.ToString().Replace(TEXT("."), TEXT("_"));
+    return FString::Printf(TEXT("/Game/Data/Missions/Campaign/%s.%s"), *AssetName, *AssetName);
+}
+
+void UBTTF_GameInstance::SetUIScale(float Scale)
+{
+    if (!EnsureProfileLoaded())
+    {
+        return;
+    }
+    ProfileSave->UIScale = FMath::Clamp(Scale, 0.75f, 2.0f);
+    SaveProfileSettings();
+    ApplyProfileAccessibility(GetWorld());
+}
+
+void UBTTF_GameInstance::SetSubtitleScale(float Scale)
+{
+    if (!EnsureProfileLoaded())
+    {
+        return;
+    }
+    ProfileSave->SubtitleScale = FMath::Clamp(Scale, 0.75f, 2.0f);
+    SaveProfileSettings();
+    ApplyProfileAccessibility(GetWorld());
+}
+
+void UBTTF_GameInstance::SetMusicVolume(float Volume)
+{
+    if (!EnsureProfileLoaded())
+    {
+        return;
+    }
+    ProfileSave->MusicVolume = FMath::Clamp(Volume, 0.0f, 1.0f);
+    SaveProfileSettings();
+    ApplyProfileAccessibility(GetWorld());
+}
+
+void UBTTF_GameInstance::SetDialogueVolume(float Volume)
+{
+    if (!EnsureProfileLoaded())
+    {
+        return;
+    }
+    ProfileSave->DialogueVolume = FMath::Clamp(Volume, 0.0f, 1.0f);
+    SaveProfileSettings();
+    ApplyProfileAccessibility(GetWorld());
+}
+
+void UBTTF_GameInstance::SetEffectsVolume(float Volume)
+{
+    if (!EnsureProfileLoaded())
+    {
+        return;
+    }
+    ProfileSave->EffectsVolume = FMath::Clamp(Volume, 0.0f, 1.0f);
+    SaveProfileSettings();
+}
+
+float UBTTF_GameInstance::GetEffectsVolume() const
+{
+    return ProfileSave ? ProfileSave->EffectsVolume : 1.0f;
 }

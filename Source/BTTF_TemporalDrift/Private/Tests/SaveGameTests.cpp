@@ -3,6 +3,10 @@
 #include "BTTF_SaveGame.h"
 #include "MissionSubsystem.h"
 #include "MissionDataAsset.h"
+#include "BTTF_GameInstance.h"
+#include "CraftingSubsystem.h"
+#include "TimelineFactSubsystem.h"
+#include "TimelineFactDataAsset.h"
 #include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -74,4 +78,55 @@ bool FBTTFMissionCheckpointSnapshotTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Restored objective index"), Restored->GetActiveObjectiveId(), Reach.ObjectiveId);
     return !HasAnyErrors();
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFMissionAssetPathTest,
+    "BTTF.Save.MissionAssetPathResolution",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFMissionAssetPathTest::RunTest(const FString& Parameters)
+{
+    const FString Path = UBTTF_GameInstance::BuildMissionAssetPathFromStableId(
+        FName(TEXT("M02.ClocktowerCalibration")));
+    TestEqual(TEXT("Stable ID maps to underscore asset path"), Path,
+        TEXT("/Game/Data/Missions/Campaign/DA_Mission_M02_ClocktowerCalibration.DA_Mission_M02_ClocktowerCalibration"));
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFSubsystemSnapshotRoundTripTest,
+    "BTTF.Save.SubsystemSnapshotRoundTrip",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFSubsystemSnapshotRoundTripTest::RunTest(const FString& Parameters)
+{
+    UGameInstance* GameInstance = NewObject<UGameInstance>();
+    GameInstance->Init();
+
+    UCraftingSubsystem* Crafting = GameInstance->GetSubsystem<UCraftingSubsystem>();
+    TestTrue(TEXT("Crafting adds item"), Crafting->AddItem(TEXT("CoolantCell"), 2));
+    Crafting->UnlockRecipe(TEXT("SensorPackage"));
+    const FCraftingSnapshot CraftingBefore = Crafting->GetSnapshot();
+
+    UGameInstance* GameInstance2 = NewObject<UGameInstance>();
+    GameInstance2->Init();
+    UCraftingSubsystem* Crafting2 = GameInstance2->GetSubsystem<UCraftingSubsystem>();
+    TestTrue(TEXT("Crafting restores"), Crafting2->RestoreSnapshot(CraftingBefore));
+    TestEqual(TEXT("Crafting quantity restored"), Crafting2->GetItemQuantity(TEXT("CoolantCell")), 2);
+
+    UTimelineFactSubsystem* Facts = GameInstance->GetSubsystem<UTimelineFactSubsystem>();
+    UTimelineFactDataAsset* FactData = NewObject<UTimelineFactDataAsset>();
+    FTimelineFactDefinition Plaque;
+    Plaque.FactId = TEXT("C_PlaqueChanged");
+    FactData->Facts = {Plaque};
+    Facts->LoadDefinitions(FactData);
+    Facts->SetBaseFact(TEXT("C_PlaqueChanged"), true);
+    const TMap<FName, bool> FactSnapshot = Facts->GetOverrideSnapshot();
+
+    UTimelineFactSubsystem* Facts2 = GameInstance2->GetSubsystem<UTimelineFactSubsystem>();
+    Facts2->LoadDefinitions(FactData);
+    TestTrue(TEXT("Timeline facts restore"), Facts2->RestoreOverrideSnapshot(FactSnapshot));
+    bool bFound = false;
+    TestTrue(TEXT("Plaque fact true after restore"), Facts2->GetFact(TEXT("C_PlaqueChanged"), bFound) && bFound);
+    return !HasAnyErrors();
+}
+
 #endif

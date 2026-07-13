@@ -4,6 +4,8 @@
 #include "MissionCoordinatorSubsystem.h"
 #include "MissionSubsystem.h"
 #include "MissionDataAsset.h"
+#include "TimelineFactSubsystem.h"
+#include "TimelineFactDataAsset.h"
 #include "Engine/GameInstance.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFMissionCoordinatorJumpBridgeTest,
@@ -96,6 +98,171 @@ bool FBTTFMissionM02VerticalSliceTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("M02 completes after return"), Mission->GetProgressSnapshot().bMissionCompleted);
     TestEqual(TEXT("Final checkpoint stored"), Mission->GetProgressSnapshot().LastCheckpointId,
         FName(TEXT("M02_Returned1985")));
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFMissionM01FlowTest,
+    "BTTF.Mission.M01FirstTestRunContract",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFMissionM01FlowTest::RunTest(const FString& Parameters)
+{
+    UGameInstance* GameInstance = NewObject<UGameInstance>();
+    GameInstance->Init();
+    UMissionCoordinatorSubsystem* Coordinator = NewObject<UMissionCoordinatorSubsystem>();
+    UMissionSubsystem* Mission = GameInstance->GetSubsystem<UMissionSubsystem>();
+    Coordinator->InjectMissionSubsystemForTests(Mission);
+
+    UMissionDataAsset* MissionData = NewObject<UMissionDataAsset>();
+    MissionData->MissionId = TEXT("M01.FirstTestRun");
+    auto Obj = [](const TCHAR* Id, const TCHAR* Event)
+    {
+        FMissionObjectiveDefinition O;
+        O.ObjectiveId = Id;
+        O.CompletionEvent = Event;
+        return O;
+    };
+    MissionData->Objectives = {
+        Obj(TEXT("MeetVale"), TEXT("TalkedToVale")),
+        Obj(TEXT("CollectParts"), TEXT("CalibrationPartsCollected")),
+        Obj(TEXT("InstallParts"), TEXT("VehicleReady")),
+        Obj(TEXT("CompleteCourse"), TEXT("TestCourseComplete")),
+        Obj(TEXT("ReturnToVale"), TEXT("M01Returned")),
+    };
+
+    TestTrue(TEXT("M01 starts"), Mission->StartMission(MissionData));
+    TestTrue(TEXT("Vale met"), Coordinator->SubmitMissionEvent(TEXT("TalkedToVale")));
+    TestTrue(TEXT("Parts collected"), Coordinator->SubmitMissionEvent(TEXT("CalibrationPartsCollected")));
+    TestTrue(TEXT("Vehicle ready"), Coordinator->SubmitMissionEvent(TEXT("VehicleReady")));
+    TestTrue(TEXT("Course complete"), Coordinator->SubmitMissionEvent(TEXT("TestCourseComplete")));
+    TestTrue(TEXT("M01 completes"), Coordinator->SubmitMissionEvent(TEXT("M01Returned")));
+    TestTrue(TEXT("M01 completion flag"), Mission->GetProgressSnapshot().bMissionCompleted);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFMissionM03FlowTest,
+    "BTTF.Mission.M03TownOutOfTimeContract",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFMissionM03FlowTest::RunTest(const FString& Parameters)
+{
+    UGameInstance* GameInstance = NewObject<UGameInstance>();
+    GameInstance->Init();
+    UMissionCoordinatorSubsystem* Coordinator = NewObject<UMissionCoordinatorSubsystem>();
+    UMissionSubsystem* Mission = GameInstance->GetSubsystem<UMissionSubsystem>();
+    Coordinator->InjectMissionSubsystemForTests(Mission);
+
+    UTimelineFactSubsystem* Facts = GameInstance->GetSubsystem<UTimelineFactSubsystem>();
+    UTimelineFactDataAsset* FactData = NewObject<UTimelineFactDataAsset>();
+    FTimelineFactDefinition Diner;
+    Diner.FactId = TEXT("C_DinerRenamed");
+    FactData->Facts = {Diner};
+    Facts->LoadDefinitions(FactData);
+
+    UMissionDataAsset* MissionData = NewObject<UMissionDataAsset>();
+    MissionData->MissionId = TEXT("M03.TownOutOfTime");
+    auto Obj = [](const TCHAR* Id, const TCHAR* Event, float Paradox = 0.0f)
+    {
+        FMissionObjectiveDefinition O;
+        O.ObjectiveId = Id;
+        O.CompletionEvent = Event;
+        O.ParadoxDelta = Paradox;
+        return O;
+    };
+    MissionData->Objectives = {
+        Obj(TEXT("MeetJune"), TEXT("ArchiveBriefingComplete")),
+        Obj(TEXT("InspectDiscrepancies"), TEXT("DiscrepanciesInspected"), 2.0f),
+        Obj(TEXT("InterviewWitnesses"), TEXT("WitnessesInterviewed")),
+        Obj(TEXT("IdentifyCause"), TEXT("AlterationIdentified")),
+    };
+
+    TestTrue(TEXT("M03 starts"), Mission->StartMission(MissionData));
+    TestTrue(TEXT("Archive briefing"), Coordinator->SubmitMissionEvent(TEXT("ArchiveBriefingComplete")));
+    TestTrue(TEXT("Evidence inspected"), Coordinator->SubmitMissionEvent(TEXT("DiscrepanciesInspected")));
+    TestEqual(TEXT("M03 paradox from evidence"), Mission->GetProgressSnapshot().AccumulatedParadoxDelta, 2.0f);
+    TestTrue(TEXT("Witnesses interviewed"), Coordinator->SubmitMissionEvent(TEXT("WitnessesInterviewed")));
+    TestTrue(TEXT("Cause identified"), Coordinator->SubmitMissionEvent(TEXT("AlterationIdentified")));
+    TestTrue(TEXT("M03 completes"), Mission->GetProgressSnapshot().bMissionCompleted);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFMissionM04FlowTest,
+    "BTTF.Mission.M04MissingComponentContract",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFMissionM04FlowTest::RunTest(const FString& Parameters)
+{
+    UGameInstance* GameInstance = NewObject<UGameInstance>();
+    GameInstance->Init();
+    UMissionCoordinatorSubsystem* Coordinator = NewObject<UMissionCoordinatorSubsystem>();
+    UMissionSubsystem* Mission = GameInstance->GetSubsystem<UMissionSubsystem>();
+    Coordinator->InjectMissionSubsystemForTests(Mission);
+
+    UMissionDataAsset* MissionData = NewObject<UMissionDataAsset>();
+    MissionData->MissionId = TEXT("M04.MissingComponent");
+    auto Obj = [](const TCHAR* Id, const TCHAR* Event)
+    {
+        FMissionObjectiveDefinition O;
+        O.ObjectiveId = Id;
+        O.CompletionEvent = Event;
+        return O;
+    };
+    MissionData->Objectives = {
+        Obj(TEXT("GatherClues"), TEXT("WorkshopLocated")),
+        Obj(TEXT("InfiltrateWorkshop"), TEXT("WorkshopEntered")),
+        Obj(TEXT("RecoverComponents"), TEXT("ComponentsRecovered")),
+        Obj(TEXT("ResolveNotes"), TEXT("ResearchChoiceResolved")),
+        Obj(TEXT("InstallRegulator"), TEXT("RegulatorInstalled")),
+    };
+
+    TestTrue(TEXT("M04 starts"), Mission->StartMission(MissionData));
+    for (const TCHAR* Event : {
+        TEXT("WorkshopLocated"), TEXT("WorkshopEntered"), TEXT("ComponentsRecovered"),
+        TEXT("ResearchChoiceResolved"), TEXT("RegulatorInstalled")})
+    {
+        TestTrue(FString::Printf(TEXT("M04 event %s"), Event), Coordinator->SubmitMissionEvent(Event));
+    }
+    TestTrue(TEXT("M04 completes"), Mission->GetProgressSnapshot().bMissionCompleted);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFMissionM05FlowTest,
+    "BTTF.Mission.M05RaceTheLightningContract",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFMissionM05FlowTest::RunTest(const FString& Parameters)
+{
+    UGameInstance* GameInstance = NewObject<UGameInstance>();
+    GameInstance->Init();
+    UMissionCoordinatorSubsystem* Coordinator = NewObject<UMissionCoordinatorSubsystem>();
+    UMissionSubsystem* Mission = GameInstance->GetSubsystem<UMissionSubsystem>();
+    Coordinator->InjectMissionSubsystemForTests(Mission);
+
+    UMissionDataAsset* MissionData = NewObject<UMissionDataAsset>();
+    MissionData->MissionId = TEXT("M05.RaceTheLightning");
+    auto Obj = [](const TCHAR* Id, const TCHAR* Event)
+    {
+        FMissionObjectiveDefinition O;
+        O.ObjectiveId = Id;
+        O.CompletionEvent = Event;
+        return O;
+    };
+    MissionData->Objectives = {
+        Obj(TEXT("PrepareRoute"), TEXT("FinalePrepared")),
+        Obj(TEXT("StartRun"), TEXT("FinalRunStarted")),
+        Obj(TEXT("HitWire"), TEXT("LightningJumpComplete")),
+        Obj(TEXT("InspectConsequences"), TEXT("ConsequencesInspected")),
+        Obj(TEXT("FinalDialogue"), TEXT("CampaignResolved")),
+    };
+
+    TestTrue(TEXT("M05 starts"), Mission->StartMission(MissionData));
+    for (const TCHAR* Event : {
+        TEXT("FinalePrepared"), TEXT("FinalRunStarted"), TEXT("LightningJumpComplete"),
+        TEXT("ConsequencesInspected"), TEXT("CampaignResolved")})
+    {
+        TestTrue(FString::Printf(TEXT("M05 event %s"), Event), Coordinator->SubmitMissionEvent(Event));
+    }
+    TestTrue(TEXT("M05 completes"), Mission->GetProgressSnapshot().bMissionCompleted);
     return !HasAnyErrors();
 }
 

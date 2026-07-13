@@ -4,7 +4,40 @@
 #include "MissionSubsystem.h"
 #include "DialogueSubsystem.h"
 #include "TimeTravelSubsystem.h"
+#include "TimelineFactSubsystem.h"
 #include "MissionDataAsset.h"
+
+namespace
+{
+    void ApplyTimelineFactsForObjective(FName MissionId, FName ObjectiveId, UGameInstance* GameInstance)
+    {
+        if (!GameInstance)
+        {
+            return;
+        }
+
+        UTimelineFactSubsystem* Facts = GameInstance->GetSubsystem<UTimelineFactSubsystem>();
+        if (!Facts)
+        {
+            return;
+        }
+
+        if (MissionId == FName(TEXT("M02.ClocktowerCalibration")) && ObjectiveId == FName(TEXT("Return1985")))
+        {
+            Facts->SetBaseFact(FName(TEXT("C_PlaqueChanged")), true);
+        }
+        else if (MissionId == FName(TEXT("M03.TownOutOfTime")) && ObjectiveId == FName(TEXT("IdentifyCause")))
+        {
+            Facts->SetBaseFact(FName(TEXT("C_DinerRenamed")), true);
+            Facts->SetBaseFact(FName(TEXT("C_SchoolDedication")), true);
+            Facts->SetBaseFact(FName(TEXT("C_FounderMissing")), true);
+        }
+        else if (MissionId == FName(TEXT("M05.RaceTheLightning")) && ObjectiveId == FName(TEXT("FinalDialogue")))
+        {
+            Facts->SetBaseFact(FName(TEXT("C_CampaignComplete")), true);
+        }
+    }
+}
 
 void UMissionCoordinatorSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -141,6 +174,12 @@ void UMissionCoordinatorSubsystem::HandleObjectiveChanged(FName ObjectiveId, EMi
                 Music->PlayMusicForEra(ETimelineState::Past1955, true);
             }
         }
+    }
+
+    if (MissionSubsystem)
+    {
+        const FMissionProgressSnapshot Snapshot = MissionSubsystem->GetProgressSnapshot();
+        ApplyTimelineFactsForObjective(Snapshot.MissionId, ObjectiveId, GetGameInstance());
     }
 
     TryAutoSaveCheckpoint();

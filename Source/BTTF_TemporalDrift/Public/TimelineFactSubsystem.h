@@ -18,6 +18,8 @@ public:
     UFUNCTION(BlueprintPure) bool GetFact(FName FactId, bool& bFound) const;
     UFUNCTION(BlueprintPure) bool HasDependencyCycle() const { return bDependencyCycle; }
     UFUNCTION(BlueprintPure) TArray<FName> GetChangedFacts() const { return ChangedFacts; }
+    UFUNCTION(BlueprintPure) TMap<FName, bool> GetOverrideSnapshot() const { return BaseOverrides; }
+    UFUNCTION(BlueprintCallable) bool RestoreOverrideSnapshot(const TMap<FName, bool>& Snapshot);
 
     UPROPERTY(BlueprintAssignable) FOnTimelineFactChanged OnFactChanged;
 

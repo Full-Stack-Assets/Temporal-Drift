@@ -65,3 +65,9 @@ bool UTimelineFactSubsystem::GetFact(FName FactId, bool& bFound) const
     if (const bool* Value=ComputedValues.Find(FactId)) { bFound=true; return *Value; }
     bFound=false; return false;
 }
+
+bool UTimelineFactSubsystem::RestoreOverrideSnapshot(const TMap<FName, bool>& Snapshot)
+{
+    BaseOverrides = Snapshot;
+    return RecomputeFacts();
+}
