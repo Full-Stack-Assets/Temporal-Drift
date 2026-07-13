@@ -2,6 +2,10 @@
 
 Last updated: 2026-07-13
 
+**Start here:** [`Docs/PC_Setup_Guide.md`](../PC_Setup_Guide.md) — concise pull → build → play instructions for Windows.
+
+This file adds extra detail on commandlets and the agent workflow.
+
 ## Where Unreal runs
 
 Unreal Editor **does not run inside the Cursor Cloud Agent**. The agent edits C++, scripts, and docs in git. You connect the project to Unreal on your **local Windows machine** where UE 5.8 is installed.

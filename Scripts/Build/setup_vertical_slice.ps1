@@ -105,4 +105,4 @@ if (-not $SkipAutomation) {
 Write-Host ''
 Write-Host 'SETUP COMPLETE'
 Write-Host 'Next: open BTTF_TemporalDrift.uproject and play LVL_TimeTravelTest in PIE.'
-Write-Host 'See Docs/QA/UnrealEditorConnection.md for the live playtest checklist.'
+Write-Host 'See Docs/PC_Setup_Guide.md for the full PC playtest checklist.'
