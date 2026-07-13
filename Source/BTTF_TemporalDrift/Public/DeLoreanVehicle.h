@@ -164,6 +164,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Vehicle|Input")
     void ApplyReverseInput(bool bPressed);
 
+    UFUNCTION(BlueprintCallable, Category = "Vehicle|Input")
+    void ApplyDigitalDriveInput(bool bForward, bool bReverse, bool bLeft, bool bRight);
+
     UFUNCTION(BlueprintCallable, Category = "Vehicle|Recovery")
     void ResetVehicle();
 
@@ -221,4 +224,16 @@ protected:
     void HandleCycleDestination(const FInputActionValue& Value);
     void BeginReverse();
     void EndReverse();
+    void BeginForward();
+    void EndForward();
+    void BeginSteerLeft();
+    void EndSteerLeft();
+    void BeginSteerRight();
+    void EndSteerRight();
+
+    bool bForwardKeyPressed = false;
+    bool bReverseKeyPressed = false;
+    bool bLeftKeyPressed = false;
+    bool bRightKeyPressed = false;
+    bool bDigitalReverseApplied = false;
 };

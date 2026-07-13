@@ -90,6 +90,34 @@ bool FBTTFVehicleReverseGearTest::RunTest(const FString& Parameters)
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FBTTFVehicleArrowKeyContractTest,
+    "BTTF.Vehicle.Input.ArrowKeysDriveDirectly",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFVehicleArrowKeyContractTest::RunTest(const FString& Parameters)
+{
+    ADeLoreanVehicle* Vehicle = NewObject<ADeLoreanVehicle>();
+    UChaosVehicleMovementComponent* Movement = Vehicle->GetVehicleMovementComponent();
+
+    Vehicle->ApplyDigitalDriveInput(true, false, true, false);
+    TestEqual(TEXT("Up arrow applies full forward throttle"), Movement->GetThrottleInput(), 1.0f);
+    TestEqual(TEXT("Left arrow applies full left steering"), Movement->GetSteeringInput(), -1.0f);
+
+    Vehicle->ApplyDigitalDriveInput(false, false, false, true);
+    TestEqual(TEXT("Released Up arrow clears throttle"), Movement->GetThrottleInput(), 0.0f);
+    TestEqual(TEXT("Right arrow applies full right steering"), Movement->GetSteeringInput(), 1.0f);
+
+    Vehicle->ApplyDigitalDriveInput(false, true, false, false);
+    TestEqual(TEXT("Down arrow selects reverse gear"), Movement->GetTargetGear(), -1);
+    TestEqual(TEXT("Down arrow applies reverse drive"), Movement->GetThrottleInput(), 1.0f);
+
+    Vehicle->ApplyDigitalDriveInput(false, false, false, false);
+    TestEqual(TEXT("Releasing all arrows restores first gear"), Movement->GetTargetGear(), 1);
+    TestEqual(TEXT("Releasing all arrows clears steering"), Movement->GetSteeringInput(), 0.0f);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FBTTFVehicleCameraCycleTest,
     "BTTF.Vehicle.Input.CameraCyclesAllPresets",
     EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)

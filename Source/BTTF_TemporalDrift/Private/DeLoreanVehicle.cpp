@@ -235,6 +235,12 @@ void ADeLoreanVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
             EnhancedInputComponent->BindAction(CycleDestinationAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleCycleDestination);
     }
 
+    PlayerInputComponent->BindKey(EKeys::Up, IE_Pressed, this, &ADeLoreanVehicle::BeginForward);
+    PlayerInputComponent->BindKey(EKeys::Up, IE_Released, this, &ADeLoreanVehicle::EndForward);
+    PlayerInputComponent->BindKey(EKeys::Left, IE_Pressed, this, &ADeLoreanVehicle::BeginSteerLeft);
+    PlayerInputComponent->BindKey(EKeys::Left, IE_Released, this, &ADeLoreanVehicle::EndSteerLeft);
+    PlayerInputComponent->BindKey(EKeys::Right, IE_Pressed, this, &ADeLoreanVehicle::BeginSteerRight);
+    PlayerInputComponent->BindKey(EKeys::Right, IE_Released, this, &ADeLoreanVehicle::EndSteerRight);
     PlayerInputComponent->BindKey(EKeys::Down, IE_Pressed, this, &ADeLoreanVehicle::BeginReverse);
     PlayerInputComponent->BindKey(EKeys::Down, IE_Released, this, &ADeLoreanVehicle::EndReverse);
     PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Right, IE_Pressed, this, &ADeLoreanVehicle::BeginReverse);
@@ -277,17 +283,56 @@ void ADeLoreanVehicle::HandleHandbrake(const FInputActionValue& Value)
 
 void ADeLoreanVehicle::HandleReverse(const FInputActionValue& Value)
 {
-    ApplyReverseInput(Value.Get<bool>());
+    bReverseKeyPressed = Value.Get<bool>();
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
 }
 
 void ADeLoreanVehicle::BeginReverse()
 {
-    ApplyReverseInput(true);
+    bReverseKeyPressed = true;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
 }
 
 void ADeLoreanVehicle::EndReverse()
 {
-    ApplyReverseInput(false);
+    bReverseKeyPressed = false;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::BeginForward()
+{
+    bForwardKeyPressed = true;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::EndForward()
+{
+    bForwardKeyPressed = false;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::BeginSteerLeft()
+{
+    bLeftKeyPressed = true;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::EndSteerLeft()
+{
+    bLeftKeyPressed = false;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::BeginSteerRight()
+{
+    bRightKeyPressed = true;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::EndSteerRight()
+{
+    bRightKeyPressed = false;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
 }
 
 void ADeLoreanVehicle::HandleCycleDestination(const FInputActionValue& Value)
@@ -470,6 +515,37 @@ void ADeLoreanVehicle::ApplyVehicleInput(
         Movement->SetSteeringInput(FMath::Clamp(Steering, -1.0f, 1.0f));
         Movement->SetBrakeInput(FMath::Clamp(Brake, 0.0f, 1.0f));
         Movement->SetHandbrakeInput(bHandbrake);
+    }
+}
+
+void ADeLoreanVehicle::ApplyDigitalDriveInput(bool bForward, bool bReverse, bool bLeft, bool bRight)
+{
+    bForwardKeyPressed = bForward;
+    bReverseKeyPressed = bReverse;
+    bLeftKeyPressed = bLeft;
+    bRightKeyPressed = bRight;
+
+    if (bReverse)
+    {
+        ApplyReverseInput(true);
+        bDigitalReverseApplied = true;
+    }
+    else
+    {
+        if (bDigitalReverseApplied)
+        {
+            ApplyReverseInput(false);
+            bDigitalReverseApplied = false;
+        }
+        if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+        {
+            Movement->SetThrottleInput(bForward ? 1.0f : 0.0f);
+        }
+    }
+
+    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+    {
+        Movement->SetSteeringInput((bRight ? 1.0f : 0.0f) - (bLeft ? 1.0f : 0.0f));
     }
 }
 
