@@ -10,6 +10,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 #include "TimeTravelPresentationComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -33,6 +34,12 @@ ADeLoreanVehicle::ADeLoreanVehicle()
     TimeTravelNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("TimeTravelNiagara"));
     TimeTravelNiagaraComponent->SetupAttachment(RootComponent);
     TimeTravelNiagaraComponent->SetAutoActivate(false);
+    static ConstructorHelpers::FObjectFinder<UNiagaraSystem> TemporalVortexAsset(
+        TEXT("/Game/Niagara/NS_TemporalVortex.NS_TemporalVortex"));
+    if (TemporalVortexAsset.Succeeded())
+    {
+        TimeTravelNiagaraComponent->SetAsset(TemporalVortexAsset.Object);
+    }
 
     TimeTravelPresentationComponent = CreateDefaultSubobject<UTimeTravelPresentationComponent>(TEXT("TimeTravelPresentation"));
 
