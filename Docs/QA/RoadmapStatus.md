@@ -45,12 +45,21 @@ Follow-up to live playtest reports: `V` had no readable feedback, `G` could fail
 - **Verification:** `build_editor.ps1` -> `Result: Succeeded`; focused automation passed: `BTTF.Hero` **6/6**, `BTTF.Vehicle` **13/13**, `BTTF.Presentation` **4/4**, `BTTF.Camera` **8/8**; full `run_automation.ps1 -Filter BTTF` -> **69 found, 69 passed**.
 - **Live check:** fresh game launched in `/Game/Levels/LVL_TimeTravelTest`; tapping `T` armed the circuits without the full blue-screen post-process. Held-key hover/driving tuning still needs hands-on play confirmation.
 
+## Character Arrow-Key Movement Fix (2026-07-13)
+
+Follow-up to live playtest report: the character could jump with Space but could not move. Root cause: legacy character movement axes still mapped `MoveForward`/`MoveRight` to `W/A/S/D`, while the current keyboard contract reserves `W/A/S/D` for camera orbit only.
+
+- **Fix:** `Config/DefaultInput.ini` now maps character movement to arrow keys (`Up`, `Down`, `Left`, `Right`) and removes the stale mouse-look axes.
+- **Regression coverage:** added `BTTF.Hero.ArrowKeyMovementConfig`, which requires arrows for character movement and rejects `W/A/S/D` as character movement bindings.
+- **Verification:** test first failed with missing arrow mappings and stale `W/A/S/D`; after the fix, `BTTF.Hero.ArrowKeyMovementConfig` passed, `BTTF.Hero` passed **7/7**, `BTTF.Vehicle.Input` passed **7/7**, and full `run_automation.ps1 -Filter BTTF` passed **70 found, 70 passed**.
+- **Live check:** fresh game launched at 1280×720 for player confirmation. Full Task 2 acceptance still needs hands-on confirmation that arrows work after possession swaps and `W/A/S/D` remains camera-only during walking/driving.
+
 ## Tasks 1–8 (Vertical-slice foundation)
 
 | Task | Status | Notes |
 |------|--------|-------|
 | 1 Stable baseline | **Code complete** | Build/automation/package scripts and configuration tests exist. 2026-07-13 baseline verified: editor build `Result: Succeeded`, automation 58/59 pass — `BTTF.World.HillValleyComplete` fails on region-bounds coverage (Task 7). See "Integration Baseline Verification (2026-07-13)" above. Live PIE ×3 gate still requires editor verification. |
-| 2 Input contract | **Code complete** | Enhanced Input assets, vehicle tests, reset/camera/destination cycling implemented. Live controller gate pending. |
+| 2 Input contract | **Code complete** | Enhanced Input assets, vehicle tests, reset/camera/destination cycling implemented. Character arrow-key regression fixed with `BTTF.Hero.ArrowKeyMovementConfig`; full BTTF automation 70/70 passed on 2026-07-13. Live controller/PIE gate pending. |
 | 3 Hero vehicle | **Partial** | Full tuning apply (suspension/steer), input smoothing, speed-responsive chase camera, reverse action binding. SportsCar physics chassis remains. |
 | 4 Time travel SM | **Code complete** | Deterministic state machine plus `BTTF.TimeTravel.FiveConsecutivePlayerJumps` automation added. |
 | 5 Era switching | **Partial** | `EraWorldManager` async switching works. `UEraDataAsset` includes data-layer and arrival fields; deeper era tests still thin. |

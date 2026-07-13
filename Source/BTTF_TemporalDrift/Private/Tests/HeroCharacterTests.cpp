@@ -7,6 +7,8 @@
 #include "VehicleInteractionComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/InputSettings.h"
+#include "InputCoreTypes.h"
 #include "UObject/SoftObjectPath.h"
 #include "Engine/World.h"
 
@@ -44,6 +46,45 @@ bool FBTTFHeroMovementContractTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Hero input asset contract exists"),
         FSoftObjectPath(TEXT("/Game/Input/IMC_Hero.IMC_Hero")).TryLoad() != nullptr);
     return true;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFHeroArrowKeyMovementConfigTest,
+    "BTTF.Hero.ArrowKeyMovementConfig",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFHeroArrowKeyMovementConfigTest::RunTest(const FString& Parameters)
+{
+    const UInputSettings* InputSettings = GetDefault<UInputSettings>();
+    TestNotNull(TEXT("Input settings load"), InputSettings);
+    if (!InputSettings)
+    {
+        return false;
+    }
+
+    TArray<FInputAxisKeyMapping> ForwardMappings;
+    InputSettings->GetAxisMappingByName(TEXT("MoveForward"), ForwardMappings);
+
+    TArray<FInputAxisKeyMapping> RightMappings;
+    InputSettings->GetAxisMappingByName(TEXT("MoveRight"), RightMappings);
+
+    auto HasMapping = [](const TArray<FInputAxisKeyMapping>& Mappings, const FKey& Key, float Scale)
+    {
+        return Mappings.ContainsByPredicate([&](const FInputAxisKeyMapping& Mapping)
+        {
+            return Mapping.Key == Key && FMath::IsNearlyEqual(Mapping.Scale, Scale);
+        });
+    };
+
+    TestTrue(TEXT("Up Arrow moves hero forward"), HasMapping(ForwardMappings, EKeys::Up, 1.0f));
+    TestTrue(TEXT("Down Arrow moves hero backward"), HasMapping(ForwardMappings, EKeys::Down, -1.0f));
+    TestTrue(TEXT("Right Arrow moves hero right"), HasMapping(RightMappings, EKeys::Right, 1.0f));
+    TestTrue(TEXT("Left Arrow moves hero left"), HasMapping(RightMappings, EKeys::Left, -1.0f));
+    TestFalse(TEXT("W is not hero movement"), HasMapping(ForwardMappings, EKeys::W, 1.0f));
+    TestFalse(TEXT("S is not hero movement"), HasMapping(ForwardMappings, EKeys::S, -1.0f));
+    TestFalse(TEXT("D is not hero movement"), HasMapping(RightMappings, EKeys::D, 1.0f));
+    TestFalse(TEXT("A is not hero movement"), HasMapping(RightMappings, EKeys::A, -1.0f));
+
+    return !HasAnyErrors();
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFHeroVehicleHandoffTest,
