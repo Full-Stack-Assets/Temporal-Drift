@@ -39,9 +39,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Game State")
     void StartVerticalSliceMission();
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Game State")
-    bool bAutoLoadSaveOnStart = true;
-
 protected:
     UPROPERTY()
     UTimeTravelSubsystem* TimeTravelSubsystem;
