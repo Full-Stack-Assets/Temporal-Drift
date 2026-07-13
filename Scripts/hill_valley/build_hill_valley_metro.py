@@ -175,6 +175,29 @@ def spawn_infrastructure(materials):
     for name, location, size in outer_roads:
         hv.spawn_block(name, location, size, materials["asphalt"], tags=("HV_Road", "HV_Regional", "HV_Metro"))
 
+    # North/South rural approach roads close the metro-to-rural circuit on the Y axis,
+    # mirroring the East/West highway approaches so the playable region spans the full
+    # metro town and rural bounds (>= 80000 UU north-south).
+    approach_roads = (
+        ("HV_RuralApproach_North", (0, 41000, 12), (1600, 12000, 24)),
+        ("HV_RuralApproach_South", (0, -41000, 12), (1600, 12000, 24)),
+    )
+    for name, location, size in approach_roads:
+        hv.spawn_block(
+            name, location, size, materials["asphalt"],
+            tags=("HV_Road", "HV_District_Rural", "HV_Regional", "HV_Metro"),
+        )
+    hv.spawn_text_sign(
+        "HV_RuralApproach_NorthSign", "HILLTOP FARM ROAD",
+        (0, 44800, 500), rotation=(0, 0, 0),
+        tags=("HV_District_Rural", "HV_DestinationSign"), scale=2.2,
+    )
+    hv.spawn_text_sign(
+        "HV_RuralApproach_SouthSign", "OLD RIVER ROAD",
+        (0, -44800, 500), rotation=(0, 0, 0),
+        tags=("HV_District_Rural", "HV_DestinationSign"), scale=2.2,
+    )
+
     for index, offset in enumerate((-28000, -14000, 0, 14000, 28000)):
         hv.spawn_block(
             f"HV_MetroCross_NS_{index}", (offset, 0, 38), (1800, 1800, 6),
@@ -291,11 +314,17 @@ def spawn_population_anchors():
         )
 
     for index, (x, y) in enumerate((
-        (0, -38000), (0, 38000), (-42000, 0), (42000, 0), (-30000, -30000), (30000, 30000),
+        (0, -41000), (0, 41000), (-42000, 0), (42000, 0), (-30000, -30000), (30000, 30000),
     )):
         hv.spawn_marker(
             f"HV_MetroReset_{index:02d}", (x, y, 100),
             ("HV_ResetVolume", "HV_EmergencyRecovery", "HV_Metro"),
+        )
+
+    for index, (x, y) in enumerate(((0, 38000), (0, -38000), (0, 44000), (0, -44000))):
+        hv.spawn_marker(
+            f"HV_RuralApproachNode_{index:02d}", (x, y, 120),
+            ("HV_Navigation", "HV_PedestrianNode", "HV_District_Rural", "HV_Metro"),
         )
 
 
