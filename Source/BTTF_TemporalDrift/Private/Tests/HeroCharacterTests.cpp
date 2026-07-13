@@ -4,6 +4,7 @@
 #include "BTTFHeroCharacter.h"
 #include "VehicleInteractionComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "UObject/SoftObjectPath.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFHeroCharacterContractTest,
     "BTTF.Hero.CharacterContract",
@@ -24,6 +25,21 @@ bool FBTTFHeroCharacterContractTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Exit clearance exceeds capsule width"),
         Hero->GetVehicleInteractionComponent()->ExitSideOffset >= 100.0f);
     return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFHeroMovementContractTest,
+    "BTTF.Hero.MovementContract",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFHeroMovementContractTest::RunTest(const FString& Parameters)
+{
+    const ABTTFHeroCharacter* Hero = GetDefault<ABTTFHeroCharacter>();
+    TestTrue(TEXT("Sprint speed exceeds walk speed"), Hero->GetSprintSpeed() > Hero->GetWalkSpeed());
+    TestTrue(TEXT("Crouch speed remains controllable"), Hero->GetCrouchSpeed() > 0.0f);
+    TestTrue(TEXT("Hero exposes a safe recovery transform"), Hero->HasSafeTransform());
+    TestTrue(TEXT("Hero input asset contract exists"),
+        FSoftObjectPath(TEXT("/Game/Input/IMC_Hero.IMC_Hero")).TryLoad() != nullptr);
+    return true;
 }
 
 #endif
