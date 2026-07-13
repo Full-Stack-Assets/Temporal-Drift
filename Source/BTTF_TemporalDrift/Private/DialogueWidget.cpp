@@ -65,8 +65,8 @@ UTextBlock* UDialogueWidget::AddLine(UVerticalBox* Parent, const FText& InitialT
     Text->SetFont(Font);
     if (Parent)
     {
-        UVerticalBoxSlot* Slot = Parent->AddChildToVerticalBox(Text);
-        Slot->SetPadding(FMargin(0.0f, 2.0f));
+        UVerticalBoxSlot* AddedSlot = Parent->AddChildToVerticalBox(Text);
+        AddedSlot->SetPadding(FMargin(0.0f, 2.0f));
     }
     return Text;
 }

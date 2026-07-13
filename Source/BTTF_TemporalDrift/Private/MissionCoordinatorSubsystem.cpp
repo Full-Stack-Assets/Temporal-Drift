@@ -75,6 +75,11 @@ namespace
     }
 }
 
+UGameInstance* UMissionCoordinatorSubsystem::ResolveGameInstance() const
+{
+    return GetWorld() ? GetWorld()->GetGameInstance() : nullptr;
+}
+
 void UMissionCoordinatorSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
@@ -86,7 +91,7 @@ void UMissionCoordinatorSubsystem::Initialize(FSubsystemCollectionBase& Collecti
             TimeTravelSubsystem->OnJumpArrived.AddDynamic(this, &UMissionCoordinatorSubsystem::HandleJumpArrived);
         }
     }
-    if (UGameInstance* GameInstance = GetGameInstance())
+    if (UGameInstance* GameInstance = ResolveGameInstance())
     {
         MissionSubsystem = GameInstance->GetSubsystem<UMissionSubsystem>();
         BindMissionDelegates();
@@ -101,7 +106,7 @@ void UMissionCoordinatorSubsystem::Initialize(FSubsystemCollectionBase& Collecti
 void UMissionCoordinatorSubsystem::Deinitialize()
 {
     UnbindMissionDelegates();
-    if (UGameInstance* GameInstance = GetGameInstance())
+    if (UGameInstance* GameInstance = ResolveGameInstance())
     {
         if (UDialogueSubsystem* Dialogue = GameInstance->GetSubsystem<UDialogueSubsystem>())
         {
@@ -167,7 +172,7 @@ bool UMissionCoordinatorSubsystem::StartCampaignMission(FName MissionStableId)
 
     if (MissionStableId == FName(TEXT("M05.RaceTheLightning")))
     {
-        if (UGameInstance* GameInstance = GetGameInstance())
+        if (UGameInstance* GameInstance = ResolveGameInstance())
         {
             if (UEraWeatherSubsystem* Weather = GameInstance->GetSubsystem<UEraWeatherSubsystem>())
             {
@@ -225,7 +230,7 @@ void UMissionCoordinatorSubsystem::HandleMissionCompleted(FName MissionId)
 
 bool UMissionCoordinatorSubsystem::SubmitMissionEvent(FName EventId)
 {
-    ApplyTimelineFactsForMissionEvent(EventId, GetGameInstance());
+    ApplyTimelineFactsForMissionEvent(EventId, ResolveGameInstance());
     return MissionSubsystem && MissionSubsystem->SubmitMissionEvent(EventId);
 }
 
@@ -276,7 +281,7 @@ void UMissionCoordinatorSubsystem::HandleObjectiveChanged(FName ObjectiveId, EMi
 
     if (State == EMissionObjectiveState::Completed && ObjectiveId == FName(TEXT("ReachClocktower")))
     {
-        if (UGameInstance* GameInstance = GetGameInstance())
+        if (UGameInstance* GameInstance = ResolveGameInstance())
         {
             if (UEraMusicSubsystem* Music = GameInstance->GetSubsystem<UEraMusicSubsystem>())
             {
@@ -288,7 +293,7 @@ void UMissionCoordinatorSubsystem::HandleObjectiveChanged(FName ObjectiveId, EMi
     if (MissionSubsystem)
     {
         const FMissionProgressSnapshot Snapshot = MissionSubsystem->GetProgressSnapshot();
-        ApplyTimelineFactsForObjective(Snapshot.MissionId, ObjectiveId, GetGameInstance());
+        ApplyTimelineFactsForObjective(Snapshot.MissionId, ObjectiveId, ResolveGameInstance());
     }
 
     TryAutoSaveCheckpoint();
@@ -306,7 +311,7 @@ void UMissionCoordinatorSubsystem::HandleDialogueEnded()
         return;
     }
 
-    if (UGameInstance* GameInstance = GetGameInstance())
+    if (UGameInstance* GameInstance = ResolveGameInstance())
     {
         if (UDialogueSubsystem* Dialogue = GameInstance->GetSubsystem<UDialogueSubsystem>())
         {
@@ -333,7 +338,7 @@ void UMissionCoordinatorSubsystem::TryAutoSaveCheckpoint()
         return;
     }
 
-    if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))
+    if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(ResolveGameInstance()))
     {
         if (GameInstance->SaveGameToSlot(DefaultSaveSlot))
         {

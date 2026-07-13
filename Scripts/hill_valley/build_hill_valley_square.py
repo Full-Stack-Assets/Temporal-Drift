@@ -563,6 +563,9 @@ def main():
         "glass": create_color_material("M_HV_Window", (0.025, 0.11, 0.16), 0.28),
         "trunk": create_color_material("M_HV_Wood", (0.16, 0.07, 0.025), 0.9),
         "leaves": create_color_material("M_HV_Leaves", (0.035, 0.18, 0.045), 0.96),
+        "water": create_color_material("M_HV_Water", (0.04, 0.18, 0.32), 0.15),
+        "sand": create_color_material("M_HV_Sand", (0.62, 0.54, 0.38), 0.9),
+        "yellow_line": create_color_material("M_HV_YellowLine", (0.82, 0.72, 0.08), 0.7),
     }
 
     build_roads_and_square(materials_global)

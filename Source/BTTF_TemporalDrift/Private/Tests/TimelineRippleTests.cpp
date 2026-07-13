@@ -43,7 +43,7 @@ bool FBTTFTimelineRippleGraphTest::RunTest(const FString& Parameters)
     AddFact(TEXT("1985.StreetRenamed"));
     AddDep(TEXT("1985.StreetRenamed"), TEXT("1955.MallSiteOwned"), false);
     AddFact(TEXT("2045.TierThreeTannenOwned"), true, false);
-    AddDep(TEXT("2045.TierThreeTannenOwned"), TEXT("1985.StreetRenamed"), true);
+    AddDep(TEXT("2045.TierThreeTannenOwned"), TEXT("1985.StreetRenamed"), false);
 
     UGameInstance* GameInstance = NewObject<UGameInstance>();
     GameInstance->Init();

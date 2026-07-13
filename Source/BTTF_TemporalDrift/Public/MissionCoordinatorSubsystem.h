@@ -84,6 +84,7 @@ private:
     void BindMissionDelegates();
     void UnbindMissionDelegates();
     void TryAutoSaveCheckpoint();
+    UGameInstance* ResolveGameInstance() const;
 
     UPROPERTY()
     TObjectPtr<UMissionSubsystem> MissionSubsystem;

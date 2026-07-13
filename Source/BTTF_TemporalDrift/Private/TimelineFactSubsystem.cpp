@@ -15,7 +15,15 @@ bool UTimelineFactSubsystem::LoadDefinitions(UTimelineFactDataAsset* Data)
 
 bool UTimelineFactSubsystem::SetBaseFact(FName FactId, bool Value)
 {
-    if (!Definitions.Contains(FactId)) return false;
+    if (FactId.IsNone()) return false;
+    if (!Definitions.Contains(FactId))
+    {
+        FTimelineFactDefinition DynamicFact;
+        DynamicFact.FactId = FactId;
+        DynamicFact.DefaultValue = false;
+        Definitions.Add(FactId, DynamicFact);
+        ComputedValues.Add(FactId, false);
+    }
     BaseOverrides.Add(FactId, Value);
     return RecomputeFacts();
 }
@@ -41,17 +49,29 @@ bool UTimelineFactSubsystem::RecomputeFacts()
     TArray<FName> FactIds; Definitions.GetKeys(FactIds);
     FactIds.Sort(FNameLexicalLess());
     for (FName FactId : FactIds) if (!VisitFact(FactId,Visiting,Visited,Order)) return false;
+    TSet<FName> ActivatedFacts;
     for (FName FactId : Order)
     {
         const FTimelineFactDefinition& Fact=Definitions[FactId];
         bool NewValue=Fact.DefaultValue;
-        if (const bool* Override=BaseOverrides.Find(FactId)) NewValue=*Override;
+        if (const bool* Override=BaseOverrides.Find(FactId))
+        {
+            NewValue=*Override;
+            ActivatedFacts.Add(FactId);
+        }
         else if (!Fact.Dependencies.IsEmpty())
         {
-            bool bSatisfied=true;
+            bool bCausallyActivated=false;
             for (const FTimelineFactDependency& Dependency : Fact.Dependencies)
-                bSatisfied &= ComputedValues.FindRef(Dependency.FactId)==Dependency.RequiredValue;
-            NewValue=bSatisfied ? Fact.ValueWhenDependenciesSatisfied : Fact.DefaultValue;
+                bCausallyActivated |= ActivatedFacts.Contains(Dependency.FactId);
+            if (bCausallyActivated)
+            {
+                bool bSatisfied=true;
+                for (const FTimelineFactDependency& Dependency : Fact.Dependencies)
+                    bSatisfied &= ComputedValues.FindRef(Dependency.FactId)==Dependency.RequiredValue;
+                NewValue=bSatisfied ? Fact.ValueWhenDependenciesSatisfied : Fact.DefaultValue;
+                ActivatedFacts.Add(FactId);
+            }
         }
         const bool Previous=ComputedValues.FindRef(FactId);
         ComputedValues.Add(FactId,NewValue);

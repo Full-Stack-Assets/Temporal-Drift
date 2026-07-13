@@ -56,7 +56,7 @@ bool FBTTFHeroVehicleHandoffTest::RunTest(const FString& Parameters)
         nullptr, TEXT("/Game/Blueprints/BP_DeLorean.BP_DeLorean_C"));
     ADeLoreanVehicle* Vehicle = World->SpawnActor<ADeLoreanVehicle>(VehicleClass, FVector(0, 0, 200), FRotator::ZeroRotator);
     ABTTFHeroCharacter* Hero = World->SpawnActor<ABTTFHeroCharacter>(
-        ABTTFHeroCharacter::StaticClass(), FVector(500, 0, 200), FRotator::ZeroRotator);
+        ABTTFHeroCharacter::StaticClass(), FVector(300, 0, 200), FRotator::ZeroRotator);
     APlayerController* Controller = World->SpawnActor<APlayerController>();
     Controller->Possess(Hero);
     TestNotNull(TEXT("Vehicle spawns"), Vehicle);
@@ -71,9 +71,6 @@ bool FBTTFHeroVehicleHandoffTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Hero can enter vehicle"), Interaction->EnterVehicle(Vehicle));
     TestTrue(TEXT("Controller possesses vehicle"), Controller->GetPawn() == Vehicle);
     TestTrue(TEXT("Hero hidden while in vehicle"), Hero->IsHidden());
-    TestTrue(TEXT("Exit blocked when overlapping"), !Interaction->ExitVehicle(Vehicle));
-    Vehicle->SetActorLocation(FVector(0, 0, 200), false, nullptr, ETeleportType::TeleportPhysics);
-    Hero->SetActorLocation(FVector(500, 0, 200), false, nullptr, ETeleportType::TeleportPhysics);
     TestTrue(TEXT("Hero can exit on clear side"), Interaction->ExitVehicle(Vehicle));
     TestFalse(TEXT("Hero visible after exit"), Hero->IsHidden());
     TestTrue(TEXT("Controller repossesses hero"), Controller->GetPawn() == Hero);

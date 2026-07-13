@@ -92,5 +92,5 @@ FText UTemporalDriveSubsystem::FormatDestinationDate(const FTemporalDestinationD
   const int32 DisplayHour = Date.Hour % 12 == 0 ? 12 : Date.Hour % 12;
     const TCHAR* AmPm = Date.Hour >= 12 ? TEXT("PM") : TEXT("AM");
     return FText::FromString(FString::Printf(TEXT("%s %02d %04d %d:%02d %s"),
-        Month, Date.Day, Date.Year, DisplayHour, Date.Minute, AmPm));
+        *Month, Date.Day, Date.Year, DisplayHour, Date.Minute, AmPm));
 }

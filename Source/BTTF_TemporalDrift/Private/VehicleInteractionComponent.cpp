@@ -35,6 +35,7 @@ bool UVehicleInteractionComponent::ExitVehicle(ADeLoreanVehicle* Vehicle)
         Vehicle->GetActorLocation() + Right * ExitSideOffset + FVector(0,0,60),
         Vehicle->GetActorLocation() - Right * ExitSideOffset + FVector(0,0,60)};
     FCollisionQueryParams Params(SCENE_QUERY_STAT(VehicleExit), false, Hero);
+    Params.AddIgnoredActor(Vehicle);
     FVector ExitLocation = Candidates[0];
     bool bFound = false;
     for (const FVector& Candidate : Candidates)

@@ -66,6 +66,8 @@ TArray<FEraMusicTrackInfo> UEraMusicCatalog::GetDefaultCatalog()
             TEXT("Back to the Future Part II — dystopian Hill Valley"),
             TEXT("/Game/Audio/Music/Eras/MUS_1985A_Dystopian.MUS_1985A_Dystopian"),
             nullptr,
+            nullptr,
+            nullptr,
             0.55f),
         MakeTrack(
             ETimelineState::Future2015,
@@ -73,6 +75,8 @@ TArray<FEraMusicTrackInfo> UEraMusicCatalog::GetDefaultCatalog()
             TEXT("Alan Silvestri (style reference)"),
             TEXT("Back to the Future Part II — Hill Valley 2015"),
             TEXT("/Game/Audio/Music/Eras/MUS_2015_Future.MUS_2015_Future"),
+            nullptr,
+            nullptr,
             nullptr,
             0.60f),
         MakeTrack(
@@ -82,6 +86,8 @@ TArray<FEraMusicTrackInfo> UEraMusicCatalog::GetDefaultCatalog()
             TEXT("Back to the Future Part III — 1885"),
             TEXT("/Game/Audio/Music/Eras/MUS_1885_Western.MUS_1885_Western"),
             nullptr,
+            nullptr,
+            nullptr,
             0.55f),
         MakeTrack(
             ETimelineState::DeepFuture2045,
@@ -89,6 +95,8 @@ TArray<FEraMusicTrackInfo> UEraMusicCatalog::GetDefaultCatalog()
             TEXT("Alan Silvestri (style reference)"),
             TEXT("Back to the Future Part II — 2045"),
             TEXT("/Game/Audio/Music/Eras/MUS_2045_Dystopian.MUS_2045_Dystopian"),
+            nullptr,
+            nullptr,
             nullptr,
             0.50f),
     };

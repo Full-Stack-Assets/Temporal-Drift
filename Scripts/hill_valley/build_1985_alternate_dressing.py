@@ -1,6 +1,7 @@
 """Alternate 1985 dystopia dressing on DL_1985_Alternate."""
 import os
 import sys
+import unreal
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPT_DIR not in sys.path:

@@ -56,7 +56,13 @@ def sign(name,text,loc,layer,scale=2.2):
     actor.set_actor_scale3d(unreal.Vector(scale,scale,scale)); assign_layer(actor,layer); return actor
 
 def main():
+    global actors, levels, layers
     if not unreal.EditorLoadingAndSavingUtils.load_map(LEVEL): raise RuntimeError('Could not load Hill Valley map')
+    actors=unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
+    levels=unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
+    layers=unreal.get_editor_subsystem(unreal.DataLayerEditorSubsystem)
+    if not actors or not levels or not layers:
+        raise RuntimeError('Required editor subsystems are unavailable after loading the map')
     for actor in list(actors.get_all_level_actors()):
         if GEN in actor.tags: actors.destroy_actor(actor)
 

@@ -23,8 +23,10 @@ def ensure_sound(name):
     if unreal.EditorAssetLibrary.does_asset_exist(path):
         return unreal.EditorAssetLibrary.load_asset(path)
     unreal.EditorAssetLibrary.make_directory(AUDIO_DEST)
-    factory = unreal.SoundFactory()
-    asset = TOOLS.create_asset(name, AUDIO_DEST, unreal.SoundWave, factory)
+    factory = unreal.SoundCueFactoryNew()
+    asset = TOOLS.create_asset(name, AUDIO_DEST, unreal.SoundCue, factory)
+    if not asset:
+        raise RuntimeError(f"Could not create placeholder sound cue {path}")
     unreal.EditorAssetLibrary.save_loaded_asset(asset, False)
     unreal.log(f"PRESENTATION_AUDIO_ASSET {path}")
     return asset
