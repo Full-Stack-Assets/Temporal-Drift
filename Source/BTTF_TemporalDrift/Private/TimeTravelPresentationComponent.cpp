@@ -144,6 +144,67 @@ FSoftObjectPath UTimeTravelPresentationComponent::GetPhaseAudioPath(ETimeTravelP
     }
 }
 
+void UTimeTravelPresentationComponent::SetPresentationEnabled(bool bEnabled)
+{
+    bPresentationEnabled = bEnabled;
+    if (!bPresentationEnabled)
+    {
+        bCueActive = false;
+        CueIntensity = 0.0f;
+    }
+    else
+    {
+        HandlePhaseChanged(PresentationPhase);
+    }
+}
+
+FSoftObjectPath UTimeTravelPresentationComponent::GetActiveDistortionMaterialPath() const
+{
+    return bReducedFlash ? ReducedFlashDistortionMaterialPath : DistortionMaterialPath;
+}
+
+FSoftObjectPath UTimeTravelPresentationComponent::GetActiveArrivalMaterialPath() const
+{
+    return ArrivalFrostMaterialPath;
+}
+
+FSoftObjectPath UTimeTravelPresentationComponent::GetPhaseNiagaraPath(ETimeTravelPhase Phase) const
+{
+    switch (Phase)
+    {
+    case ETimeTravelPhase::Charging:
+    case ETimeTravelPhase::ThresholdReached:
+        return FluxChargeNiagaraPath;
+    case ETimeTravelPhase::Departing:
+    case ETimeTravelPhase::SwitchingEra:
+        return TemporalVortexNiagaraPath;
+    case ETimeTravelPhase::Arriving:
+        return ArrivalFrostNiagaraPath;
+    case ETimeTravelPhase::Cooldown:
+        return FireTrailsNiagaraPath;
+    default:
+        return FSoftObjectPath();
+    }
+}
+
+FSoftObjectPath UTimeTravelPresentationComponent::GetPhaseAudioPath(ETimeTravelPhase Phase) const
+{
+    switch (Phase)
+    {
+    case ETimeTravelPhase::Charging:
+    case ETimeTravelPhase::ThresholdReached:
+        return FluxHumAudioPath;
+    case ETimeTravelPhase::Departing:
+    case ETimeTravelPhase::SwitchingEra:
+        return DepartureAudioPath;
+    case ETimeTravelPhase::Arriving:
+    case ETimeTravelPhase::Cooldown:
+        return ArrivalAudioPath;
+    default:
+        return FSoftObjectPath();
+    }
+}
+
 void UTimeTravelPresentationComponent::HandlePhaseChanged(ETimeTravelPhase NewPhase)
 {
     PresentationPhase = NewPhase;
