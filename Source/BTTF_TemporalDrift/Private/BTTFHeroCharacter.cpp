@@ -1,5 +1,6 @@
 #include "BTTFHeroCharacter.h"
 #include "VehicleInteractionComponent.h"
+#include "MissionInteractable.h"
 #include "HeroCombatComponent.h"
 #include "HeroStealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -95,6 +96,27 @@ void ABTTFHeroCharacter::ToggleCrouch()
 void ABTTFHeroCharacter::Interact()
 {
     if (!GetWorld()) return;
+
+    AMissionInteractable* NearestInteractable = nullptr;
+    float NearestInteractableDistanceSq = TNumericLimits<float>::Max();
+    for (TActorIterator<AMissionInteractable> It(GetWorld()); It; ++It)
+    {
+        if (!It->CanInteract(this))
+        {
+            continue;
+        }
+        const float DistanceSq = FVector::DistSquared(GetActorLocation(), It->GetActorLocation());
+        if (DistanceSq < NearestInteractableDistanceSq)
+        {
+            NearestInteractableDistanceSq = DistanceSq;
+            NearestInteractable = *It;
+        }
+    }
+    if (NearestInteractable && NearestInteractable->Interact(this))
+    {
+        return;
+    }
+
     ADeLoreanVehicle* NearestVehicle = nullptr;
     float NearestDistanceSq = TNumericLimits<float>::Max();
     for (TActorIterator<ADeLoreanVehicle> It(GetWorld()); It; ++It)

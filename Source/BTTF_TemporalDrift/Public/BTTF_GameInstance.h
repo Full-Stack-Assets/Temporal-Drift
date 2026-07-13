@@ -47,6 +47,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Save System")
     void InitializeNewGame();
 
+    UFUNCTION(BlueprintCallable, Category = "Save System")
+    void CapturePlayerState();
+
+    UFUNCTION(BlueprintCallable, Category = "Save System")
+    void RestorePlayerState();
+
 protected:
     virtual void Init() override;
     virtual void Shutdown() override;

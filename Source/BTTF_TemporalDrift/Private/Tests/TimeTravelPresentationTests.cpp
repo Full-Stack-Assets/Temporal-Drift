@@ -51,4 +51,38 @@ bool FBTTFTimeTravelPresentationAssets::RunTest(const FString& Parameters)
     }
     return !HasAnyErrors();
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFTimeTravelPresentationPhaseAssetsTest,
+    "BTTF.Presentation.PhaseAssetContract",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFTimeTravelPresentationPhaseAssetsTest::RunTest(const FString& Parameters)
+{
+    UTimeTravelPresentationComponent* Presentation = NewObject<UTimeTravelPresentationComponent>();
+    const ETimeTravelPhase Phases[] = {
+        ETimeTravelPhase::Charging,
+        ETimeTravelPhase::Departing,
+        ETimeTravelPhase::Arriving,
+        ETimeTravelPhase::Cooldown
+    };
+
+    for (ETimeTravelPhase Phase : Phases)
+    {
+        TestFalse(FString::Printf(TEXT("Phase %d has Niagara path"), static_cast<int32>(Phase)),
+            Presentation->GetPhaseNiagaraPath(Phase).IsNull());
+        TestFalse(FString::Printf(TEXT("Phase %d has audio path"), static_cast<int32>(Phase)),
+            Presentation->GetPhaseAudioPath(Phase).IsNull());
+    }
+
+    Presentation->HandlePhaseChanged(ETimeTravelPhase::Departing);
+    TestFalse(TEXT("Distortion material path assigned"), Presentation->GetActiveDistortionMaterialPath().IsNull());
+    Presentation->SetReducedFlash(true);
+    TestTrue(TEXT("Reduced-flash distortion path selected"),
+        Presentation->GetActiveDistortionMaterialPath().ToString().Contains(TEXT("ReducedFlash")));
+    Presentation->SetPresentationEnabled(false);
+    TestFalse(TEXT("Presentation disable clears cue"), Presentation->IsCueActive());
+    TestEqual(TEXT("Presentation disable clears intensity"), Presentation->GetCueIntensity(), 0.0f);
+    return !HasAnyErrors();
+}
+
 #endif

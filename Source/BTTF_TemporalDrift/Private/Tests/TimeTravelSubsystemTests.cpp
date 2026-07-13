@@ -57,4 +57,38 @@ bool FBTTFTimeTravelStateMachineTest::RunTest(const FString& Parameters)
     return !HasAnyErrors();
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFTimeTravelFiveJumpContractTest,
+    "BTTF.TimeTravel.FiveConsecutivePlayerJumps",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFTimeTravelFiveJumpContractTest::RunTest(const FString& Parameters)
+{
+    UTimeTravelSubsystem* System = NewObject<UTimeTravelSubsystem>();
+    for (int32 JumpIndex = 0; JumpIndex < 5; ++JumpIndex)
+    {
+        System->ResetTimeTravelState();
+        System->AddFluxEnergy(System->FluxCapacitorMaxEnergy);
+        System->SetTimeCircuitsArmed(true);
+
+        FTimeTravelRequest Request;
+        Request.Destination = ETimelineState::Past1955;
+        Request.EntrySpeedMph = System->GetJumpSpeedThresholdMph();
+        TestTrue(FString::Printf(TEXT("Jump %d accepted"), JumpIndex + 1), System->RequestTimeTravel(Request));
+
+        while (System->GetTimeTravelPhase() != ETimeTravelPhase::Idle)
+        {
+            TestTrue(FString::Printf(TEXT("Jump %d advances"), JumpIndex + 1), System->AdvanceTimeTravelPhase());
+        }
+
+        TestEqual(FString::Printf(TEXT("Jump %d arrives in 1955"), JumpIndex + 1),
+            System->GetCurrentEra(), ETimelineState::Past1955);
+        TestFalse(FString::Printf(TEXT("Jump %d leaves effects active"), JumpIndex + 1),
+            System->GetTimeTravelPhase() == ETimeTravelPhase::Departing
+            || System->GetTimeTravelPhase() == ETimeTravelPhase::SwitchingEra
+            || System->GetTimeTravelPhase() == ETimeTravelPhase::Arriving);
+    }
+
+    return !HasAnyErrors();
+}
+
 #endif

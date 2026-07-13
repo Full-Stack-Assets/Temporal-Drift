@@ -10,6 +10,9 @@
 #include "TemporalDriveSubsystem.h"
 #include "EraWeatherSubsystem.h"
 #include "CraftingSubsystem.h"
+#include "BTTFHeroCharacter.h"
+#include "DeLoreanVehicle.h"
+#include "GameFramework/PlayerController.h"
 
 UBTTF_GameInstance::UBTTF_GameInstance()
 {
@@ -37,6 +40,80 @@ void UBTTF_GameInstance::InitializeNewGame()
     UnlockedEras.Empty();
     UnlockedEras.Add(ETimelineState::Present1985);
     TotalTimeJumpsMade = 0;
+    if (CurrentSaveGame)
+    {
+        CurrentSaveGame->SavedHeroTransform = FTransform::Identity;
+        CurrentSaveGame->LastSafeVehicleTransform = FTransform::Identity;
+        CurrentSaveGame->bPlayerInVehicle = true;
+    }
+}
+
+void UBTTF_GameInstance::CapturePlayerState()
+{
+    if (!CurrentSaveGame)
+    {
+        CurrentSaveGame = Cast<UBTTF_SaveGame>(UGameplayStatics::CreateSaveGameObject(UBTTF_SaveGame::StaticClass()));
+    }
+    if (!CurrentSaveGame)
+    {
+        return;
+    }
+
+    UWorld* World = GetWorld();
+    APlayerController* Controller = World ? World->GetFirstPlayerController() : nullptr;
+    APawn* Pawn = Controller ? Controller->GetPawn() : nullptr;
+    if (!Pawn)
+    {
+        return;
+    }
+
+    if (ADeLoreanVehicle* Vehicle = Cast<ADeLoreanVehicle>(Pawn))
+    {
+        CurrentSaveGame->bPlayerInVehicle = true;
+        CurrentSaveGame->LastSafeVehicleTransform = Vehicle->GetActorTransform();
+        return;
+    }
+
+    if (ABTTFHeroCharacter* Hero = Cast<ABTTFHeroCharacter>(Pawn))
+    {
+        CurrentSaveGame->bPlayerInVehicle = false;
+        CurrentSaveGame->SavedHeroTransform = Hero->GetActorTransform();
+    }
+}
+
+void UBTTF_GameInstance::RestorePlayerState()
+{
+    if (!CurrentSaveGame)
+    {
+        return;
+    }
+
+    UWorld* World = GetWorld();
+    APlayerController* Controller = World ? World->GetFirstPlayerController() : nullptr;
+    if (!Controller)
+    {
+        return;
+    }
+
+    if (CurrentSaveGame->bPlayerInVehicle)
+    {
+        if (ADeLoreanVehicle* Vehicle = Cast<ADeLoreanVehicle>(Controller->GetPawn()))
+        {
+            if (!CurrentSaveGame->LastSafeVehicleTransform.Equals(FTransform::Identity))
+            {
+                Vehicle->SetActorTransform(CurrentSaveGame->LastSafeVehicleTransform, false, nullptr, ETeleportType::TeleportPhysics);
+            }
+        }
+        return;
+    }
+
+    if (ABTTFHeroCharacter* Hero = Cast<ABTTFHeroCharacter>(Controller->GetPawn()))
+    {
+        if (!CurrentSaveGame->SavedHeroTransform.Equals(FTransform::Identity))
+        {
+            Hero->SetActorTransform(CurrentSaveGame->SavedHeroTransform, false, nullptr, ETeleportType::TeleportPhysics);
+        }
+    }
 }
 
 void UBTTF_GameInstance::SaveTimelineState()
@@ -70,6 +147,7 @@ void UBTTF_GameInstance::LoadTimelineState()
 bool UBTTF_GameInstance::SaveGameToSlot(const FString& SlotName)
 {
     SaveTimelineState();
+    CapturePlayerState();
 
     if (!CurrentSaveGame)
     {
@@ -130,6 +208,7 @@ bool UBTTF_GameInstance::LoadGameFromSlot(const FString& SlotName)
             if(UEraWeatherSubsystem* Weather=GetSubsystem<UEraWeatherSubsystem>())Weather->SetWorldClock(CurrentSaveGame->WorldClock);
 
             LoadTimelineState();
+            RestorePlayerState();
             return true;
         }
     }
