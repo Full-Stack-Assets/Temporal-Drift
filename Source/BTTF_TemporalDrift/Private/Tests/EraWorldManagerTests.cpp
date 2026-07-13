@@ -23,6 +23,10 @@ bool FBTTFEraWorldMappingTest::RunTest(const FString& Parameters)
         TestNotNull(FString::Printf(TEXT("Era %s layer resolves"), *UEnum::GetValueAsString(Era)), Layer.LoadSynchronous());
     }
     TestEqual(TEXT("Default era is 1985"), Manager->GetActiveEra(), ETimelineState::Present1985);
+    TestTrue(TEXT("Default era begins ready"), Manager->IsEraReady());
+    TestFalse(TEXT("A worldless request fails safely"), Manager->RequestEra(ETimelineState::Past1955));
+    TestTrue(TEXT("Failed request leaves current era ready"), Manager->IsEraReady());
+    TestEqual(TEXT("Failed request preserves active era"), Manager->GetActiveEra(), ETimelineState::Present1985);
     return !HasAnyErrors();
 }
 

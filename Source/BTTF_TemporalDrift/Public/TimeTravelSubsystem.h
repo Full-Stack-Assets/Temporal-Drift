@@ -209,5 +209,6 @@ private:
     FTimeTravelRequest ActiveTravelRequest;
     FText LastJumpFailureReason;
     bool bTimeCircuitsArmed = false;
+    bool bEraSwitchRequested = false;
     float PhaseElapsedSeconds = 0.0f;
 };

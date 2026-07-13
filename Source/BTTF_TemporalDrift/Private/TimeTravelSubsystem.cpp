@@ -129,6 +129,7 @@ bool UTimeTravelSubsystem::RequestTimeTravel(const FTimeTravelRequest& Request)
 
     ActiveTravelRequest = Request;
     LastJumpFailureReason = FText::GetEmpty();
+    bEraSwitchRequested = false;
     bIsTimeTraveling = true;
     SetTimeTravelPhase(ETimeTravelPhase::ThresholdReached);
     ConsumeEnergyForTimeTravel();
@@ -148,7 +149,20 @@ bool UTimeTravelSubsystem::AdvanceTimeTravelPhase()
         {
             if (UEraWorldManager* EraManager = World->GetSubsystem<UEraWorldManager>())
             {
-                EraManager->SwitchToEra(ActiveTravelRequest.Destination);
+                if (!bEraSwitchRequested)
+                {
+                    bEraSwitchRequested = EraManager->RequestEra(ActiveTravelRequest.Destination);
+                    if (!bEraSwitchRequested)
+                    {
+                        bIsTimeTraveling = false;
+                        return FailTimeTravelRequest(ActiveTravelRequest,
+                            FText::FromString(TEXT("The destination era could not be loaded.")));
+                    }
+                }
+                if (!EraManager->IsEraReady())
+                {
+                    return false;
+                }
             }
         }
         PreviousTimelineState = CurrentTimelineState;
@@ -162,6 +176,7 @@ bool UTimeTravelSubsystem::AdvanceTimeTravelPhase()
     case ETimeTravelPhase::Cooldown:
         bIsTimeTraveling = false;
         bTimeCircuitsArmed = false;
+        bEraSwitchRequested = false;
         SetTimeTravelPhase(ETimeTravelPhase::Idle);
         OnTimeTravelCompleted.Broadcast();
         return true;
@@ -173,6 +188,7 @@ void UTimeTravelSubsystem::ResetTimeTravelState()
 {
     bIsTimeTraveling = false;
     bTimeCircuitsArmed = false;
+    bEraSwitchRequested = false;
     SetTimeTravelPhase(ETimeTravelPhase::Idle);
     CurrentTimelineState = ETimelineState::Present1985;
     PreviousTimelineState = ETimelineState::Present1985;

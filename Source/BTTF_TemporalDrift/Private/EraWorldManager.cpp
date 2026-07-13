@@ -1,6 +1,8 @@
 #include "EraWorldManager.h"
 #include "WorldPartition/DataLayer/DataLayerAsset.h"
+#include "WorldPartition/DataLayer/DataLayerInstance.h"
 #include "WorldPartition/DataLayer/DataLayerManager.h"
+#include "WorldPartition/WorldPartitionSubsystem.h"
 
 UEraWorldManager::UEraWorldManager()
 {
@@ -23,12 +25,22 @@ TSoftObjectPtr<UDataLayerAsset> UEraWorldManager::GetDataLayerForEra(ETimelineSt
 
 bool UEraWorldManager::SwitchToEra(ETimelineState NewEra)
 {
+    return RequestEra(NewEra);
+}
+
+bool UEraWorldManager::RequestEra(ETimelineState NewEra)
+{
     UWorld* World = GetWorld();
     UDataLayerManager* Manager = World ? UDataLayerManager::GetDataLayerManager(World) : nullptr;
     UDataLayerAsset* TargetLayer = GetDataLayerForEra(NewEra).LoadSynchronous();
     if (!Manager || !TargetLayer)
     {
         return false;
+    }
+
+    if (bEraReady && NewEra == ActiveEra)
+    {
+        return true;
     }
 
     for (const TPair<ETimelineState, TSoftObjectPtr<UDataLayerAsset>>& Pair : EraLayers)
@@ -40,8 +52,43 @@ bool UEraWorldManager::SwitchToEra(ETimelineState NewEra)
         }
     }
 
-    const ETimelineState PreviousEra = ActiveEra;
-    ActiveEra = NewEra;
-    OnEraChanged.Broadcast(PreviousEra, NewEra);
+    PendingEra = NewEra;
+    bEraReady = false;
     return true;
+}
+
+void UEraWorldManager::Tick(float DeltaTime)
+{
+    if (bEraReady)
+    {
+        return;
+    }
+
+    UWorld* World = GetWorld();
+    UDataLayerManager* Manager = World ? UDataLayerManager::GetDataLayerManager(World) : nullptr;
+    UDataLayerAsset* TargetLayer = GetDataLayerForEra(PendingEra).Get();
+    const UDataLayerInstance* TargetInstance = Manager && TargetLayer
+        ? Manager->GetDataLayerInstanceFromAsset(TargetLayer)
+        : nullptr;
+    if (!TargetInstance || TargetInstance->GetEffectiveRuntimeState() != EDataLayerRuntimeState::Activated)
+    {
+        return;
+    }
+
+    const UWorldPartitionSubsystem* PartitionSubsystem = World->GetSubsystem<UWorldPartitionSubsystem>();
+    if (PartitionSubsystem && !PartitionSubsystem->IsStreamingCompleted())
+    {
+        return;
+    }
+
+    const ETimelineState PreviousEra = ActiveEra;
+    ActiveEra = PendingEra;
+    bEraReady = true;
+    OnEraChanged.Broadcast(PreviousEra, ActiveEra);
+    OnEraReady.Broadcast(ActiveEra);
+}
+
+TStatId UEraWorldManager::GetStatId() const
+{
+    RETURN_QUICK_DECLARE_CYCLE_STAT(UEraWorldManager, STATGROUP_Tickables);
 }
