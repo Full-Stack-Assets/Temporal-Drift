@@ -60,6 +60,12 @@ private:
     UFUNCTION()
     void HandleObjectiveChanged(FName ObjectiveId, EMissionObjectiveState State);
 
+    UFUNCTION()
+    void HandleDialogueMissionEvent(FName EventId, FName SourceNodeId);
+
+    UFUNCTION()
+    void HandleDialogueEnded();
+
     void BindMissionDelegates();
     void UnbindMissionDelegates();
     void TryAutoSaveCheckpoint();

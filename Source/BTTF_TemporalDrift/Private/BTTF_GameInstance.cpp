@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimeTravelSubsystem.h"
 #include "MissionSubsystem.h"
+#include "DialogueSubsystem.h"
 #include "HeroProgressionSubsystem.h"
 #include "TemporalDriveSubsystem.h"
 #include "EraWeatherSubsystem.h"
@@ -319,6 +320,16 @@ float UBTTF_GameInstance::GetUIScale() const
     return ProfileSave ? ProfileSave->UIScale : 1.0f;
 }
 
+float UBTTF_GameInstance::GetSubtitleScale() const
+{
+    return ProfileSave ? ProfileSave->SubtitleScale : 1.0f;
+}
+
+float UBTTF_GameInstance::GetDialogueVolume() const
+{
+    return ProfileSave ? ProfileSave->DialogueVolume : 1.0f;
+}
+
 void UBTTF_GameInstance::ApplyProfileAccessibility(UWorld* World)
 {
     if (!World || !EnsureProfileLoaded())
@@ -338,7 +349,12 @@ void UBTTF_GameInstance::ApplyProfileAccessibility(UWorld* World)
     {
         if (ABTTF_HUD* HUD = Cast<ABTTF_HUD>(Controller->GetHUD()))
         {
-            HUD->ApplyAccessibilitySettings(ProfileSave->UIScale);
+            HUD->ApplyAccessibilitySettings(ProfileSave->UIScale, ProfileSave->SubtitleScale);
         }
+    }
+
+    if (UDialogueSubsystem* Dialogue = GetSubsystem<UDialogueSubsystem>())
+    {
+        Dialogue->SetDialogueVolume(ProfileSave->DialogueVolume);
     }
 }

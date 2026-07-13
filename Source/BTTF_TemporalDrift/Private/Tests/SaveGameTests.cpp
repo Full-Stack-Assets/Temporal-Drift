@@ -23,9 +23,10 @@ bool FBTTFSaveSchemaTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Mission stable ID stored"),Save->MissionProgress.MissionId,FName(TEXT("M02.ClocktowerCalibration")));TestEqual(TEXT("Hero progression stored"),Save->HeroProgression.Temperance,6);TestEqual(TEXT("Fuel stored"),Save->TemporalDrive.PlutoniumCells,2);
     const FString MissingSlot=TEXT("BTTF_Automation_MissingSlot_9E827");UGameplayStatics::DeleteGameInSlot(MissingSlot,0);TestFalse(TEXT("Missing file detected"),UGameplayStatics::DoesSaveGameExist(MissingSlot,0));
     UBTTF_ProfileSaveGame* Profile=NewObject<UBTTF_ProfileSaveGame>();
-    Profile->bReducedFlash=true;Profile->UIScale=1.25f;
+    Profile->bReducedFlash=true;Profile->UIScale=1.25f;Profile->DialogueVolume=0.85f;
     TestTrue(TEXT("Profile reduced flash stored"),Profile->bReducedFlash);
     TestEqual(TEXT("Profile UI scale stored"),Profile->UIScale,1.25f);
+    TestEqual(TEXT("Profile dialogue volume stored"),Profile->DialogueVolume,0.85f);
     return !HasAnyErrors();
 }
 

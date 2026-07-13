@@ -7,6 +7,10 @@
 #include "BTTF_GameInstance.h"
 #include "TimeCircuitsViewModel.h"
 #include "TimeCircuitsWidget.h"
+#include "DialogueSubsystem.h"
+#include "DialogueViewModel.h"
+#include "DialogueWidget.h"
+#include "DialogueDataAsset.h"
 #include "BTTF_PlayerController.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
@@ -21,10 +25,11 @@ void ABTTF_HUD::BeginPlay()
 {
     Super::BeginPlay();
     EnsureRuntimeWidget();
+    EnsureDialogueWidget();
 
     if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))
     {
-        ApplyAccessibilitySettings(GameInstance->GetUIScale());
+        ApplyAccessibilitySettings(GameInstance->GetUIScale(), GameInstance->GetSubtitleScale());
         if (UWorld* World = GetWorld())
         {
             GameInstance->ApplyProfileAccessibility(World);
@@ -32,11 +37,15 @@ void ABTTF_HUD::BeginPlay()
     }
 }
 
-void ABTTF_HUD::ApplyAccessibilitySettings(float UIScale)
+void ABTTF_HUD::ApplyAccessibilitySettings(float UIScale, float SubtitleScale)
 {
     if (TimeCircuitsWidget)
     {
         TimeCircuitsWidget->TextScale = FMath::Clamp(UIScale, 0.75f, 2.0f);
+    }
+    if (DialogueWidget)
+    {
+        DialogueWidget->TextScale = FMath::Clamp(SubtitleScale, 0.75f, 2.0f);
     }
 }
 
@@ -73,6 +82,71 @@ void ABTTF_HUD::EnsureRuntimeWidget()
         {
             UE_LOG(LogTemp, Error, TEXT("BTTF runtime UMG HUD creation failed."));
         }
+    }
+}
+
+void ABTTF_HUD::EnsureDialogueWidget()
+{
+    if (!DialogueViewModel)
+    {
+        DialogueViewModel = NewObject<UDialogueViewModel>(this);
+    }
+    if (DialogueWidget)
+    {
+        return;
+    }
+
+    if (APlayerController* Controller = GetOwningPlayerController())
+    {
+        TSubclassOf<UDialogueWidget> WidgetClass = UDialogueWidget::StaticClass();
+        if (UClass* AuthoredClass = LoadClass<UDialogueWidget>(
+                nullptr, TEXT("/Game/UI/WBP_Dialogue.WBP_Dialogue")))
+        {
+            WidgetClass = AuthoredClass;
+        }
+
+        DialogueWidget = CreateWidget<UDialogueWidget>(Controller, WidgetClass);
+        if (DialogueWidget)
+        {
+            DialogueWidget->BindViewModel(DialogueViewModel);
+            DialogueWidget->AddToPlayerScreen(90);
+            DialogueWidget->SetVisibility(ESlateVisibility::Collapsed);
+        }
+    }
+
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UDialogueSubsystem* Dialogue = GameInstance->GetSubsystem<UDialogueSubsystem>())
+        {
+            Dialogue->OnNodeChanged.AddDynamic(this, &ABTTF_HUD::HandleDialogueNodeChanged);
+            Dialogue->OnDialogueEnded.AddDynamic(this, &ABTTF_HUD::HandleDialogueConversationEnded);
+        }
+    }
+}
+
+void ABTTF_HUD::HandleDialogueNodeChanged(FDialogueNode Node)
+{
+    if (!DialogueViewModel)
+    {
+        return;
+    }
+
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UDialogueSubsystem* Dialogue = GameInstance->GetSubsystem<UDialogueSubsystem>())
+        {
+            DialogueViewModel->UpdateFromNode(Node, Dialogue->GetAvailableChoices(),
+                Dialogue->CanAdvanceConversation(),
+                Node.bWaitForVoiceBeforeAdvance && !Dialogue->CanAdvanceConversation());
+        }
+    }
+}
+
+void ABTTF_HUD::HandleDialogueConversationEnded()
+{
+    if (DialogueViewModel)
+    {
+        DialogueViewModel->ClearDisplay();
     }
 }
 

@@ -77,6 +77,12 @@ public:
     UFUNCTION(BlueprintPure, Category = "Profile")
     float GetUIScale() const;
 
+    UFUNCTION(BlueprintPure, Category = "Profile")
+    float GetSubtitleScale() const;
+
+    UFUNCTION(BlueprintPure, Category = "Profile")
+    float GetDialogueVolume() const;
+
     UFUNCTION(BlueprintCallable, Category = "Profile")
     void ApplyProfileAccessibility(UWorld* World);
 

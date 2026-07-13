@@ -70,4 +70,5 @@ public:
     UPROPERTY(VisibleAnywhere,Category="Accessibility") bool bReducedFlash=false;
     UPROPERTY(VisibleAnywhere,Category="Accessibility") float UIScale=1.0f;
     UPROPERTY(VisibleAnywhere,Category="Accessibility") float SubtitleScale=1.0f;
+    UPROPERTY(VisibleAnywhere,Category="Audio") float DialogueVolume=1.0f;
 };

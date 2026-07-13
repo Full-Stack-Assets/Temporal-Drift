@@ -24,6 +24,7 @@ def widget_blueprint(name, parent_class_path):
 def main():
     widget_blueprint("WBP_TimeCircuits", "/Script/BTTF_TemporalDrift.TimeCircuitsWidget")
     widget_blueprint("WBP_DrivingHUD", "/Script/BTTF_TemporalDrift.TimeCircuitsWidget")
+    widget_blueprint("WBP_Dialogue", "/Script/BTTF_TemporalDrift.DialogueWidget")
     unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
     unreal.log("UI_WIDGETS_SUCCESS")
 

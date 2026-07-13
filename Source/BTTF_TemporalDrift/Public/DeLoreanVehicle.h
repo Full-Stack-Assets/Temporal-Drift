@@ -112,6 +112,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vehicle|Tuning")
     UDeLoreanTuningData* TuningDataAsset;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vehicle|Input", meta=(ClampMin="1.0"))
+    float InputSmoothingRate = 12.0f;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vehicle|Tuning", meta=(ClampMin="100.0"))
     float ReverseAssistAcceleration = 650.0f;
 
@@ -230,6 +233,9 @@ protected:
     void InitializeTimeTravelSubsystem();
     void ApplyTuningData(const UDeLoreanTuningData* TuningData);
     void UpdateHoverMode(float DeltaTime);
+    void UpdateSpeedResponsiveCamera(float DeltaTime);
+    void ApplySmoothedVehicleInput(float DeltaTime);
+    void UpdateSafeTransformIfStable();
     void ApplyKeyboardFallback();
     void InstallVehicleInputMapping();
 
@@ -237,6 +243,12 @@ protected:
     float LastKeyboardSteering = 0.0f;
     float LastKeyboardBrake = 0.0f;
     bool bLastKeyboardReverse = false;
+    float SmoothedThrottleInput = 0.0f;
+    float SmoothedSteeringInput = 0.0f;
+    float SmoothedBrakeInput = 0.0f;
+    float TargetThrottleInput = 0.0f;
+    float TargetSteeringInput = 0.0f;
+    float TargetBrakeInput = 0.0f;
 
     UPROPERTY(VisibleInstanceOnly, Category = "Vehicle|Recovery")
     FTransform LastSafeTransform;

@@ -56,6 +56,9 @@ public:
     UFUNCTION(BlueprintCallable, Category="Time Travel|Presentation")
     void HandlePhaseChanged(ETimeTravelPhase NewPhase);
 
+    UFUNCTION(BlueprintCallable, Category="Time Travel|Presentation")
+    void UpdateVehicleDrivingContext(float SpeedMph, float FluxPercent, float ParadoxPercent);
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Presentation|Materials")
     FSoftObjectPath DistortionMaterialPath =
         FSoftObjectPath(TEXT("/Game/Materials/PostProcess/M_TemporalDistortion.M_TemporalDistortion"));
@@ -127,4 +130,8 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Presentation", meta=(AllowPrivateAccess="true"))
     float CueIntensity = 0.0f;
+
+    float CachedSpeedMph = 0.0f;
+    float CachedFluxPercent = 0.0f;
+    float CachedParadoxPercent = 0.0f;
 };

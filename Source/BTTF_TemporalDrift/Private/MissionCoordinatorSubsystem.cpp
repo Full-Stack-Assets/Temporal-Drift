@@ -1,6 +1,7 @@
 #include "MissionCoordinatorSubsystem.h"
 #include "BTTF_GameInstance.h"
 #include "MissionSubsystem.h"
+#include "DialogueSubsystem.h"
 #include "TimeTravelSubsystem.h"
 #include "MissionDataAsset.h"
 
@@ -19,12 +20,25 @@ void UMissionCoordinatorSubsystem::Initialize(FSubsystemCollectionBase& Collecti
     {
         MissionSubsystem = GameInstance->GetSubsystem<UMissionSubsystem>();
         BindMissionDelegates();
+        if (UDialogueSubsystem* Dialogue = GameInstance->GetSubsystem<UDialogueSubsystem>())
+        {
+            Dialogue->OnMissionEvent.AddDynamic(this, &UMissionCoordinatorSubsystem::HandleDialogueMissionEvent);
+            Dialogue->OnDialogueEnded.AddDynamic(this, &UMissionCoordinatorSubsystem::HandleDialogueEnded);
+        }
     }
 }
 
 void UMissionCoordinatorSubsystem::Deinitialize()
 {
     UnbindMissionDelegates();
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UDialogueSubsystem* Dialogue = GameInstance->GetSubsystem<UDialogueSubsystem>())
+        {
+            Dialogue->OnMissionEvent.RemoveDynamic(this, &UMissionCoordinatorSubsystem::HandleDialogueMissionEvent);
+            Dialogue->OnDialogueEnded.RemoveDynamic(this, &UMissionCoordinatorSubsystem::HandleDialogueEnded);
+        }
+    }
     if (TimeTravelSubsystem)
     {
         TimeTravelSubsystem->OnJumpArrived.RemoveDynamic(this, &UMissionCoordinatorSubsystem::HandleJumpArrived);
@@ -118,6 +132,32 @@ void UMissionCoordinatorSubsystem::HandleObjectiveChanged(FName ObjectiveId, EMi
     }
 
     TryAutoSaveCheckpoint();
+}
+
+void UMissionCoordinatorSubsystem::HandleDialogueMissionEvent(FName EventId, FName SourceNodeId)
+{
+    SubmitMissionEvent(EventId);
+}
+
+void UMissionCoordinatorSubsystem::HandleDialogueEnded()
+{
+    if (!TimeTravelSubsystem)
+    {
+        return;
+    }
+
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UDialogueSubsystem* Dialogue = GameInstance->GetSubsystem<UDialogueSubsystem>())
+        {
+            const float ParadoxDelta = Dialogue->PendingParadoxDelta;
+            if (!FMath::IsNearlyZero(ParadoxDelta))
+            {
+                TimeTravelSubsystem->ApplyDirectParadoxDelta(ParadoxDelta);
+            }
+            Dialogue->PendingParadoxDelta = 0.0f;
+        }
+    }
 }
 
 void UMissionCoordinatorSubsystem::TryAutoSaveCheckpoint()

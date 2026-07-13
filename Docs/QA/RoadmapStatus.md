@@ -10,19 +10,19 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 |------|--------|-------|
 | 1 Stable baseline | **Code complete** | Build/automation/package scripts and configuration tests exist. Live PIE ×3 gate still requires editor verification. |
 | 2 Input contract | **Code complete** | Enhanced Input assets, vehicle tests, reset/camera/destination cycling implemented. Live controller gate pending. |
-| 3 Hero vehicle | **Partial** | Tuning data, hero mesh contract, and cameras implemented. SportsCar physics chassis remains; live course tuning gate pending. |
+| 3 Hero vehicle | **Partial** | Full tuning apply (suspension/steer), input smoothing, speed-responsive chase camera, reverse action binding. SportsCar physics chassis remains. |
 | 4 Time travel SM | **Code complete** | Deterministic state machine plus `BTTF.TimeTravel.FiveConsecutivePlayerJumps` automation added. |
 | 5 Era switching | **Partial** | `EraWorldManager` async switching works. `UEraDataAsset` now includes data-layer and arrival fields; deeper era tests still thin. |
 | 6 1955 dressing | **Code complete** | Python builders/validators pass; live blind-comparison screenshots still outstanding. |
-| 7 Time-circuit UI | **Partial** | Runtime UMG + view model + mission objective row; `WBP_TimeCircuits` load fallback and profile UI scale added. Full accessibility pass still pending. |
-| 8 Presentation | **Partial** | Phase contract, material paths, disable switch, profile reduced-flash sync, and asset script added. Niagara/audio asset binaries still editor-authored. |
+| 7 Time-circuit UI | **Partial** | Runtime UMG + view model + mission objective row; `WBP_TimeCircuits` fallback and profile UI scale added. Dialogue subtitle widget (`WBP_Dialogue`) added. |
+| 8 Presentation | **Partial** | Phase contract, vehicle-driven Niagara parameters, audio fade, profile reduced-flash sync, and asset scripts added. |
 
 ## Tasks 13–14 (Region + hero)
 
 | Task | Status | Notes |
 |------|--------|-------|
 | 13 Complete Hill Valley region | **Partial** | C++ validator + Python regional builder pass. Live full-circuit/streaming gate still open in `HillValleyRegionEvidence.md`. |
-| 14 On-foot hero | **Partial** | Movement, vehicle handoff, interaction priority, and `BTTF.Hero.VehicleHandoff` test added. NPC/item dialogue gate still open. |
+| 14 On-foot hero | **Partial** | Movement tuning, camera lag, dialogue interactables with subtitles/audio hooks, mission interact priority, vehicle enter range check. |
 
 ## New in this branch
 

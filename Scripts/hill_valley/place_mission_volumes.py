@@ -6,6 +6,7 @@ GENERATED_TAG = unreal.Name("HV_MissionGenerated")
 
 MISSION_VOLUME_CLASS = "/Script/BTTF_TemporalDrift.MissionEventVolume"
 MISSION_INTERACTABLE_CLASS = "/Script/BTTF_TemporalDrift.MissionInteractable"
+DIALOGUE_INTERACTABLE_CLASS = "/Script/BTTF_TemporalDrift.DialogueInteractable"
 TRIGGER_BOX_CLASS = "/Script/Engine.TriggerBox"
 TARGET_POINT_CLASS = "/Script/Engine.TargetPoint"
 
@@ -17,6 +18,11 @@ MISSION_VOLUMES = [
 MISSION_INTERACTABLES = [
     ("MI_M02_SensorVehicle", (-800, 1200, 120), "SensorInstalledVehicle", "Install clocktower sensor"),
     ("MI_M02_ClocktowerCalibrate", (0, 4100, 220), "ClocktowerCalibrated", "Calibrate clocktower sensor"),
+]
+
+DIALOGUE_INTERACTABLES = [
+    ("DI_M02_CourthouseBriefing", (0, 3000, 120),
+     "/Game/Dialogue/DA_Dialogue_M02_CourthouseBriefing.DA_Dialogue_M02_CourthouseBriefing"),
 ]
 
 
@@ -93,10 +99,29 @@ def spawn_interactable(name, location, event_id, prompt, interactable_class, cla
     return actor
 
 
+def spawn_dialogue_interactable(name, location, asset_path, dialogue_class, class_path):
+    actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
+    actor = actor_subsystem.spawn_actor_from_class(
+        dialogue_class, unreal.Vector(*location), unreal.Rotator(0, 0, 0)
+    )
+    actor.set_actor_label(name)
+    actor.tags = [GENERATED_TAG, unreal.Name("HV_DialogueInteractable")]
+    if class_path.endswith("DialogueInteractable"):
+        asset = unreal.load_asset(asset_path)
+        if asset:
+            actor.set_editor_property("conversation_asset", asset)
+        else:
+            unreal.log_warning(f"Dialogue asset missing for {name}: {asset_path}")
+    return actor
+
+
 def main():
     volume_class, volume_class_path = load_actor_class(MISSION_VOLUME_CLASS, TRIGGER_BOX_CLASS)
     interactable_class, interactable_class_path = load_actor_class(
         MISSION_INTERACTABLE_CLASS, TARGET_POINT_CLASS
+    )
+    dialogue_class, dialogue_class_path = load_actor_class(
+        DIALOGUE_INTERACTABLE_CLASS, TARGET_POINT_CLASS
     )
 
     load_map()
@@ -106,6 +131,8 @@ def main():
         spawn_volume(*spec, volume_class, volume_class_path)
     for spec in MISSION_INTERACTABLES:
         spawn_interactable(*spec, interactable_class, interactable_class_path)
+    for spec in DIALOGUE_INTERACTABLES:
+        spawn_dialogue_interactable(*spec, dialogue_class, dialogue_class_path)
 
     unreal.EditorLoadingAndSavingUtils.save_current_level()
     unreal.log("MISSION_VOLUME_PLACEMENT_SUCCESS")
