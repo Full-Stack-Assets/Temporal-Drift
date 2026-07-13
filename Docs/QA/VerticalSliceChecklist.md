@@ -38,7 +38,8 @@ Last updated: 2026-07-13
 - [x] `BTTF.Mission.EventFactsApplyOnlyAfterAccept` verifies timeline facts mutate only after mission events are accepted.
 - [x] `BTTF.Vehicle.TimeTravel.JumpFailureClearsVehicleState` verifies failed jumps do not strand the DeLorean in a traveling state.
 - [x] `BTTF.Save.RuntimeTimelineFactOverridesRestore` verifies runtime fact overrides survive save/load restore.
-- [x] `BTTF.Hero.VehicleExitSupportsBehindOffset` verifies left/right/behind exit configuration.
+- [x] `BTTF.Vehicle.Gameplay.ReverseHoverAndResetContracts` verifies tuning apply, reverse transition, hover roll isolation, and reset recovery.
+- [x] `BTTF.World.PhotorealMaterialLibraryContract` verifies PBR masters/instances load with valid parents.
 
 ## Live transition evidence
 

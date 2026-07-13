@@ -12,8 +12,8 @@ Execution order follows `Docs/superpowers/plans/2026-07-13-temporal-drift-compre
 | 2 Keyboard input contract | **Code complete** | Arrow movement, WASD camera-only orbit, mouse look removed, possession mapping swap, Enhanced Input + fallback handlers. Live PIE gate pending. |
 | 3 G enter/exit | **Code complete** | Controller-owned `G`, left/right/behind exit, blocked-exit feedback, handoff automation. |
 | 4 Shared keyboard camera | **Code complete** | `UKeyboardCameraComponent`: clamps, 1.5s auto-chase, `C`/`V`, hero + DeLorean presets, hover roll isolation. |
-| 5 Hero DeLorean gameplay | **Partial** | Reverse assist, hover stabilization, reset, speed-responsive chase FOV. Tuning acceptance + `HeroVehicleAcceptance.md` evidence pending. |
-| 6 Photoreal materials/lighting | **Partial** | `create_pbr_materials.py`, `apply_photoreal_lighting.py`; flat-color builders not fully migrated. Validator + screenshots pending. |
+| 5 Hero DeLorean gameplay | **Code complete** | Tuning data drives reverse/hover/input; `BTTF.Vehicle.Gameplay.ReverseHoverAndResetContracts` + `Docs/QA/HeroVehicleAcceptance.md`. Live PIE pending. |
+| 6 Photoreal materials/lighting | **Code complete** | `photoreal_material_library.py`, builder migration, validator; `apply_photoreal_lighting.py`. Screenshots pending. |
 | 7 Hill Valley region gaps | **Partial** | Metro basin, six era dressings, mission volumes (incl. M01 return, M04/M05 producers). Streaming perf evidence open. |
 | 8 1985→1955 loop | **Partial** | Five-jump automation, M02 bridge, presentation scaffold. Live player jumps + full M02 playthrough pending. |
 | 9 Save/packaging acceptance | **Partial** | Schema v3, era restore on load, dynamic fact restore, jump-failure recovery. Packaged smoke + force-close recovery pending. |

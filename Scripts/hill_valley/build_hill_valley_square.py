@@ -1,4 +1,15 @@
 import unreal
+import os
+import sys
+
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if _SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPT_DIR)
+
+try:
+    import hill_valley_common as hv
+except ImportError:
+    hv = None
 
 
 LEVEL = "/Game/Levels/LVL_TimeTravelTest"
@@ -548,7 +559,10 @@ def main():
         raise RuntimeError(f"Unable to load level: {LEVEL}")
     delete_previous_generated()
 
-    materials_global = {
+    if hv:
+        materials_global = hv.create_default_materials()
+    else:
+        materials_global = {
         "asphalt": create_color_material("M_HV_Asphalt", (0.035, 0.04, 0.045), 0.92),
         "concrete": create_color_material("M_HV_Concrete", (0.42, 0.43, 0.40), 0.82),
         "grass": create_color_material("M_HV_Grass", (0.08, 0.24, 0.07), 0.95),
@@ -563,7 +577,10 @@ def main():
         "glass": create_color_material("M_HV_Window", (0.025, 0.11, 0.16), 0.28),
         "trunk": create_color_material("M_HV_Wood", (0.16, 0.07, 0.025), 0.9),
         "leaves": create_color_material("M_HV_Leaves", (0.035, 0.18, 0.045), 0.96),
-    }
+        "water": create_color_material("M_HV_Water", (0.04, 0.18, 0.32), 0.15),
+        "sand": create_color_material("M_HV_Sand", (0.62, 0.54, 0.38), 0.9),
+        "yellow_line": create_color_material("M_HV_YellowLine", (0.82, 0.72, 0.08), 0.7),
+        }
 
     build_roads_and_square(materials_global)
     build_courthouse(materials_global)

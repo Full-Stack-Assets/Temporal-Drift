@@ -41,11 +41,11 @@
 
 ### Task 5: Complete the Hero DeLorean Gameplay Gate
 
-**Status:** Partial — tuning acceptance evidence pending.
+**Status:** Code complete — tuning data drives reverse/hover/input; regression tests + `Docs/QA/HeroVehicleAcceptance.md`. Live PIE evidence pending.
 
 ### Task 6: Upgrade Hill Valley to Photoreal Material and Lighting Baseline
 
-**Status:** Partial — initial PBR/lighting scripts; full builder migration pending.
+**Status:** Code complete — `Scripts/hill_valley/photoreal_material_library.py`, apply/validate scripts, builders use PBR instances via `hill_valley_common.create_default_materials()`. Courthouse screenshots pending on PC.
 
 ### Task 7: Close Hill Valley Region and Streaming Gaps
 

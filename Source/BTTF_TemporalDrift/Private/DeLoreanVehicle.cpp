@@ -142,6 +142,17 @@ void ADeLoreanVehicle::ApplyTuningData(const UDeLoreanTuningData* TuningData)
             }
         }
     }
+
+    InputSmoothingRate = TuningData->InputSmoothingRate;
+    ReverseAssistAcceleration = TuningData->ReverseAssistAcceleration;
+    ReverseAssistMaxSpeedMph = TuningData->ReverseAssistMaxSpeedMph;
+    HoverTargetHeight = TuningData->HoverTargetHeight;
+    HoverSpringStrength = TuningData->HoverSpringStrength;
+    HoverDamping = TuningData->HoverDamping;
+    HoverStabilizationStrength = TuningData->HoverStabilizationStrength;
+    HoverAngularDamping = TuningData->HoverAngularDamping;
+    HoverForwardAcceleration = TuningData->HoverForwardAcceleration;
+    HoverYawAcceleration = TuningData->HoverYawAcceleration;
 }
 
 void ADeLoreanVehicle::BeginPlay()

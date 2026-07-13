@@ -30,6 +30,11 @@ def material(mat_path, name, color, roughness=0.78):
     existing = unreal.EditorAssetLibrary.load_asset(full_path)
     if existing:
         return existing
+
+    shared_path = f"/Game/Materials/HillValley/{name}"
+    if unreal.EditorAssetLibrary.does_asset_exist(shared_path):
+        return unreal.EditorAssetLibrary.load_asset(shared_path)
+
     unreal.EditorAssetLibrary.make_directory(mat_path)
     result = unreal.AssetToolsHelpers.get_asset_tools().create_asset(
         name, mat_path, unreal.Material, unreal.MaterialFactoryNew()

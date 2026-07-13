@@ -3,6 +3,7 @@
 #include "Misc/AutomationTest.h"
 #include "DeLoreanTuningData.h"
 #include "DeLoreanVehicle.h"
+#include "ChaosVehicleMovementComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -32,6 +33,49 @@ bool FBTTFVehicleTuningDefaultsTest::RunTest(const FString& Parameters)
         Tuning->MaxSteerAngleDegrees >= 30.0f && Tuning->MaxSteerAngleDegrees <= 45.0f);
     TestTrue(TEXT("Chase camera FOV range configured"),
         Tuning->ChaseHighSpeedFov > Tuning->ChaseBaseFov);
+    TestTrue(TEXT("Reverse assist acceleration configured"),
+        Tuning->ReverseAssistAcceleration >= 400.0f);
+    TestTrue(TEXT("Hover yaw acceleration configured"),
+        Tuning->HoverYawAcceleration > 0.0f);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FBTTFVehicleGameplayRegressionTest,
+    "BTTF.Vehicle.Gameplay.ReverseHoverAndResetContracts",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFVehicleGameplayRegressionTest::RunTest(const FString& Parameters)
+{
+    ADeLoreanVehicle* Vehicle = NewObject<ADeLoreanVehicle>();
+    const UDeLoreanTuningData* Tuning = GetDefault<UDeLoreanTuningData>();
+    Vehicle->ApplyTuningData(Tuning);
+
+    TestEqual(TEXT("Tuning applies reverse assist acceleration"),
+        Vehicle->ReverseAssistAcceleration, Tuning->ReverseAssistAcceleration);
+    TestEqual(TEXT("Tuning applies hover target height"),
+        Vehicle->HoverTargetHeight, Tuning->HoverTargetHeight);
+
+    Vehicle->ApplyReverseInput(true);
+    UChaosVehicleMovementComponent* Movement = Vehicle->GetVehicleMovementComponent();
+    TestEqual(TEXT("Reverse from rest selects reverse gear"), Movement->GetTargetGear(), -1);
+
+    Vehicle->ApplyReverseInput(false);
+    Vehicle->ApplyDigitalDriveInput(true, false, true, false);
+    TestEqual(TEXT("Forward after reverse restores drive gear"), Movement->GetTargetGear(), 1);
+    TestEqual(TEXT("Forward throttle applied after reverse"), Movement->GetThrottleInput(), 1.0f);
+
+    Vehicle->ToggleHoverMode();
+    TestTrue(TEXT("Hover mode engages"), Vehicle->bHoverModeActive);
+    TestFalse(TEXT("Hover mode keeps camera roll isolated"),
+        Vehicle->CameraSpringArm->bInheritRoll);
+
+    const FTransform SafeTransform(FRotator::ZeroRotator, FVector(100.0f, 200.0f, 300.0f));
+    Vehicle->SetLastSafeTransform(SafeTransform);
+    Vehicle->SetActorTransform(FTransform(FRotator(80.0f, 45.0f, 30.0f), FVector(0.0f, 0.0f, -500.0f)));
+    Vehicle->ResetVehicle();
+    TestTrue(TEXT("Reset restores safe transform location"),
+        Vehicle->GetActorLocation().Equals(SafeTransform.GetLocation(), 1.0f));
     return !HasAnyErrors();
 }
 

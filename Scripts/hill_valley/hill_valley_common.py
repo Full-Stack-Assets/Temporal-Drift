@@ -225,6 +225,12 @@ def spawn_named_citizen_node(citizen_id, display_name, location):
 
 
 def create_default_materials():
+    try:
+        import photoreal_material_library as photoreal
+        return photoreal.load_material_map()
+    except Exception as exc:
+        log(f"photoreal library unavailable ({exc}); falling back to flat-color materials")
+
     return {
         "asphalt": create_color_material("M_HV_Asphalt", (0.035, 0.04, 0.045), 0.92),
         "concrete": create_color_material("M_HV_Concrete", (0.42, 0.43, 0.40), 0.82),

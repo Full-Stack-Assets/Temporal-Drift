@@ -60,4 +60,34 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
     float ChaseHighSpeedMph = 65.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    float InputSmoothingRate = 12.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Reverse")
+    float ReverseAssistAcceleration = 650.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Reverse")
+    float ReverseAssistMaxSpeedMph = 15.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hover")
+    float HoverTargetHeight = 250.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hover")
+    float HoverSpringStrength = 12.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hover")
+    float HoverDamping = 3.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hover")
+    float HoverStabilizationStrength = 8.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hover")
+    float HoverAngularDamping = 5.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hover")
+    float HoverForwardAcceleration = 500.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Hover")
+    float HoverYawAcceleration = 1.5f;
 };
