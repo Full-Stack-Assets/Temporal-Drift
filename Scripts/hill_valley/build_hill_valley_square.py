@@ -343,6 +343,23 @@ def spawn_marker(name, location, tags):
     return actor
 
 
+def build_destination_facade(name, x, y, size, materials, district):
+    width, depth, height = size
+    front_y = y - depth / 2.0 - 18.0
+    # Large, readable street-facing bays keep each destination identifiable at driving distance.
+    for index in range(max(2, int(width // 900))):
+        window_x = x - width * 0.5 + 480.0 + index * 900.0
+        spawn_block(f"{name}_Window_{index:02d}", (window_x, front_y, height * 0.60),
+                    (560, 36, 420), materials["glass"], tags=("HV_Architecture", district))
+        spawn_block(f"{name}_WindowTrim_{index:02d}", (window_x, front_y - 24.0, height * 0.60),
+                    (620, 26, 480), materials["trim"], tags=("HV_Architecture", district))
+    spawn_block(f"{name}_Door", (x, front_y - 4.0, 300), (520, 60, 720),
+                materials["dark"], tags=("HV_Interior", "HV_MissionAccess", district))
+    spawn_block(f"{name}_Awning", (x, front_y - 70.0, height * 0.43),
+                (min(width * 0.82, 3400), 160, 70), materials["trim"],
+                tags=("HV_Architecture", "HV_Streetscape", district))
+
+
 def build_streetscape(materials):
     tree_positions = [
         (-2100, -2500, 120), (2100, -2500, 120), (-2100, 250, 120), (2100, 250, 120),
@@ -464,6 +481,7 @@ def build_complete_region(materials):
         spawn_block(name+"_Roof", (x,y,size[2]+110), (size[0]+180,size[1]+180,220), materials["roof"], tags=("HV_Building",district))
         sign_y = y - size[1]/2 - 30
         spawn_text_sign(name+"_Sign", sign, (x,sign_y,size[2]*0.72), rotation=(0,0,90), tags=(district,"HV_DestinationSign"), scale=3.0)
+        build_destination_facade(name, x, y, size, materials, district)
 
         # Mission-critical buildings receive a collision-safe readable lobby.
         interior_y = y - size[1] * 0.2
@@ -485,6 +503,9 @@ def build_complete_region(materials):
             spawn_block(house+"_Roof", (x,y,930), (2300,1650,260), materials["roof"], tags=("HV_Building","HV_District_Residential"))
             spawn_block(house+"_Porch", (x-side*1170,y,140), (320,900,180), materials["concrete"], tags=("HV_Prop","HV_District_Residential"))
             spawn_block(house+"_Garage", (x,y+1050,280), (1450,650,560), body_mat, tags=("HV_Building","HV_District_Residential"))
+            spawn_block(house+"_FrontDoor", (x-side*1060,y-730,300), (360,45,620), materials["dark"], tags=("HV_Architecture","HV_District_Residential"))
+            for window_index in (-1, 1):
+                spawn_block(f"{house}_Window_{window_index:+d}", (x + window_index*560, y-730, 560), (420,45,300), materials["glass"], tags=("HV_Architecture","HV_District_Residential"))
 
     street_signs = (("MAPLE STREET",-7200,-5200),("LYON ESTATES",7200,-5200),("RIVER ROAD",0,-15000),("SCHOOL AVENUE",-10500,4800))
     for index,(text,x,y) in enumerate(street_signs):
