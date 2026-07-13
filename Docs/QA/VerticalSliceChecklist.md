@@ -4,13 +4,13 @@ Last updated: 2026-07-13
 
 ## Automated evidence
 
-> **Integration baseline — 2026-07-13** (Gate A · Task 1, commit `08e9a6a`, local UE 5.8):
-> `build_editor.ps1` → `Result: Succeeded`. `run_automation.ps1 -Filter BTTF` → **59 found / 58 passed / 1 failed / 0 not-run**.
-> Sole failure: **`BTTF.World.HillValleyComplete`** — *"Playable region does not cover the required metro town and rural bounds"* (needs ≥70000×80000 UU of `HV_Generated` actors; owned by Task 7). `BTTF.Hero.VehicleHandoff` passes. Full log: `Saved/Logs/BTTF_Automation.log`.
+> **Integration baseline — 2026-07-13** (Gate A · Task 1, local UE 5.8):
+> `build_editor.ps1` → `Result: Succeeded`. `run_automation.ps1 -Filter BTTF` → **59 found / 59 passed / 0 failed / 0 not-run** after the Task 7 region fix below.
+> Baseline commit `08e9a6a` had one failure — `BTTF.World.HillValleyComplete` (*"Playable region does not cover the required metro town and rural bounds"*, Y location-span 76000 < required 80000 UU). Fixed by adding North/South rural approach content; the neutral map was regenerated and the test now passes. `BTTF.Hero.VehicleHandoff` passes. Full log: `Saved/Logs/BTTF_Automation.log`.
 
 - [x] `Scripts/Build/build_editor.ps1` completed with `Result: Succeeded` after the asynchronous era-readiness changes (re-confirmed 2026-07-13).
-- [x] `Scripts/Build/run_automation.ps1 -Filter BTTF` — 2026-07-13 baseline: **59 tests, 58 passed, 1 failed** (`BTTF.World.HillValleyComplete`).
-- [ ] `BTTF.World.HillValleyComplete` passes — currently **fails** on metro/rural region-bounds coverage; deferred to Task 7 (Close Hill Valley Region and Streaming Gaps).
+- [x] `Scripts/Build/run_automation.ps1 -Filter BTTF` — 2026-07-13: **59 tests, 59 passed, 0 failed**.
+- [x] `BTTF.World.HillValleyComplete` passes — metro/rural region-bounds coverage restored via North/South rural approach (Task 7). *(Automation gate only; live driving-circuit profiling still pending — see `Docs/QA/HillValleyRegionEvidence.md`.)*
 - [x] `BTTF.Presentation.TimeTravelPhaseContract` verifies phase cues, reduced-flash intensity, and idle cleanup.
 - [x] `Scripts/Build/package_windows.ps1 -Configuration Development` completed cook, stage, pak, archive, and exited with `BUILD SUCCESSFUL`.
 - [x] Development package artifact was produced at `Builds/Windows-Development/BTTF_TemporalDrift.exe`.

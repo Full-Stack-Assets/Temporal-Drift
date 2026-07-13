@@ -9,11 +9,20 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 Release Gate A · Task 1 ("Preserve and Verify the Current Integration Baseline"). Ran against the tip of `agent/batch-1-stability-controls` (commit `08e9a6a`) on the local UE 5.8 checkout. Worktree was already clean; no `__pycache__`/`.pyc` or other transient files were present to remove.
 
 - **Editor build:** `Scripts/Build/build_editor.ps1` → `Result: Succeeded` (target already up to date; 0 compile actions).
-- **Automation:** `Scripts/Build/run_automation.ps1 -Filter BTTF` → **59 found, 58 passed, 1 failed, 0 not-run.**
+- **Automation (baseline commit `08e9a6a`):** `run_automation.ps1 -Filter BTTF` → **59 found, 58 passed, 1 failed, 0 not-run.**
 - **`BTTF.Hero.VehicleHandoff`:** ✅ passes (enter → possess vehicle → exit on clear side → repossess hero).
-- **`BTTF.World.HillValleyComplete`:** ❌ **fails.** Validator error: *"Playable region does not cover the required metro town and rural bounds."* `UHillValleyWorldValidator` requires the `HV_Generated`-tagged region to span ≥70000×80000 UU (700m×800m); the regenerated `LVL_TimeTravelTest` load falls short. This is a region/streaming coverage gap owned by **Task 7 (Close Hill Valley Region and Streaming Gaps)**, not a baseline blocker — recorded here as the exact known-failing test.
+- **`BTTF.World.HillValleyComplete`:** was ❌ failing on the baseline — *"Playable region does not cover the required metro town and rural bounds."* `UHillValleyWorldValidator` measures the bounding box of `HV_Generated` **actor locations** and requires ≥70000×80000 UU. The metro layout reached local X ±42000 (84000, passes) but only local Y ±38000 (76000, fails). **Fixed under Task 7** (see below).
 
-Full log: `Saved/Logs/BTTF_Automation.log`. This baseline is an automation/build checkpoint only; no PIE or packaged evidence was produced in this task, so no gate is claimed complete from it.
+Full baseline log preserved; this build/automation checkpoint produced no PIE or packaged evidence, so no gate was claimed complete from it.
+
+## Task 7 — Hill Valley Region Fix (2026-07-13)
+
+Anchored on the failing `BTTF.World.HillValleyComplete` (constraint: every fix starts from a failing test). Root cause: the metro generator gave the East/West axis highway approaches at local X ±42000 but the North/South axis only reached ±38000 (reset volumes), leaving the Y location-span 4000 UU short of the required 80000.
+
+- **Fix (`Scripts/hill_valley/build_hill_valley_metro.py`):** added North/South rural approach roads at local Y ±41000 (mirroring the E/W highway approaches), two destination signs, four approach nav nodes, and relocated the two N/S emergency-reset volumes to ±41000. Y location-span is now 82000 (≥80000). The validator was **not** modified.
+- **Regenerated** `LVL_TimeTravelTest` via `build_hill_valley_square.py` (clean commandlet, exit 0, token `courthouse square generation complete`; removed 2389 prior generated actors, rebuilt).
+- **Result:** `run_automation.ps1 -Filter BTTF` → **59 found, 59 passed, 0 failed.** `BTTF.World.HillValleyComplete` ✅.
+- **Still open for Task 7 acceptance:** all-era clean regeneration (1885/1985-A/2015/2045), live driving-circuit profiling (frame time, streaming hitches, memory), and the live-evidence gates in `Docs/QA/HillValleyRegionEvidence.md`. Not claimed complete from generated assets + automation alone.
 
 ## Tasks 1–8 (Vertical-slice foundation)
 
