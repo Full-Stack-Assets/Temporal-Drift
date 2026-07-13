@@ -13,6 +13,7 @@
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
 #include "TimeTravelPresentationComponent.h"
+#include "KeyboardCameraStateComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
@@ -90,6 +91,40 @@ ADeLoreanVehicle::ADeLoreanVehicle()
 
     ChaseCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ChaseCamera"));
     ChaseCamera->SetupAttachment(CameraSpringArm);
+
+    KeyboardCamera = CreateDefaultSubobject<UKeyboardCameraStateComponent>(TEXT("KeyboardCamera"));
+    TArray<FKeyboardCameraPreset> VehicleCameraPresets;
+    {
+        FKeyboardCameraPreset Chase;
+        Chase.PresetName = TEXT("Chase");
+        Chase.ArmLength = 525.0f;
+        Chase.ArmSocketOffset = FVector(0.0f, 0.0f, 45.0f);
+        Chase.ArmRotation = FRotator(-7.0f, 0.0f, 0.0f);
+        VehicleCameraPresets.Add(Chase);
+
+        FKeyboardCameraPreset Hood;
+        Hood.PresetName = TEXT("Hood");
+        Hood.ArmLength = 220.0f;
+        Hood.ArmSocketOffset = FVector(205.0f, 0.0f, 50.0f);
+        Hood.ArmRotation = FRotator(-8.0f, 0.0f, 0.0f);
+        VehicleCameraPresets.Add(Hood);
+
+        FKeyboardCameraPreset Bumper;
+        Bumper.PresetName = TEXT("Bumper");
+        Bumper.ArmLength = 55.0f;
+        Bumper.ArmSocketOffset = FVector(275.0f, 0.0f, -20.0f);
+        Bumper.ArmRotation = FRotator(-3.0f, 0.0f, 0.0f);
+        VehicleCameraPresets.Add(Bumper);
+
+        FKeyboardCameraPreset Cockpit;
+        Cockpit.PresetName = TEXT("Cockpit");
+        Cockpit.ArmLength = 0.0f;
+        Cockpit.ArmSocketOffset = FVector(35.0f, -35.0f, 20.0f);
+        Cockpit.ArmRotation = FRotator(0.0f, 0.0f, 0.0f);
+        VehicleCameraPresets.Add(Cockpit);
+    }
+    KeyboardCamera->SetPresets(VehicleCameraPresets);
+    KeyboardCamera->SetManagedSpringArm(CameraSpringArm);
 
     // Chaos wheel setup (bone names match the UE5 SportsCar template skeleton)
     if (UChaosWheeledVehicleMovementComponent* Movement = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent()))
@@ -287,6 +322,7 @@ void ADeLoreanVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
     PlayerInputComponent->BindKey(EKeys::T, IE_Pressed, this, &ADeLoreanVehicle::ToggleTimeCircuits);
     PlayerInputComponent->BindKey(EKeys::F, IE_Pressed, this, &ADeLoreanVehicle::TryTimeTravelFromInput);
     PlayerInputComponent->BindKey(EKeys::C, IE_Pressed, this, &ADeLoreanVehicle::ToggleCamera);
+    PlayerInputComponent->BindKey(EKeys::V, IE_Pressed, this, &ADeLoreanVehicle::ToggleAutoChaseCamera);
     PlayerInputComponent->BindKey(EKeys::R, IE_Pressed, this, &ADeLoreanVehicle::ResetVehicle);
 }
 
@@ -494,6 +530,7 @@ void ADeLoreanVehicle::Tick(float DeltaTime)
     }
     UpdateSpeedometer();
     UpdateFluxCapacitor(DeltaTime);
+    UpdateKeyboardCameraInput(DeltaTime);
     UpdateHoverMode(DeltaTime);
     if (!bReverseKeyPressed && !bHoverModeActive)
     {
@@ -540,6 +577,25 @@ void ADeLoreanVehicle::Tick(float DeltaTime)
     }
 }
 
+void ADeLoreanVehicle::UpdateKeyboardCameraInput(float DeltaTime)
+{
+    APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    if (!KeyboardCamera || !PlayerController || !IsLocallyControlled())
+    {
+        return;
+    }
+
+    const float YawInput =
+        (PlayerController->IsInputKeyDown(EKeys::D) ? 1.0f : 0.0f) -
+        (PlayerController->IsInputKeyDown(EKeys::A) ? 1.0f : 0.0f);
+    const float PitchInput =
+        (PlayerController->IsInputKeyDown(EKeys::W) ? 1.0f : 0.0f) -
+        (PlayerController->IsInputKeyDown(EKeys::S) ? 1.0f : 0.0f);
+
+    KeyboardCamera->ApplyYawInput(YawInput, DeltaTime);
+    KeyboardCamera->ApplyPitchInput(PitchInput, DeltaTime);
+}
+
 void ADeLoreanVehicle::ApplyKeyboardFallback()
 {
     APlayerController* PlayerController = Cast<APlayerController>(GetController());
@@ -574,6 +630,10 @@ void ADeLoreanVehicle::ApplyKeyboardFallback()
     if (PlayerController->WasInputKeyJustPressed(EKeys::C))
     {
         ToggleCamera();
+    }
+    if (PlayerController->WasInputKeyJustPressed(EKeys::V))
+    {
+        ToggleAutoChaseCamera();
     }
     if (PlayerController->WasInputKeyJustPressed(EKeys::Q))
     {
@@ -678,7 +738,7 @@ void ADeLoreanVehicle::UpdateSpeedResponsiveCamera(float DeltaTime)
         {
             const float Shake = FMath::Sin(GetWorld()->GetTimeSeconds() * 24.0f)
                 * TimeTravelPresentationComponent->GetCueIntensity() * 0.35f;
-            CameraSpringArm->SetRelativeRotation(FRotator(-7.0f + Shake, 0.0f, Shake * 0.25f));
+            ChaseCamera->FieldOfView = FMath::Clamp(ChaseCamera->FieldOfView + Shake, 65.0f, 100.0f);
         }
     }
 }
@@ -771,6 +831,12 @@ void ADeLoreanVehicle::ResetVehicle()
 
 void ADeLoreanVehicle::ToggleCamera()
 {
+    if (KeyboardCamera)
+    {
+        ActiveCameraIndex = KeyboardCamera->CyclePreset();
+        return;
+    }
+
     ActiveCameraIndex = (ActiveCameraIndex + 1) % 4;
     if (!CameraSpringArm)
     {
@@ -792,6 +858,14 @@ void ADeLoreanVehicle::ToggleCamera()
     CameraSpringArm->TargetArmLength = ArmLengths[ActiveCameraIndex];
     CameraSpringArm->SetRelativeLocation(ArmLocations[ActiveCameraIndex]);
     CameraSpringArm->SetRelativeRotation(ArmRotations[ActiveCameraIndex]);
+}
+
+void ADeLoreanVehicle::ToggleAutoChaseCamera()
+{
+    if (KeyboardCamera)
+    {
+        KeyboardCamera->ToggleAutoChase();
+    }
 }
 
 void ADeLoreanVehicle::CycleDestinationEra(int32 Direction)

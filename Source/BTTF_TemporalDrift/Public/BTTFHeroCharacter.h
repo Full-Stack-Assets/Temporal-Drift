@@ -9,6 +9,7 @@ class UCameraComponent;
 class UVehicleInteractionComponent;
 class UHeroCombatComponent;
 class UHeroStealthComponent;
+class UKeyboardCameraStateComponent;
 
 UCLASS()
 class BTTF_TEMPORALDRIFT_API ABTTFHeroCharacter : public ACharacter
@@ -18,6 +19,7 @@ class BTTF_TEMPORALDRIFT_API ABTTFHeroCharacter : public ACharacter
 public:
     ABTTFHeroCharacter();
     virtual void BeginPlay() override;
+    virtual void Tick(float DeltaSeconds) override;
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
     UFUNCTION(BlueprintCallable, Category="Hero|Movement")
@@ -43,6 +45,9 @@ protected:
     void EndSprint();
     void ToggleCrouch();
     void Interact();
+    void CycleCameraPreset();
+    void ToggleAutoChaseCamera();
+    void UpdateKeyboardCameraInput(float DeltaSeconds);
     bool TryInteractMissionTaggedActor();
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Hero|Interaction")
@@ -61,6 +66,9 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera")
     UCameraComponent* FollowCamera;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Camera")
+    UKeyboardCameraStateComponent* KeyboardCamera;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Interaction")
     UVehicleInteractionComponent* VehicleInteraction;

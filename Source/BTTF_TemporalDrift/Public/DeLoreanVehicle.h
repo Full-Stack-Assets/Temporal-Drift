@@ -16,6 +16,7 @@ class UCameraComponent;
 class UStaticMeshComponent;
 class USceneComponent;
 class UDeLoreanTuningData;
+class UKeyboardCameraStateComponent;
 struct FInputActionValue;
 
 UCLASS()
@@ -83,6 +84,9 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
     UCameraComponent* ChaseCamera;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+    UKeyboardCameraStateComponent* KeyboardCamera;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Time Travel")
     UNiagaraComponent* TimeTravelNiagaraComponent;
@@ -215,6 +219,9 @@ public:
     UFUNCTION(BlueprintPure, Category = "Camera")
     int32 GetActiveCameraIndex() const { return ActiveCameraIndex; }
 
+    UFUNCTION(BlueprintCallable, Category = "Camera")
+    void ToggleAutoChaseCamera();
+
     UFUNCTION(BlueprintCallable, Category = "Time Travel")
     void CycleDestinationEra(int32 Direction);
 
@@ -238,6 +245,7 @@ protected:
     void ApplyTuningData(const UDeLoreanTuningData* TuningData);
     void UpdateHoverMode(float DeltaTime);
     void UpdateSpeedResponsiveCamera(float DeltaTime);
+    void UpdateKeyboardCameraInput(float DeltaTime);
     void ApplySmoothedVehicleInput(float DeltaTime);
     void UpdateSafeTransformIfStable();
     void ApplyKeyboardFallback();

@@ -24,6 +24,16 @@ Anchored on the failing `BTTF.World.HillValleyComplete` (constraint: every fix s
 - **Result:** `run_automation.ps1 -Filter BTTF` → **59 found, 59 passed, 0 failed.** `BTTF.World.HillValleyComplete` ✅.
 - **Still open for Task 7 acceptance:** all-era clean regeneration (1885/1985-A/2015/2045), live driving-circuit profiling (frame time, streaming hitches, memory), and the live-evidence gates in `Docs/QA/HillValleyRegionEvidence.md`. Not claimed complete from generated assets + automation alone.
 
+## Comprehensive Task 4 — Shared Keyboard Camera (2026-07-13)
+
+Anchored on a failing `BTTF.Camera.PawnOwnership` test proving the hero and DeLorean did not yet own the shared keyboard camera component. The component tests were already present but untracked; they now compile and execute with pawn ownership covered.
+
+- **Fix:** `ABTTFHeroCharacter` and `ADeLoreanVehicle` now create `UKeyboardCameraStateComponent`, assign pawn-specific camera presets, and keep their spring arms managed by the shared camera state.
+- **Input behavior:** `W/A/S/D` continuously orbit the camera for both walking and driving. `C` cycles presets. `V` toggles auto-chase recentering. Hero mouse-look/controller-look axis bindings were removed from the pawn camera path, and both spring arms isolate roll.
+- **Hover/camera stability:** vehicle presentation shake no longer writes roll onto the spring arm; it modulates camera FOV instead, preserving the level horizon during hover/roll events.
+- **Verification:** `build_editor.ps1` → `Result: Succeeded`; `run_automation.ps1 -Filter BTTF.Camera` → **8 found, 8 passed**; `run_automation.ps1 -Filter BTTF.Vehicle.Input` → **7 found, 7 passed**; full `run_automation.ps1 -Filter BTTF` → **67 found, 67 passed**.
+- **Still open for acceptance:** live PIE confirmation that `W/A/S/D`, `C`, and `V` behave correctly in walking, driving, and hover modes.
+
 ## Tasks 1–8 (Vertical-slice foundation)
 
 | Task | Status | Notes |
