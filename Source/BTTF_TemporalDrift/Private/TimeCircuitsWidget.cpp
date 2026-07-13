@@ -71,6 +71,9 @@ void UTimeCircuitsWidget::BuildWidgetTree()
     DestinationText = AddReadout(Stack, FText::FromString(TEXT("DESTINATION 1955")), FLinearColor(1.0f, 0.3f, 0.18f));
     PhaseText = AddReadout(Stack, FText::FromString(TEXT("CIRCUITS OFF")), FLinearColor::White);
     WarningText = AddReadout(Stack, FText::GetEmpty(), FLinearColor(1.0f, 0.65f, 0.1f), 2);
+    ControlsText = AddReadout(Stack,
+        FText::FromString(TEXT("UP/DOWN DRIVE  LEFT/RIGHT STEER\nT CIRCUITS  Q/E DEST  F JUMP  H HOVER  R RESET")),
+        FLinearColor(0.72f, 0.78f, 0.88f), -8);
     UE_LOG(LogTemp, Display, TEXT("BTTF UMG widget tree built with runtime readouts."));
 }
 

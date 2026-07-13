@@ -44,5 +44,6 @@ private:
     UPROPERTY(Transient) TObjectPtr<UTextBlock> DestinationText;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> PhaseText;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> WarningText;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> ControlsText;
     UPROPERTY(Transient) TObjectPtr<UProgressBar> FluxBar;
 };
