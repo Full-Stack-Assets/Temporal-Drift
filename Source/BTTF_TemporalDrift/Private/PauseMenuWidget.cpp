@@ -39,7 +39,7 @@ void UPauseMenuWidget::BuildWidgetTree()
     Panel->SetContent(Stack);
     TitleText = AddMenuLine(Stack, FText::FromString(TEXT("PAUSED")), FLinearColor(0.45f, 0.85f, 1.0f), 6);
 
-    auto AddButton = [&](const TCHAR* Name, const TCHAR* Label, void (UPauseMenuWidget::*Handler)())
+    auto AddButton = [&](const TCHAR* Name, const TCHAR* Label)
     {
         UButton* Button = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), Name);
         UTextBlock* LabelText = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
@@ -48,14 +48,15 @@ void UPauseMenuWidget::BuildWidgetTree()
         Font.Size = 24;
         LabelText->SetFont(Font);
         Button->AddChild(LabelText);
-        Button->OnClicked.AddDynamic(this, Handler);
-        UVerticalBoxSlot* Slot = Stack->AddChildToVerticalBox(Button);
-        Slot->SetPadding(FMargin(0.0f, 6.0f));
+        UVerticalBoxSlot* AddedSlot = Stack->AddChildToVerticalBox(Button);
+        AddedSlot->SetPadding(FMargin(0.0f, 6.0f));
         return LabelText;
     };
 
-    ResumeText = AddButton(TEXT("ResumeButton"), TEXT("Resume"), &UPauseMenuWidget::HandleResumeClicked);
-    SettingsText = AddButton(TEXT("SettingsButton"), TEXT("Settings"), &UPauseMenuWidget::HandleSettingsClicked);
+    ResumeText = AddButton(TEXT("ResumeButton"), TEXT("Resume"));
+    CastChecked<UButton>(ResumeText->GetParent())->OnClicked.AddDynamic(this, &UPauseMenuWidget::HandleResumeClicked);
+    SettingsText = AddButton(TEXT("SettingsButton"), TEXT("Settings"));
+    CastChecked<UButton>(SettingsText->GetParent())->OnClicked.AddDynamic(this, &UPauseMenuWidget::HandleSettingsClicked);
     ContinueButton = WidgetTree->ConstructWidget<UButton>(UButton::StaticClass(), TEXT("ContinueButton"));
     UTextBlock* ContinueLabel = WidgetTree->ConstructWidget<UTextBlock>(UTextBlock::StaticClass());
     ContinueLabel->SetText(FText::FromString(TEXT("Continue")));
@@ -65,8 +66,10 @@ void UPauseMenuWidget::BuildWidgetTree()
     ContinueButton->AddChild(ContinueLabel);
     ContinueButton->OnClicked.AddDynamic(this, &UPauseMenuWidget::HandleContinueClicked);
     Stack->AddChildToVerticalBox(ContinueButton);
-    NewGameText = AddButton(TEXT("NewGameButton"), TEXT("New Game"), &UPauseMenuWidget::HandleNewGameClicked);
-    QuitText = AddButton(TEXT("QuitButton"), TEXT("Quit to Desktop"), &UPauseMenuWidget::HandleQuitClicked);
+    NewGameText = AddButton(TEXT("NewGameButton"), TEXT("New Game"));
+    CastChecked<UButton>(NewGameText->GetParent())->OnClicked.AddDynamic(this, &UPauseMenuWidget::HandleNewGameClicked);
+    QuitText = AddButton(TEXT("QuitButton"), TEXT("Quit to Desktop"));
+    CastChecked<UButton>(QuitText->GetParent())->OnClicked.AddDynamic(this, &UPauseMenuWidget::HandleQuitClicked);
 
     SettingsWidget = CreateWidget<USettingsWidget>(GetOwningPlayer(), USettingsWidget::StaticClass());
     if (SettingsWidget)
@@ -89,8 +92,8 @@ UTextBlock* UPauseMenuWidget::AddMenuLine(UVerticalBox* Parent, const FText& Lab
     Text->SetFont(Font);
     if (Parent)
     {
-        UVerticalBoxSlot* Slot = Parent->AddChildToVerticalBox(Text);
-        Slot->SetPadding(FMargin(0.0f, 4.0f));
+        UVerticalBoxSlot* AddedSlot = Parent->AddChildToVerticalBox(Text);
+        AddedSlot->SetPadding(FMargin(0.0f, 4.0f));
     }
     return Text;
 }

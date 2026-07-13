@@ -1,6 +1,7 @@
 """1885 Wild West dressing on DL_1885."""
 import os
 import sys
+import unreal
 
 _SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if _SCRIPT_DIR not in sys.path:

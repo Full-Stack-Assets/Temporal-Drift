@@ -1,6 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Engine/DataAsset.h"
 #include "TimeTravelTypes.h"
 #include "CraftingSubsystem.generated.h"
 
@@ -30,6 +31,15 @@ struct FCraftingSnapshot
     GENERATED_BODY()
     UPROPERTY(EditAnywhere,BlueprintReadWrite) TMap<FName,int32> ItemQuantities;
     UPROPERTY(EditAnywhere,BlueprintReadWrite) TArray<FName> UnlockedRecipeIds;
+};
+
+UCLASS(BlueprintType)
+class BTTF_TEMPORALDRIFT_API UCraftingRecipeDataAsset : public UPrimaryDataAsset
+{
+    GENERATED_BODY()
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Crafting")
+    TArray<FCraftingRecipe> Recipes;
 };
 
 UCLASS()

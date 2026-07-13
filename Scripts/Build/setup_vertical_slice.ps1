@@ -1,12 +1,17 @@
 [CmdletBinding()]
 param(
-    [string]$ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path,
+    [string]$ProjectRoot = '',
     [string]$UeRoot = 'C:\Program Files\Epic Games\UE_5.8',
+    [string]$StartAt = '',
     [switch]$SkipBuild,
     [switch]$SkipAutomation
 )
 
 $ErrorActionPreference = 'Stop'
+
+if ([string]::IsNullOrWhiteSpace($ProjectRoot)) {
+    $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+}
 
 function Invoke-EditorPython {
     param(
@@ -97,8 +102,19 @@ $pythonSteps = @(
     @{ Path = 'Scripts\apply_photoreal_lighting.py'; Token = 'PHOTOREAL_LIGHTING_SUCCESS' }
 )
 
+$runStep = [string]::IsNullOrWhiteSpace($StartAt)
 foreach ($step in $pythonSteps) {
+    if (-not $runStep -and $step.Path -eq $StartAt) {
+        $runStep = $true
+    }
+    if (-not $runStep) {
+        continue
+    }
     Invoke-EditorPython -ScriptRelativePath $step.Path -SuccessToken $step.Token
+}
+
+if (-not [string]::IsNullOrWhiteSpace($StartAt) -and -not $runStep) {
+    throw "StartAt script is not part of the setup pipeline: $StartAt"
 }
 
 if (-not $SkipAutomation) {

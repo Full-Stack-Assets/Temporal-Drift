@@ -21,9 +21,10 @@ def ensure_material(name, description):
     unreal.EditorAssetLibrary.make_directory(SIGNAGE_DEST)
     factory = unreal.MaterialFactoryNew()
     asset = TOOLS.create_asset(name, SIGNAGE_DEST, unreal.Material, factory)
-    asset.set_editor_property("description", description)
+    if not asset:
+        raise RuntimeError(f"Could not create consequence material {path}")
     unreal.EditorAssetLibrary.save_loaded_asset(asset, False)
-    unreal.log(f"CONSEQUENCE_SIGNAGE_CREATED {path}")
+    unreal.log(f"CONSEQUENCE_SIGNAGE_CREATED {path}: {description}")
     return asset
 
 

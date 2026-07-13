@@ -18,7 +18,8 @@ class BTTF_TEMPORALDRIFT_API UEraMusicSubsystem : public UGameInstanceSubsystem
     GENERATED_BODY()
 
 public:
-    virtual void OnWorldBeginPlay(UWorld& InWorld) override;
+    virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+    virtual void Deinitialize() override;
 
     UFUNCTION(BlueprintCallable, Category = "Music")
     void PlayMusicForEra(ETimelineState Era, bool bUseAlternateTrack = false);

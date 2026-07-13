@@ -8,6 +8,14 @@ import unreal
 MUSIC_DEST = "/Game/Audio/Music/Eras"
 ERA_DEST = "/Game/Data/EraDataAssets"
 TOOLS = unreal.AssetToolsHelpers.get_asset_tools()
+ERA_VALUES = {
+    "Present1985": unreal.TimelineState.PRESENT1985,
+    "Past1955": unreal.TimelineState.PAST1955,
+    "Alternate1985": unreal.TimelineState.ALTERNATE1985,
+    "Future2015": unreal.TimelineState.FUTURE2015,
+    "WildWest1885": unreal.TimelineState.WILD_WEST1885,
+    "DeepFuture2045": unreal.TimelineState.DEEP_FUTURE2045,
+}
 
 TRACKS = [
     {
@@ -94,12 +102,14 @@ TRACKS = [
 def ensure_music_asset(name):
     path = f"{MUSIC_DEST}/{name}"
     if unreal.EditorAssetLibrary.does_asset_exist(path):
-        return path
+        return unreal.load_asset(path)
     unreal.EditorAssetLibrary.make_directory(MUSIC_DEST)
-    asset = TOOLS.create_asset(name, MUSIC_DEST, unreal.SoundWave, unreal.SoundFactory())
+    asset = TOOLS.create_asset(name, MUSIC_DEST, unreal.SoundCue, unreal.SoundCueFactoryNew())
+    if not asset:
+        raise RuntimeError(f"Could not create era music placeholder {path}")
     unreal.EditorAssetLibrary.save_loaded_asset(asset, False)
     unreal.log(f"ERA_MUSIC_ASSET {path}")
-    return path
+    return asset
 
 
 def ensure_era_data_asset(spec, primary_path, alternate_path=None):
@@ -114,7 +124,7 @@ def ensure_era_data_asset(spec, primary_path, alternate_path=None):
         factory.set_editor_property("data_asset_class", unreal.EraDataAsset)
         asset = TOOLS.create_asset(data_name, ERA_DEST, unreal.EraDataAsset, factory)
 
-    asset.set_editor_property("timeline_state", spec["era"])
+    asset.set_editor_property("timeline_state", ERA_VALUES[spec["era"]])
     asset.set_editor_property("era_name", data_name.replace("DA_Era_", ""))
     asset.set_editor_property("music_primary_title", spec["title"])
     asset.set_editor_property("music_primary_artist", spec["artist"])
@@ -123,10 +133,10 @@ def ensure_era_data_asset(spec, primary_path, alternate_path=None):
     asset.set_editor_property("era_music_primary", primary_path)
     if alternate_path:
         asset.set_editor_property("era_music_alternate", alternate_path)
-        if track.get("alternate_title"):
-            asset.set_editor_property("music_alternate_title", track["alternate_title"])
-        if track.get("alternate_artist"):
-            asset.set_editor_property("music_alternate_artist", track["alternate_artist"])
+        if spec.get("alternate_title"):
+            asset.set_editor_property("music_alternate_title", spec["alternate_title"])
+        if spec.get("alternate_artist"):
+            asset.set_editor_property("music_alternate_artist", spec["alternate_artist"])
     unreal.EditorAssetLibrary.save_asset(path, only_if_is_dirty=False)
     unreal.log(f"ERA_DATA_MUSIC_WIRED {path}")
 

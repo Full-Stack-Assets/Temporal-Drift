@@ -3,6 +3,7 @@
 #include "Misc/AutomationTest.h"
 #include "EraMusicTypes.h"
 #include "EraMusicSubsystem.h"
+#include "Engine/GameInstance.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFEraMusicCatalogTest,
     "BTTF.Music.EraFilmTrackCatalog",
@@ -38,7 +39,8 @@ IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFEraMusicSubsystemContractTest,
 
 bool FBTTFEraMusicSubsystemContractTest::RunTest(const FString& Parameters)
 {
-    UEraMusicSubsystem* Music = NewObject<UEraMusicSubsystem>();
+    UGameInstance* GameInstance = NewObject<UGameInstance>();
+    UEraMusicSubsystem* Music = NewObject<UEraMusicSubsystem>(GameInstance);
     TestNotNull(TEXT("Music subsystem constructs"), Music);
     Music->SetMusicVolume(0.5f);
     Music->SetMusicDucked(true);
