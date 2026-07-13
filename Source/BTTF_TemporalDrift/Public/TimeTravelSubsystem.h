@@ -139,6 +139,9 @@ public:
     void ApplyParadoxFromAction(float Severity);
 
     UFUNCTION(BlueprintCallable, Category = "Paradox")
+    void ApplyDirectParadoxDelta(float Delta);
+
+    UFUNCTION(BlueprintCallable, Category = "Paradox")
     void UpdateParadoxOverTime(float DeltaTime);
 
     UFUNCTION(BlueprintPure, Category = "Paradox")

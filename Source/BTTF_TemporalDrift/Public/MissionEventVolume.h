@@ -25,6 +25,7 @@ public:
     bool FireMissionEvent();
 
 protected:
+    virtual void BeginPlay() override;
     virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 private:

@@ -25,12 +25,15 @@ bool FBTTFTimeCircuitsViewModelTest::RunTest(const FString& Parameters)
 
     ViewModel->UpdateDisplay(40.0f, 1.0f, ETimelineState::Present1985,
         ETimelineState::Past1955, ETimeTravelPhase::Armed, 78.0f, 32.0f,
-        FText::FromString(TEXT("Destination streaming delayed.")));
+        FText::FromString(TEXT("Destination streaming delayed.")),
+        FText::FromString(TEXT("Install the clocktower sensor")));
     const FTimeCircuitsDisplayState Dangerous = ViewModel->GetDisplayState();
     TestTrue(TEXT("Threshold and flux make jump ready"), Dangerous.bJumpReady);
     TestTrue(TEXT("Explicit failure reason wins warning priority"),
         Dangerous.WarningText.ToString().Contains(TEXT("Destination streaming delayed")));
     TestTrue(TEXT("Danger state is accessibility text, not color alone"), Dangerous.bDangerWarning);
+    TestEqual(TEXT("Mission objective surfaces in HUD state"),
+        Dangerous.MissionObjectiveText.ToString(), FString(TEXT("Install the clocktower sensor")));
 
     TestEqual(TEXT("Forward era cycle reaches alternate 1985"),
         ViewModel->CycleDestination(ETimelineState::Present1985, 1), ETimelineState::Alternate1985);

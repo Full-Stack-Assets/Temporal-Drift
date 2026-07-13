@@ -31,6 +31,10 @@ ABTTF_GameMode::ABTTF_GameMode()
 void ABTTF_GameMode::BeginPlay()
 {
     Super::BeginPlay();
+    if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))
+    {
+        GameInstance->ApplyProfileAccessibility(GetWorld());
+    }
     InitializeTimeTravelSubsystem();
     StartVerticalSliceMission();
 }

@@ -9,6 +9,25 @@ AMissionEventVolume::AMissionEventVolume()
     MissionEventId = NAME_None;
 }
 
+void AMissionEventVolume::BeginPlay()
+{
+    Super::BeginPlay();
+    if (!MissionEventId.IsNone())
+    {
+        return;
+    }
+
+    for (const FName& Tag : Tags)
+    {
+        const FString TagString = Tag.ToString();
+        if (TagString.StartsWith(TEXT("MissionEvent_")))
+        {
+            MissionEventId = FName(*TagString.RightChop(13));
+            break;
+        }
+    }
+}
+
 void AMissionEventVolume::NotifyActorBeginOverlap(AActor* OtherActor)
 {
     Super::NotifyActorBeginOverlap(OtherActor);

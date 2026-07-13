@@ -30,6 +30,8 @@ public:
     bool CanInteract(AActor* Interactor) const;
 
 protected:
+    virtual void BeginPlay() override;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Mission")
     TObjectPtr<UBoxComponent> InteractionBounds;
 

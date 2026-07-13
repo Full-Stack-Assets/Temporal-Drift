@@ -61,6 +61,10 @@ Write-Host "Engine:  $UeRoot"
 if (-not $SkipBuild) {
     Write-Host '==> Building editor target'
     & (Join-Path $PSScriptRoot 'build_editor.ps1')
+    if ($LASTEXITCODE -ne 0) {
+        throw "Editor build failed with exit code $LASTEXITCODE"
+    }
+    Write-Host 'If the build reported 0 compile actions, pull the latest branch and touch Source before rebuilding.'
 }
 
 $pythonSteps = @(

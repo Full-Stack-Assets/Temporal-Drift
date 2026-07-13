@@ -47,7 +47,7 @@ def cleanup_generated():
 
 
 def set_trigger_extent(actor, extent):
-  # TriggerBox root is a brush; scale in meters-ish units for courthouse-scale coords.
+    # TriggerBox root is a brush; scale for courthouse-scale coordinates.
     scale = unreal.Vector(extent[0] / 100.0, extent[1] / 100.0, extent[2] / 100.0)
     actor.set_actor_scale3d(scale)
 

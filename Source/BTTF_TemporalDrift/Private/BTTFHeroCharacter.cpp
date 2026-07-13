@@ -1,6 +1,7 @@
 #include "BTTFHeroCharacter.h"
 #include "VehicleInteractionComponent.h"
 #include "MissionInteractable.h"
+#include "MissionCoordinatorSubsystem.h"
 #include "HeroCombatComponent.h"
 #include "HeroStealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -117,6 +118,11 @@ void ABTTFHeroCharacter::Interact()
         return;
     }
 
+    if (TryInteractMissionTaggedActor())
+    {
+        return;
+    }
+
     ADeLoreanVehicle* NearestVehicle = nullptr;
     float NearestDistanceSq = TNumericLimits<float>::Max();
     for (TActorIterator<ADeLoreanVehicle> It(GetWorld()); It; ++It)
@@ -132,6 +138,61 @@ void ABTTFHeroCharacter::Interact()
     {
         VehicleInteraction->EnterVehicle(NearestVehicle);
     }
+}
+
+bool ABTTFHeroCharacter::TryInteractMissionTaggedActor()
+{
+    if (!GetWorld())
+    {
+        return false;
+    }
+
+    UMissionCoordinatorSubsystem* Coordinator = GetWorld()->GetSubsystem<UMissionCoordinatorSubsystem>();
+    if (!Coordinator)
+    {
+        return false;
+    }
+
+    const float RadiusSq = FMath::Square(MissionTagInteractRadius);
+    AActor* NearestTaggedActor = nullptr;
+    FName NearestEventId = NAME_None;
+    float NearestDistanceSq = TNumericLimits<float>::Max();
+
+    for (TActorIterator<AActor> It(GetWorld()); It; ++It)
+    {
+        if (It->IsA<AMissionInteractable>() || *It == this)
+        {
+            continue;
+        }
+
+        FName EventId = NAME_None;
+        for (const FName& Tag : It->Tags)
+        {
+            const FString TagString = Tag.ToString();
+            if (TagString.StartsWith(TEXT("MissionEvent_")))
+            {
+                EventId = FName(*TagString.RightChop(13));
+                break;
+            }
+        }
+
+        if (EventId.IsNone())
+        {
+            continue;
+        }
+
+        const float DistanceSq = FVector::DistSquared(GetActorLocation(), It->GetActorLocation());
+        if (DistanceSq > RadiusSq || DistanceSq >= NearestDistanceSq)
+        {
+            continue;
+        }
+
+        NearestDistanceSq = DistanceSq;
+        NearestTaggedActor = *It;
+        NearestEventId = EventId;
+    }
+
+    return NearestTaggedActor && Coordinator->SubmitMissionEvent(NearestEventId);
 }
 
 void ABTTFHeroCharacter::ResetToSafeTransform()

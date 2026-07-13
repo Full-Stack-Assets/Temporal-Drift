@@ -53,11 +53,36 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Save System")
     void RestorePlayerState();
 
+    UFUNCTION(BlueprintCallable, Category = "Profile")
+    bool LoadProfileSettings();
+
+    UFUNCTION(BlueprintCallable, Category = "Profile")
+    bool SaveProfileSettings();
+
+    UFUNCTION(BlueprintCallable, Category = "Profile")
+    void SetReducedFlashEnabled(bool bEnabled);
+
+    UFUNCTION(BlueprintPure, Category = "Profile")
+    bool IsReducedFlashEnabled() const;
+
+    UFUNCTION(BlueprintPure, Category = "Profile")
+    float GetUIScale() const;
+
+    UFUNCTION(BlueprintCallable, Category = "Profile")
+    void ApplyProfileAccessibility(UWorld* World);
+
 protected:
     virtual void Init() override;
     virtual void Shutdown() override;
 
 private:
+    bool EnsureProfileLoaded();
+
+    static const FString ProfileSlotName;
+
     UPROPERTY()
     UBTTF_SaveGame* CurrentSaveGame;
+
+    UPROPERTY()
+    UBTTF_ProfileSaveGame* ProfileSave;
 };

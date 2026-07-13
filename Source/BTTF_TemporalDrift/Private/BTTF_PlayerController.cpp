@@ -4,6 +4,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "DeLoreanVehicle.h"
 #include "BTTFHeroCharacter.h"
+#include "BTTF_GameInstance.h"
 #include "VehicleInteractionComponent.h"
 #include "EngineUtils.h"
 #include "InputCoreTypes.h"
@@ -88,6 +89,7 @@ void ABTTF_PlayerController::SetupInputComponent()
     // polling is not guaranteed to run while the game is in GameAndUI mode.
     InputComponent->BindKey(EKeys::G, IE_Pressed, this,
         &ABTTF_PlayerController::HandleToggleVehicleHeroPossession);
+    InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ABTTF_PlayerController::TogglePauseMenu);
 
     if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
     {
@@ -129,6 +131,34 @@ void ABTTF_PlayerController::ToggleHoverMode()
 void ABTTF_PlayerController::HandleToggleVehicleHeroPossession()
 {
     ToggleVehicleHeroPossession();
+}
+
+void ABTTF_PlayerController::TogglePauseMenu()
+{
+    if (bMenuPaused)
+    {
+        SetPause(false);
+        bMenuPaused = false;
+        bShowMouseCursor = true;
+        FInputModeGameAndUI InputMode;
+        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        InputMode.SetHideCursorDuringCapture(false);
+        SetInputMode(InputMode);
+        return;
+    }
+
+    if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))
+    {
+        GameInstance->SaveGameToSlot();
+    }
+
+    SetPause(true);
+    bMenuPaused = true;
+    bShowMouseCursor = true;
+    FInputModeGameAndUI InputMode;
+    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+    InputMode.SetHideCursorDuringCapture(false);
+    SetInputMode(InputMode);
 }
 
 void ABTTF_PlayerController::QAJumpTo1955()

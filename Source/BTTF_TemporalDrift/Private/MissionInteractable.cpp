@@ -2,6 +2,25 @@
 #include "Components/BoxComponent.h"
 #include "MissionCoordinatorSubsystem.h"
 
+void AMissionInteractable::BeginPlay()
+{
+    Super::BeginPlay();
+    if (!MissionEventId.IsNone())
+    {
+        return;
+    }
+
+    for (const FName& Tag : Tags)
+    {
+        const FString TagString = Tag.ToString();
+        if (TagString.StartsWith(TEXT("MissionEvent_")))
+        {
+            MissionEventId = FName(*TagString.RightChop(13));
+            break;
+        }
+    }
+}
+
 AMissionInteractable::AMissionInteractable()
 {
     PrimaryActorTick.bCanEverTick = false;

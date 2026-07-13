@@ -58,3 +58,19 @@ FText UMissionSubsystem::GetActiveObjectiveDescription()const
     }
     return FText::GetEmpty();
 }
+
+float UMissionSubsystem::GetObjectiveParadoxDelta(FName ObjectiveId)const
+{
+    if (!ActiveMission)
+    {
+        return 0.0f;
+    }
+    for (const FMissionObjectiveDefinition& Objective : ActiveMission->Objectives)
+    {
+        if (Objective.ObjectiveId == ObjectiveId)
+        {
+            return Objective.ParadoxDelta;
+        }
+    }
+    return 0.0f;
+}

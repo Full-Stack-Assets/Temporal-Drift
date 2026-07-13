@@ -14,8 +14,8 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 | 4 Time travel SM | **Code complete** | Deterministic state machine plus `BTTF.TimeTravel.FiveConsecutivePlayerJumps` automation added. |
 | 5 Era switching | **Partial** | `EraWorldManager` async switching works. `UEraDataAsset` now includes data-layer and arrival fields; deeper era tests still thin. |
 | 6 1955 dressing | **Code complete** | Python builders/validators pass; live blind-comparison screenshots still outstanding. |
-| 7 Time-circuit UI | **Partial** | Runtime UMG + view model complete. Authored `WBP_*` assets and full accessibility pass still pending. |
-| 8 Presentation | **Partial** | Phase contract, material paths, disable switch, and asset script added. Niagara/audio asset binaries still editor-authored. |
+| 7 Time-circuit UI | **Partial** | Runtime UMG + view model + mission objective row; `WBP_TimeCircuits` load fallback and profile UI scale added. Full accessibility pass still pending. |
+| 8 Presentation | **Partial** | Phase contract, material paths, disable switch, profile reduced-flash sync, and asset script added. Niagara/audio asset binaries still editor-authored. |
 
 ## Tasks 13–14 (Region + hero)
 
@@ -29,8 +29,11 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 - `UMissionCoordinatorSubsystem` bridges jump arrivals to mission events and auto-saves checkpoints.
 - `AMissionEventVolume` and `AMissionInteractable` wire M02 objectives in-world.
 - `Scripts/hill_valley/place_mission_volumes.py` places courthouse briefing, sensor install, clocktower reach, and calibration interactables.
-- `UBTTF_GameInstance` now captures/restores hero and vehicle transforms during save/load.
-- `UTimeTravelPresentationComponent` exposes per-phase material/Niagara/audio contracts and a presentation disable switch.
+- `UBTTF_GameInstance` now captures/restores hero and vehicle transforms during save/load, and persists profile accessibility settings (`BTTF_Profile` slot).
+- `UTimeTravelPresentationComponent` exposes per-phase material/Niagara/audio contracts, a presentation disable switch, and reduced-flash profile sync.
+- `ABTTF_HUD` loads authored `WBP_TimeCircuits` when present and surfaces active mission objectives.
+- `ABTTF_PlayerController` Escape pause saves progress before pausing.
+- Hero `Interact()` can complete objectives on actors tagged `MissionEvent_*`.
 
 ## Still required for vertical-slice acceptance
 
