@@ -1,5 +1,6 @@
 #include "BTTFHeroCharacter.h"
 #include "VehicleInteractionComponent.h"
+#include "KeyboardCameraComponent.h"
 #include "MissionInteractable.h"
 #include "DialogueInteractable.h"
 #include "DialogueSubsystem.h"
@@ -8,15 +9,18 @@
 #include "HeroStealthComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/PlayerController.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "Engine/SkeletalMesh.h"
 #include "EngineUtils.h"
 #include "DeLoreanVehicle.h"
+#include "InputCoreTypes.h"
 
 ABTTFHeroCharacter::ABTTFHeroCharacter()
 {
-    PrimaryActorTick.bCanEverTick = false;
+    PrimaryActorTick.bCanEverTick = true;
     bUseControllerRotationYaw = false;
     GetCharacterMovement()->bOrientRotationToMovement = true;
     GetCharacterMovement()->RotationRate = FRotator(0, 540, 0);
@@ -39,14 +43,17 @@ ABTTFHeroCharacter::ABTTFHeroCharacter()
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     CameraBoom->SetupAttachment(RootComponent);
     CameraBoom->TargetArmLength = 350.0f;
-    CameraBoom->bUsePawnControlRotation = true;
+    CameraBoom->bUsePawnControlRotation = false;
     CameraBoom->bEnableCameraLag = true;
     CameraBoom->CameraLagSpeed = 10.0f;
     CameraBoom->bDoCollisionTest = true;
+    CameraBoom->bInheritRoll = false;
 
     FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
     FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
     FollowCamera->bUsePawnControlRotation = false;
+
+    KeyboardCamera = CreateDefaultSubobject<UKeyboardCameraComponent>(TEXT("KeyboardCamera"));
 
     VehicleInteraction = CreateDefaultSubobject<UVehicleInteractionComponent>(TEXT("VehicleInteraction"));
     Combat = CreateDefaultSubobject<UHeroCombatComponent>(TEXT("Combat"));
@@ -58,6 +65,80 @@ void ABTTFHeroCharacter::BeginPlay()
     Super::BeginPlay();
     SafeTransform = GetActorTransform();
     bHasSafeTransform = true;
+
+    if (KeyboardCamera && CameraBoom)
+    {
+        TArray<FKeyboardCameraPreset> Presets;
+        FKeyboardCameraPreset Chase;
+        Chase.TargetArmLength = 350.0f;
+        Chase.RelativeLocation = FVector::ZeroVector;
+        Chase.RelativeRotation = FRotator::ZeroRotator;
+        Chase.ChasePitchOffset = -12.0f;
+        Presets.Add(Chase);
+
+        FKeyboardCameraPreset Shoulder;
+        Shoulder.TargetArmLength = 210.0f;
+        Shoulder.RelativeLocation = FVector(0.0f, 55.0f, 35.0f);
+        Shoulder.RelativeRotation = FRotator::ZeroRotator;
+        Shoulder.ChasePitchOffset = -8.0f;
+        Presets.Add(Shoulder);
+
+        KeyboardCamera->ConfigureSpringArm(CameraBoom, Presets);
+        KeyboardCamera->ResetCameraState();
+    }
+
+    InstallHeroInputMapping();
+}
+
+void ABTTFHeroCharacter::PawnClientRestart()
+{
+    Super::PawnClientRestart();
+    InstallHeroInputMapping();
+    if (KeyboardCamera)
+    {
+        KeyboardCamera->ResetCameraState();
+    }
+}
+
+void ABTTFHeroCharacter::InstallHeroInputMapping()
+{
+    if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+    {
+        if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+                ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+        {
+            if (UInputMappingContext* VehicleContext = LoadObject<UInputMappingContext>(
+                    nullptr, TEXT("/Game/Input/IMC_DeLorean.IMC_DeLorean")))
+            {
+                Subsystem->RemoveMappingContext(VehicleContext);
+            }
+            if (HeroMappingContext)
+            {
+                Subsystem->RemoveMappingContext(HeroMappingContext);
+                Subsystem->AddMappingContext(HeroMappingContext, 0);
+            }
+        }
+    }
+}
+
+void ABTTFHeroCharacter::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
+    UpdateMovementFacingYaw();
+}
+
+void ABTTFHeroCharacter::UpdateMovementFacingYaw()
+{
+    if (!Controller || !KeyboardCamera)
+    {
+        return;
+    }
+
+    const float CameraYaw = GetActorRotation().Yaw + KeyboardCamera->GetOrbitYaw();
+    FRotator ControlRotation = Controller->GetControlRotation();
+    ControlRotation.Yaw = CameraYaw;
+    ControlRotation.Pitch = KeyboardCamera->GetOrbitPitch();
+    Controller->SetControlRotation(ControlRotation);
 }
 
 void ABTTFHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -65,14 +146,54 @@ void ABTTFHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
     Super::SetupPlayerInputComponent(PlayerInputComponent);
     PlayerInputComponent->BindAxis(TEXT("MoveForward"), this, &ABTTFHeroCharacter::MoveForward);
     PlayerInputComponent->BindAxis(TEXT("MoveRight"), this, &ABTTFHeroCharacter::MoveRight);
-    PlayerInputComponent->BindAxis(TEXT("Turn"), this, &APawn::AddControllerYawInput);
-    PlayerInputComponent->BindAxis(TEXT("LookUp"), this, &APawn::AddControllerPitchInput);
+    PlayerInputComponent->BindAxis(TEXT("CameraOrbitYaw"), this, &ABTTFHeroCharacter::CameraOrbitYaw);
+    PlayerInputComponent->BindAxis(TEXT("CameraOrbitPitch"), this, &ABTTFHeroCharacter::CameraOrbitPitch);
     PlayerInputComponent->BindAction(TEXT("Jump"), IE_Pressed, this, &ACharacter::Jump);
     PlayerInputComponent->BindAction(TEXT("Jump"), IE_Released, this, &ACharacter::StopJumping);
     PlayerInputComponent->BindAction(TEXT("Sprint"), IE_Pressed, this, &ABTTFHeroCharacter::BeginSprint);
     PlayerInputComponent->BindAction(TEXT("Sprint"), IE_Released, this, &ABTTFHeroCharacter::EndSprint);
     PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Pressed, this, &ABTTFHeroCharacter::ToggleCrouch);
     PlayerInputComponent->BindAction(TEXT("Interact"), IE_Pressed, this, &ABTTFHeroCharacter::Interact);
+    PlayerInputComponent->BindKey(EKeys::C, IE_Pressed, this, &ABTTFHeroCharacter::CycleCameraPreset);
+    PlayerInputComponent->BindKey(EKeys::V, IE_Pressed, this, &ABTTFHeroCharacter::ToggleAutoChase);
+}
+
+void ABTTFHeroCharacter::CameraOrbitYaw(float Value)
+{
+    if (!KeyboardCamera || FMath::IsNearlyZero(Value))
+    {
+        return;
+    }
+
+    const float DeltaTime = GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.016f;
+    KeyboardCamera->ApplyOrbitInput(Value, 0.0f, DeltaTime);
+}
+
+void ABTTFHeroCharacter::CameraOrbitPitch(float Value)
+{
+    if (!KeyboardCamera || FMath::IsNearlyZero(Value))
+    {
+        return;
+    }
+
+    const float DeltaTime = GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.016f;
+    KeyboardCamera->ApplyOrbitInput(0.0f, Value, DeltaTime);
+}
+
+void ABTTFHeroCharacter::CycleCameraPreset()
+{
+    if (KeyboardCamera)
+    {
+        KeyboardCamera->CyclePreset();
+    }
+}
+
+void ABTTFHeroCharacter::ToggleAutoChase()
+{
+    if (KeyboardCamera)
+    {
+        KeyboardCamera->ToggleAutoChase();
+    }
 }
 
 void ABTTFHeroCharacter::SetSprinting(bool bEnabled)

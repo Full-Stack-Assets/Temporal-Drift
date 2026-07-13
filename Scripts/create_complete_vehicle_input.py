@@ -40,6 +40,9 @@ actions = {
     "IA_TimeJump": load_or_create_action("IA_TimeJump", unreal.InputActionValueType.BOOLEAN),
     "IA_CycleDestination": load_or_create_action("IA_CycleDestination", unreal.InputActionValueType.AXIS1D),
     "IA_ToggleCamera": load_or_create_action("IA_ToggleCamera", unreal.InputActionValueType.BOOLEAN),
+    "IA_ToggleAutoChase": load_or_create_action("IA_ToggleAutoChase", unreal.InputActionValueType.BOOLEAN),
+    "IA_CameraOrbitYaw": load_or_create_action("IA_CameraOrbitYaw", unreal.InputActionValueType.AXIS1D),
+    "IA_CameraOrbitPitch": load_or_create_action("IA_CameraOrbitPitch", unreal.InputActionValueType.AXIS1D),
 }
 
 context_path = f"{INPUT_PATH}/IMC_DeLorean.IMC_DeLorean"
@@ -67,6 +70,11 @@ context.set_editor_property("mappings", [
     make_mapping(actions["IA_CycleDestination"], "E"),
     make_mapping(actions["IA_CycleDestination"], "Q", negate=True),
     make_mapping(actions["IA_ToggleCamera"], "C"),
+    make_mapping(actions["IA_ToggleAutoChase"], "V"),
+    make_mapping(actions["IA_CameraOrbitYaw"], "D"),
+    make_mapping(actions["IA_CameraOrbitYaw"], "A", negate=True),
+    make_mapping(actions["IA_CameraOrbitPitch"], "W"),
+    make_mapping(actions["IA_CameraOrbitPitch"], "S", negate=True),
 ])
 
 vehicle_class = unreal.load_class(None, BP_CLASS_PATH)
@@ -85,6 +93,9 @@ cdo.set_editor_property("TimeCircuitsAction", actions["IA_TimeCircuits"])
 cdo.set_editor_property("TimeJumpAction", actions["IA_TimeJump"])
 cdo.set_editor_property("CycleDestinationAction", actions["IA_CycleDestination"])
 cdo.set_editor_property("ToggleCameraAction", actions["IA_ToggleCamera"])
+cdo.set_editor_property("ToggleAutoChaseAction", actions["IA_ToggleAutoChase"])
+cdo.set_editor_property("CameraOrbitYawAction", actions["IA_CameraOrbitYaw"])
+cdo.set_editor_property("CameraOrbitPitchAction", actions["IA_CameraOrbitPitch"])
 
 unreal.EditorAssetLibrary.save_directory(INPUT_PATH)
 unreal.EditorAssetLibrary.save_asset("/Game/Blueprints/BP_DeLorean")

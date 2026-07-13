@@ -2,6 +2,7 @@
 
 #include "Misc/AutomationTest.h"
 #include "DeLoreanVehicle.h"
+#include "KeyboardCameraComponent.h"
 #include "ChaosVehicleMovementComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -127,6 +128,7 @@ bool FBTTFVehicleHoverStabilityTest::RunTest(const FString& Parameters)
 {
     const ADeLoreanVehicle* Vehicle = GetDefault<ADeLoreanVehicle>();
     TestFalse(TEXT("Chase camera does not inherit vehicle roll"), Vehicle->CameraSpringArm->bInheritRoll);
+    TestNotNull(TEXT("Vehicle has keyboard camera"), Vehicle->GetKeyboardCameraComponent());
 
     const FVector TiltedUp = FVector(0.0f, 0.5f, 0.8660254f).GetSafeNormal();
     const FVector CorrectiveAxis = FVector::CrossProduct(TiltedUp, FVector::UpVector).GetSafeNormal();

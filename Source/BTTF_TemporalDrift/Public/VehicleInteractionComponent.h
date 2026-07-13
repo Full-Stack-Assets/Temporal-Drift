@@ -19,6 +19,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle")
     float ExitSideOffset = 160.0f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle")
+    float ExitBehindOffset = 220.0f;
+
     UFUNCTION(BlueprintPure, Category="Vehicle")
     bool CanEnterVehicle(const ADeLoreanVehicle* Vehicle) const;
 
@@ -27,4 +30,11 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="Vehicle")
     bool ExitVehicle(ADeLoreanVehicle* Vehicle);
+
+    UFUNCTION(BlueprintPure, Category="Vehicle")
+    FString GetLastExitFailureReason() const { return LastExitFailureReason; }
+
+private:
+    UPROPERTY(Transient)
+    FString LastExitFailureReason;
 };

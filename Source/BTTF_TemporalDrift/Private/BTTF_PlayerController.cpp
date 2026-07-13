@@ -9,6 +9,7 @@
 #include "VehicleInteractionComponent.h"
 #include "EngineUtils.h"
 #include "InputCoreTypes.h"
+#include "Engine/Engine.h"
 #include "TimeTravelSubsystem.h"
 
 ABTTF_PlayerController::ABTTF_PlayerController()
@@ -22,9 +23,10 @@ ABTTF_PlayerController::ABTTF_PlayerController()
 void ABTTF_PlayerController::PlayerTick(float DeltaTime)
 {
     Super::PlayerTick(DeltaTime);
-    if (WasInputKeyJustPressed(EKeys::G))
+
+    if (!ActiveGameplayMessage.IsEmpty() && GetWorld() && GetWorld()->GetTimeSeconds() >= GameplayMessageExpiry)
     {
-        ToggleVehicleHeroPossession();
+        ActiveGameplayMessage.Reset();
     }
 }
 
@@ -38,7 +40,26 @@ bool ABTTF_PlayerController::ToggleVehicleHeroPossession()
             SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
             CachedHero = GetWorld()->SpawnActor<ABTTFHeroCharacter>(HeroClass, Vehicle->GetActorLocation(), Vehicle->GetActorRotation(), SpawnParams);
         }
-        return CachedHero && CachedHero->GetVehicleInteractionComponent()->ExitVehicle(Vehicle);
+
+        if (!CachedHero)
+        {
+            ShowGameplayMessage(TEXT("No hero available to exit the vehicle."));
+            return false;
+        }
+
+        UVehicleInteractionComponent* Interaction = CachedHero->GetVehicleInteractionComponent();
+        if (Interaction && Interaction->ExitVehicle(Vehicle))
+        {
+            return true;
+        }
+
+        const FString FailureReason = Interaction
+            ? Interaction->GetLastExitFailureReason()
+            : TEXT("Exit failed.");
+        ShowGameplayMessage(FailureReason.IsEmpty()
+            ? TEXT("Exit blocked — clear space on the sides or behind the DeLorean.")
+            : FailureReason);
+        return false;
     }
 
     if (ABTTFHeroCharacter* Hero = Cast<ABTTFHeroCharacter>(GetPawn()))
@@ -156,6 +177,24 @@ void ABTTF_PlayerController::ToggleHoverMode()
 void ABTTF_PlayerController::HandleToggleVehicleHeroPossession()
 {
     ToggleVehicleHeroPossession();
+}
+
+void ABTTF_PlayerController::ShowGameplayMessage(const FString& Message, float DurationSeconds)
+{
+    ActiveGameplayMessage = Message;
+    if (UWorld* World = GetWorld())
+    {
+        GameplayMessageExpiry = World->GetTimeSeconds() + FMath::Max(DurationSeconds, 0.5f);
+    }
+
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(
+            INDEX_NONE,
+            FMath::Max(DurationSeconds, 0.5f),
+            FColor::Yellow,
+            Message);
+    }
 }
 
 void ABTTF_PlayerController::TogglePauseMenu()
