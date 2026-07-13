@@ -35,7 +35,46 @@ void UBTTF_GameInstance::Init()
 
 void UBTTF_GameInstance::Shutdown()
 {
+    if (bAutoSaveOnShutdown)
+    {
+        if (UMissionSubsystem* Mission = GetSubsystem<UMissionSubsystem>())
+        {
+            if (Mission->IsMissionActive())
+            {
+                SaveGameToSlot(DefaultSaveSlot);
+            }
+        }
+    }
+
     Super::Shutdown();
+}
+
+bool UBTTF_GameInstance::HasSaveGame(const FString& SlotName) const
+{
+    const FString ResolvedSlot = SlotName.IsEmpty() ? DefaultSaveSlot : SlotName;
+    return UGameplayStatics::DoesSaveGameExist(ResolvedSlot, 0);
+}
+
+bool UBTTF_GameInstance::TryContinueGame(const FString& SlotName)
+{
+    const FString ResolvedSlot = SlotName.IsEmpty() ? DefaultSaveSlot : SlotName;
+    if (!HasSaveGame(ResolvedSlot))
+    {
+        return false;
+    }
+
+    return LoadGameFromSlot(ResolvedSlot);
+}
+
+bool UBTTF_GameInstance::DeleteSaveGame(const FString& SlotName)
+{
+    const FString ResolvedSlot = SlotName.IsEmpty() ? DefaultSaveSlot : SlotName;
+    if (!UGameplayStatics::DoesSaveGameExist(ResolvedSlot, 0))
+    {
+        return true;
+    }
+
+    return UGameplayStatics::DeleteGameInSlot(ResolvedSlot, 0);
 }
 
 void UBTTF_GameInstance::InitializeNewGame()

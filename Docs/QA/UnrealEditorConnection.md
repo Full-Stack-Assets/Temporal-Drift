@@ -38,7 +38,7 @@ git checkout cursor/roadmap-vertical-slice-completion-492a
 git pull
 ```
 
-Or merge PR #3 into `main` and use `main`.
+Or merge PR #4 into `main` and use `main`.
 
 ### 2. Open in Visual Studio / Rider
 
@@ -97,7 +97,14 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\run_auto
 2. `T` circuits on, `Q/E` select 1955, `F` jump (five times, no `QAJumpTo1955`)
 3. `G` exit vehicle at courthouse, interact with mission actors
 4. Complete M02 through return to 1985
-5. `Esc` pause menu — Save And Continue, quit editor, relaunch, Continue
+5. `Esc` pause — progress saves automatically; press `Esc` again to resume
+6. Quit editor and relaunch — game continues from `BTTF_SaveSlot` when `bAutoLoadSaveOnStart` is enabled (default)
+7. Run packaged smoke test:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\package_smoke_test.ps1 -Configuration Development
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\package_smoke_test.ps1 -Configuration Shipping
+```
 
 ## Troubleshooting
 

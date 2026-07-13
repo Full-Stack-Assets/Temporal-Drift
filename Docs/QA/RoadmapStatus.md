@@ -33,7 +33,10 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 - `UTimeTravelPresentationComponent` exposes per-phase material/Niagara/audio contracts, a presentation disable switch, and reduced-flash profile sync.
 - `ABTTF_HUD` loads authored `WBP_TimeCircuits` when present and surfaces active mission objectives.
 - `ABTTF_PlayerController` Escape pause saves progress before pausing.
+- `ABTTF_GameMode` auto-continues from `BTTF_SaveSlot` on startup when a save exists.
+- `UBTTF_GameInstance` auto-saves active missions on shutdown.
 - Hero `Interact()` can complete objectives on actors tagged `MissionEvent_*`.
+- `BTTF.Mission.M02VerticalSliceContract` automation covers the full six-objective M02 flow.
 
 ## Still required for vertical-slice acceptance
 

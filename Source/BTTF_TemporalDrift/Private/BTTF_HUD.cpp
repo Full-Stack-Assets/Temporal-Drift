@@ -7,6 +7,7 @@
 #include "BTTF_GameInstance.h"
 #include "TimeCircuitsViewModel.h"
 #include "TimeCircuitsWidget.h"
+#include "BTTF_PlayerController.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "UObject/ConstructorHelpers.h"
@@ -114,6 +115,27 @@ void ABTTF_HUD::DrawHUD()
 
     RefreshTimeCircuitsDisplay();
     EnsureRuntimeWidget();
+
+    if (Canvas)
+    {
+        if (const ABTTF_PlayerController* PlayerController = Cast<ABTTF_PlayerController>(GetOwningPlayerController()))
+        {
+            if (PlayerController->IsMenuPaused())
+            {
+                DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.55f), 0.0f, 0.0f, Canvas->SizeX, Canvas->SizeY);
+                UFont* Font = GEngine ? GEngine->GetLargeFont() : nullptr;
+                if (Font)
+                {
+                    const FString PauseText = TEXT("PAUSED — Press ESC to resume");
+                    const float TextWidth = Font->GetStringSize(*PauseText);
+                    const float X = (Canvas->SizeX - TextWidth) * 0.5f;
+                    const float Y = Canvas->SizeY * 0.45f;
+                    DrawText(PauseText, FLinearColor::White, X, Y, Font, 2.0f);
+                    DrawText(TEXT("Progress saved"), FLinearColor(0.7f, 0.9f, 1.0f), X, Y + 48.0f, Font, 1.2f);
+                }
+            }
+        }
+    }
 
     const ADeLoreanVehicle* Vehicle = Cast<ADeLoreanVehicle>(GetOwningPawn());
     if (!Vehicle || !Canvas)

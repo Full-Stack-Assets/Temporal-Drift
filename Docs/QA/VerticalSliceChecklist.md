@@ -18,6 +18,9 @@ Last updated: 2026-07-13
 - [x] `BTTF.Hero.VehicleHandoff` verifies enter/exit possession handoff.
 - [x] `BTTF.Presentation.PhaseAssetContract` verifies per-phase presentation asset paths and disable behavior.
 
+- [x] `BTTF.Mission.M02VerticalSliceContract` verifies the full six-objective M02 mission flow.
+- [x] `BTTF.Save.MissionCheckpointSnapshot` verifies checkpoint fields restore into `UMissionSubsystem`.
+
 ## Live transition evidence
 
 Test configuration: Unreal Editor 5.8 Development game mode, 1280x720 window, `/Game/Levels/LVL_TimeTravelTest`.
@@ -37,6 +40,6 @@ Test configuration: Unreal Editor 5.8 Development game mode, 1280x720 window, `/
 - [ ] Replace the Canvas debug HUD with final scalable UMG presentation. *(Runtime UMG + `WBP_TimeCircuits` fallback added; authored widget polish still pending.)*
 - [ ] Add complete jump VFX, audio, distortion, fire trails, arrival frost, and reduced-flash variants. *(Material contract + script added; profile reduced-flash sync added; Niagara/audio binaries still required.)*
 - [ ] Complete the Clocktower Calibration mission from new game through return to 1985. *(Coordinator + mission actors + paradox-on-complete added; live playthrough still required.)*
-- [ ] Verify save/quit/continue at each objective boundary. *(Hero/vehicle capture + Escape pause/save added; packaged verification still required.)*
-- [ ] Run Development and Shipping packaged-build smoke tests on a machine without Unreal Editor.
+- [ ] Verify save/quit/continue at each objective boundary. *(Auto-load on start, shutdown autosave, Escape pause/save, and checkpoint snapshot tests added; packaged verification still required.)*
+- [ ] Run Development and Shipping packaged-build smoke tests on a machine without Unreal Editor. *(Use `Scripts/Build/package_smoke_test.ps1`.)*
 - [ ] Complete keyboard/mouse and controller acceptance at 1080p.

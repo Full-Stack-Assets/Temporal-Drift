@@ -115,6 +115,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\setup_ve
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\build_editor.ps1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\run_automation.ps1 -Filter BTTF
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\package_windows.ps1 -Configuration Development
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\package_smoke_test.ps1 -Configuration Development
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\package_smoke_test.ps1 -Configuration Shipping
 ```
 
 Close Unreal Editor before compiling C++ from VS Code. If Unreal reports that modules are missing or were built with another engine version, run `build_editor.ps1`, confirm `Result: Succeeded`, and reopen `BTTF_TemporalDrift.uproject`. Automation output is written to `Saved\Logs\BTTF_Automation.log`; packaging output defaults to `Builds\Windows-Development` or `Builds\Windows-Shipping`.

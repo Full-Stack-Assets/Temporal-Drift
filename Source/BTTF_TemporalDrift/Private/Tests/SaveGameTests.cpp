@@ -1,6 +1,9 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Misc/AutomationTest.h"
 #include "BTTF_SaveGame.h"
+#include "MissionSubsystem.h"
+#include "MissionDataAsset.h"
+#include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFSaveSchemaTest,"BTTF.Save.SchemaAndMigration",EAutomationTestFlags::EditorContext|EAutomationTestFlags::EngineFilter)
@@ -23,6 +26,51 @@ bool FBTTFSaveSchemaTest::RunTest(const FString& Parameters)
     Profile->bReducedFlash=true;Profile->UIScale=1.25f;
     TestTrue(TEXT("Profile reduced flash stored"),Profile->bReducedFlash);
     TestEqual(TEXT("Profile UI scale stored"),Profile->UIScale,1.25f);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFMissionCheckpointSnapshotTest,
+    "BTTF.Save.MissionCheckpointSnapshot",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFMissionCheckpointSnapshotTest::RunTest(const FString& Parameters)
+{
+    UBTTF_SaveGame* Save = NewObject<UBTTF_SaveGame>();
+    Save->MissionProgress.MissionId = TEXT("M02.ClocktowerCalibration");
+    Save->MissionProgress.ActiveObjectiveIndex = 3;
+    Save->MissionProgress.LastCheckpointId = TEXT("M02_Arrived1955");
+    Save->MissionProgress.CompletedObjectiveIds = {
+        FName(TEXT("Briefing")), FName(TEXT("InstallSensorVehicle")), FName(TEXT("Jump1955"))};
+    Save->MissionProgress.AccumulatedParadoxDelta = -1.5f;
+    Save->SavedTimelineState = ETimelineState::Past1955;
+    Save->SavedParadoxLevel = 12.0f;
+
+    TestTrue(TEXT("Checkpoint save schema valid"), Save->IsSaveDataValid());
+    TestEqual(TEXT("Checkpoint ID persisted"), Save->MissionProgress.LastCheckpointId,
+        FName(TEXT("M02_Arrived1955")));
+    TestEqual(TEXT("Era at checkpoint persisted"), Save->SavedTimelineState, ETimelineState::Past1955);
+    TestEqual(TEXT("Paradox at checkpoint persisted"), Save->SavedParadoxLevel, 12.0f);
+
+    UMissionDataAsset* Mission = NewObject<UMissionDataAsset>();
+    Mission->MissionId = TEXT("M02.ClocktowerCalibration");
+    FMissionObjectiveDefinition Brief;
+    Brief.ObjectiveId = TEXT("Briefing");
+    Brief.CompletionEvent = TEXT("TalkedToValeAndJune");
+    FMissionObjectiveDefinition Install;
+    Install.ObjectiveId = TEXT("InstallSensorVehicle");
+    Install.CompletionEvent = TEXT("SensorInstalledVehicle");
+    FMissionObjectiveDefinition Jump;
+    Jump.ObjectiveId = TEXT("Jump1955");
+    Jump.CompletionEvent = TEXT("Arrived1955");
+    FMissionObjectiveDefinition Reach;
+    Reach.ObjectiveId = TEXT("ReachClocktower");
+    Reach.CompletionEvent = TEXT("ClocktowerReached");
+    Mission->Objectives = {Brief, Install, Jump, Reach};
+
+    UGameInstance* GameInstance = NewObject<UGameInstance>();
+    UMissionSubsystem* Restored = NewObject<UMissionSubsystem>(GameInstance);
+    TestTrue(TEXT("Checkpoint progress restores"), Restored->RestoreProgress(Mission, Save->MissionProgress));
+    TestEqual(TEXT("Restored objective index"), Restored->GetActiveObjectiveId(), Reach.ObjectiveId);
     return !HasAnyErrors();
 }
 #endif
