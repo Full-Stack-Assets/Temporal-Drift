@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-13
 
-This document defines how to elevate **Temporal Drift** from a working vertical-slice prototype to a memorable Hill Valley experience. It complements `Docs/Design/MissionCampaign.md` and `Docs/QA/RoadmapStatus.md`.
+This document defines how to elevate **Temporal Drift** from a working vertical-slice prototype to a memorable Hill Valley experience. It complements `Docs/Design/MissionCampaign.md`, `Docs/Design/TemporalDriftV2MasterExpansion.md`, and `Docs/QA/RoadmapStatus.md`.
 
 ## Design north star
 
