@@ -4,11 +4,22 @@ Last updated: 2026-07-13
 
 This document records verified completion against `Docs/superpowers/plans/2026-07-12-temporal-drift-game-upgrade-roadmap.md`.
 
+## Integration Baseline Verification (2026-07-13)
+
+Release Gate A · Task 1 ("Preserve and Verify the Current Integration Baseline"). Ran against the tip of `agent/batch-1-stability-controls` (commit `08e9a6a`) on the local UE 5.8 checkout. Worktree was already clean; no `__pycache__`/`.pyc` or other transient files were present to remove.
+
+- **Editor build:** `Scripts/Build/build_editor.ps1` → `Result: Succeeded` (target already up to date; 0 compile actions).
+- **Automation:** `Scripts/Build/run_automation.ps1 -Filter BTTF` → **59 found, 58 passed, 1 failed, 0 not-run.**
+- **`BTTF.Hero.VehicleHandoff`:** ✅ passes (enter → possess vehicle → exit on clear side → repossess hero).
+- **`BTTF.World.HillValleyComplete`:** ❌ **fails.** Validator error: *"Playable region does not cover the required metro town and rural bounds."* `UHillValleyWorldValidator` requires the `HV_Generated`-tagged region to span ≥70000×80000 UU (700m×800m); the regenerated `LVL_TimeTravelTest` load falls short. This is a region/streaming coverage gap owned by **Task 7 (Close Hill Valley Region and Streaming Gaps)**, not a baseline blocker — recorded here as the exact known-failing test.
+
+Full log: `Saved/Logs/BTTF_Automation.log`. This baseline is an automation/build checkpoint only; no PIE or packaged evidence was produced in this task, so no gate is claimed complete from it.
+
 ## Tasks 1–8 (Vertical-slice foundation)
 
 | Task | Status | Notes |
 |------|--------|-------|
-| 1 Stable baseline | **Code complete** | Build/automation/package scripts and configuration tests exist. Live PIE ×3 gate still requires editor verification. |
+| 1 Stable baseline | **Code complete** | Build/automation/package scripts and configuration tests exist. 2026-07-13 baseline verified: editor build `Result: Succeeded`, automation 58/59 pass — `BTTF.World.HillValleyComplete` fails on region-bounds coverage (Task 7). See "Integration Baseline Verification (2026-07-13)" above. Live PIE ×3 gate still requires editor verification. |
 | 2 Input contract | **Code complete** | Enhanced Input assets, vehicle tests, reset/camera/destination cycling implemented. Live controller gate pending. |
 | 3 Hero vehicle | **Partial** | Full tuning apply (suspension/steer), input smoothing, speed-responsive chase camera, reverse action binding. SportsCar physics chassis remains. |
 | 4 Time travel SM | **Code complete** | Deterministic state machine plus `BTTF.TimeTravel.FiveConsecutivePlayerJumps` automation added. |

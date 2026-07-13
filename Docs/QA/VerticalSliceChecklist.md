@@ -4,8 +4,13 @@ Last updated: 2026-07-13
 
 ## Automated evidence
 
-- [x] `Scripts/Build/build_editor.ps1` completed with `Result: Succeeded` after the asynchronous era-readiness changes.
-- [x] `Scripts/Build/run_automation.ps1 -Filter BTTF` — 42+ tests expected after latest branch (run on PC to refresh count).
+> **Integration baseline — 2026-07-13** (Gate A · Task 1, commit `08e9a6a`, local UE 5.8):
+> `build_editor.ps1` → `Result: Succeeded`. `run_automation.ps1 -Filter BTTF` → **59 found / 58 passed / 1 failed / 0 not-run**.
+> Sole failure: **`BTTF.World.HillValleyComplete`** — *"Playable region does not cover the required metro town and rural bounds"* (needs ≥70000×80000 UU of `HV_Generated` actors; owned by Task 7). `BTTF.Hero.VehicleHandoff` passes. Full log: `Saved/Logs/BTTF_Automation.log`.
+
+- [x] `Scripts/Build/build_editor.ps1` completed with `Result: Succeeded` after the asynchronous era-readiness changes (re-confirmed 2026-07-13).
+- [x] `Scripts/Build/run_automation.ps1 -Filter BTTF` — 2026-07-13 baseline: **59 tests, 58 passed, 1 failed** (`BTTF.World.HillValleyComplete`).
+- [ ] `BTTF.World.HillValleyComplete` passes — currently **fails** on metro/rural region-bounds coverage; deferred to Task 7 (Close Hill Valley Region and Streaming Gaps).
 - [x] `BTTF.Presentation.TimeTravelPhaseContract` verifies phase cues, reduced-flash intensity, and idle cleanup.
 - [x] `Scripts/Build/package_windows.ps1 -Configuration Development` completed cook, stage, pak, archive, and exited with `BUILD SUCCESSFUL`.
 - [x] Development package artifact was produced at `Builds/Windows-Development/BTTF_TemporalDrift.exe`.
