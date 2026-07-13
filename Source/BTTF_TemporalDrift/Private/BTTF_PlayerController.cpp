@@ -84,6 +84,11 @@ void ABTTF_PlayerController::SetupInputComponent()
 {
     Super::SetupInputComponent();
 
+    // Bind the handoff directly on the controller input component. PlayerTick
+    // polling is not guaranteed to run while the game is in GameAndUI mode.
+    InputComponent->BindKey(EKeys::G, IE_Pressed, this,
+        &ABTTF_PlayerController::HandleToggleVehicleHeroPossession);
+
     if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
     {
         if (TimeCircuitsToggleAction)
@@ -119,6 +124,11 @@ void ABTTF_PlayerController::ToggleHoverMode()
     {
         Vehicle->ToggleHoverMode();
     }
+}
+
+void ABTTF_PlayerController::HandleToggleVehicleHeroPossession()
+{
+    ToggleVehicleHeroPossession();
 }
 
 void ABTTF_PlayerController::QAJumpTo1955()

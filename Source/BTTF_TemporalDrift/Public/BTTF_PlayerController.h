@@ -21,6 +21,8 @@ public:
     UFUNCTION(BlueprintCallable, Category="Vehicle")
     bool ToggleVehicleHeroPossession();
 
+    void HandleToggleVehicleHeroPossession();
+
     UFUNCTION(BlueprintPure, Category="Vehicle")
     ABTTFHeroCharacter* GetCachedHero() const { return CachedHero; }
 

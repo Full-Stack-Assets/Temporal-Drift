@@ -249,6 +249,8 @@ protected:
     void HandleCycleDestination(const FInputActionValue& Value);
     void BeginReverse();
     void EndReverse();
+    void SelectPreviousDestination();
+    void SelectNextDestination();
     void BeginForward();
     void EndForward();
     void BeginSteerLeft();

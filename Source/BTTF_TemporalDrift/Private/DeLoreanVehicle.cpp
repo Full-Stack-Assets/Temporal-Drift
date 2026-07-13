@@ -248,6 +248,24 @@ void ADeLoreanVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
     PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Right, IE_Released, this, &ADeLoreanVehicle::EndReverse);
     PlayerInputComponent->BindKey(EKeys::H, IE_Pressed, this, &ADeLoreanVehicle::ToggleHoverMode);
     PlayerInputComponent->BindKey(EKeys::Gamepad_DPad_Up, IE_Pressed, this, &ADeLoreanVehicle::ToggleHoverMode);
+    // Keep the core time-circuit loop independent of an optional Enhanced
+    // Input asset or diagnostic polling fallback.
+    PlayerInputComponent->BindKey(EKeys::Q, IE_Pressed, this, &ADeLoreanVehicle::SelectPreviousDestination);
+    PlayerInputComponent->BindKey(EKeys::E, IE_Pressed, this, &ADeLoreanVehicle::SelectNextDestination);
+    PlayerInputComponent->BindKey(EKeys::T, IE_Pressed, this, &ADeLoreanVehicle::ToggleTimeCircuits);
+    PlayerInputComponent->BindKey(EKeys::F, IE_Pressed, this, &ADeLoreanVehicle::TryTimeTravelFromInput);
+    PlayerInputComponent->BindKey(EKeys::C, IE_Pressed, this, &ADeLoreanVehicle::ToggleCamera);
+    PlayerInputComponent->BindKey(EKeys::R, IE_Pressed, this, &ADeLoreanVehicle::ResetVehicle);
+}
+
+void ADeLoreanVehicle::SelectPreviousDestination()
+{
+    CycleDestinationEra(-1);
+}
+
+void ADeLoreanVehicle::SelectNextDestination()
+{
+    CycleDestinationEra(1);
 }
 
 void ADeLoreanVehicle::HandleThrottle(const FInputActionValue& Value)
