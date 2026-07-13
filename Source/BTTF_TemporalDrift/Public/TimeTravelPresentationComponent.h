@@ -28,6 +28,9 @@ public:
     UFUNCTION(BlueprintPure, Category="Time Travel|Presentation")
     bool IsCueActive() const { return bCueActive; }
 
+    UFUNCTION(BlueprintPure, Category="Time Travel|Presentation")
+    float GetCueIntensity() const { return CueIntensity; }
+
     // Public for Blueprint presentation graphs and deterministic automation tests.
     UFUNCTION(BlueprintCallable, Category="Time Travel|Presentation")
     void HandlePhaseChanged(ETimeTravelPhase NewPhase);
@@ -44,4 +47,7 @@ private:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Presentation", meta=(AllowPrivateAccess="true"))
     bool bCueActive = false;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Presentation", meta=(AllowPrivateAccess="true"))
+    float CueIntensity = 0.0f;
 };

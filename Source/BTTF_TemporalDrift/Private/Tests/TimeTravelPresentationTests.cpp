@@ -20,10 +20,16 @@ bool FBTTFTimeTravelPresentationContract::RunTest(const FString& Parameters)
     Presentation->HandlePhaseChanged(ETimeTravelPhase::Charging);
     TestEqual(TEXT("Charging phase is exposed"), Presentation->GetPresentationPhase(), ETimeTravelPhase::Charging);
     TestTrue(TEXT("Charging cue is active"), Presentation->IsCueActive());
+    TestEqual(TEXT("Reduced-flash charging intensity is capped"), Presentation->GetCueIntensity(), 0.35f);
     Presentation->HandlePhaseChanged(ETimeTravelPhase::Cooldown);
     TestEqual(TEXT("Cooldown phase is exposed"), Presentation->GetPresentationPhase(), ETimeTravelPhase::Cooldown);
+    TestEqual(TEXT("Reduced-flash cooldown intensity is restrained"), Presentation->GetCueIntensity(), 0.15f);
+    Presentation->SetReducedFlash(false);
+    Presentation->HandlePhaseChanged(ETimeTravelPhase::Departing);
+    TestEqual(TEXT("Full departure intensity is available"), Presentation->GetCueIntensity(), 1.0f);
     Presentation->HandlePhaseChanged(ETimeTravelPhase::Idle);
     TestFalse(TEXT("Idle has no active cue"), Presentation->IsCueActive());
+    TestEqual(TEXT("Idle intensity is zero"), Presentation->GetCueIntensity(), 0.0f);
     return !HasAnyErrors();
 }
 #endif
