@@ -110,3 +110,18 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\package_
 ```
 
 Close Unreal Editor before compiling C++ from VS Code. If Unreal reports that modules are missing or were built with another engine version, run `build_editor.ps1`, confirm `Result: Succeeded`, and reopen `BTTF_TemporalDrift.uproject`. Automation output is written to `Saved\Logs\BTTF_Automation.log`; packaging output defaults to `Builds\Windows-Development` or `Builds\Windows-Shipping`.
+
+## Vehicle Controls
+
+- Up Arrow: accelerate
+- Down Arrow: reverse
+- Left/Right Arrow: steer
+- Space: handbrake
+- H: toggle hover mode
+- R: reset vehicle
+- C: cycle chase, hood, bumper, and cockpit cameras
+- Q/E: select destination era
+- T: toggle time circuits
+- F: initiate time travel
+
+Controller equivalents remain available through `/Game/Input/IMC_DeLorean`.

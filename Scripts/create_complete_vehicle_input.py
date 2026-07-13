@@ -34,6 +34,7 @@ actions = {
     "IA_Brake": load_or_create_action("IA_Brake", unreal.InputActionValueType.AXIS1D),
     "IA_Handbrake": load_or_create_action("IA_Handbrake", unreal.InputActionValueType.BOOLEAN),
     "IA_Reverse": load_or_create_action("IA_Reverse", unreal.InputActionValueType.BOOLEAN),
+    "IA_HoverMode": load_or_create_action("IA_HoverMode", unreal.InputActionValueType.BOOLEAN),
     "IA_ResetVehicle": load_or_create_action("IA_ResetVehicle", unreal.InputActionValueType.BOOLEAN),
     "IA_TimeCircuits": load_or_create_action("IA_TimeCircuits", unreal.InputActionValueType.BOOLEAN),
     "IA_TimeJump": load_or_create_action("IA_TimeJump", unreal.InputActionValueType.BOOLEAN),
@@ -48,15 +49,18 @@ if context is None:
         "IMC_DeLorean", INPUT_PATH, unreal.InputMappingContext, unreal.DataAssetFactory())
 
 context.set_editor_property("mappings", [
-    make_mapping(actions["IA_Throttle"], "W"),
+    make_mapping(actions["IA_Throttle"], "Up"),
     make_mapping(actions["IA_Throttle"], "Gamepad_RightTriggerAxis"),
-    make_mapping(actions["IA_Steering"], "D"),
-    make_mapping(actions["IA_Steering"], "A", negate=True),
+    make_mapping(actions["IA_Steering"], "Right"),
+    make_mapping(actions["IA_Steering"], "Left", negate=True),
     make_mapping(actions["IA_Steering"], "Gamepad_LeftX"),
     make_mapping(actions["IA_Brake"], "Gamepad_LeftTriggerAxis"),
     make_mapping(actions["IA_Handbrake"], "SpaceBar"),
     make_mapping(actions["IA_Handbrake"], "Gamepad_FaceButton_Left"),
-    make_mapping(actions["IA_Reverse"], "S"),
+    make_mapping(actions["IA_Reverse"], "Down"),
+    make_mapping(actions["IA_Reverse"], "Gamepad_FaceButton_Right"),
+    make_mapping(actions["IA_HoverMode"], "H"),
+    make_mapping(actions["IA_HoverMode"], "Gamepad_DPad_Up"),
     make_mapping(actions["IA_ResetVehicle"], "R"),
     make_mapping(actions["IA_TimeCircuits"], "T"),
     make_mapping(actions["IA_TimeJump"], "F"),
@@ -75,6 +79,7 @@ cdo.set_editor_property("SteeringAction", actions["IA_Steering"])
 cdo.set_editor_property("BrakeAction", actions["IA_Brake"])
 cdo.set_editor_property("HandbrakeAction", actions["IA_Handbrake"])
 cdo.set_editor_property("ReverseAction", actions["IA_Reverse"])
+cdo.set_editor_property("HoverModeAction", actions["IA_HoverMode"])
 cdo.set_editor_property("ResetVehicleAction", actions["IA_ResetVehicle"])
 cdo.set_editor_property("TimeCircuitsAction", actions["IA_TimeCircuits"])
 cdo.set_editor_property("TimeJumpAction", actions["IA_TimeJump"])

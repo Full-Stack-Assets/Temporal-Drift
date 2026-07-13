@@ -83,7 +83,7 @@
 - [ ] Implement reset using the last valid upright road transform, zeroing linear/angular velocity before teleport.
 - [ ] Add camera toggle and destination cycling events for later UMG use.
 - [ ] Run `BTTF.Vehicle`; expect all physics, wheel, and input tests to pass.
-- [ ] Gate: W/S or trigger input accelerates/reverses, A/D or stick steers, Space handbrakes, R resets, C changes camera, and no control is frame-rate dependent.
+- [ ] Gate: Up/Down Arrow or trigger/button input accelerates/reverses, Left/Right Arrow or stick steers, Space handbrakes, H toggles hover, R resets, C changes camera, and no control is frame-rate dependent.
 
 ### Task 3: Build the Hero DeLorean Vehicle
 

@@ -3,6 +3,7 @@
 #include "Misc/AutomationTest.h"
 #include "InputAction.h"
 #include "InputMappingContext.h"
+#include "DeLoreanVehicle.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FBTTFEnhancedInputAssetsTest,
@@ -17,6 +18,7 @@ bool FBTTFEnhancedInputAssetsTest::RunTest(const FString& Parameters)
         TEXT("IA_Brake"),
         TEXT("IA_Handbrake"),
         TEXT("IA_Reverse"),
+        TEXT("IA_HoverMode"),
         TEXT("IA_ResetVehicle"),
         TEXT("IA_TimeCircuits"),
         TEXT("IA_TimeJump"),
@@ -36,6 +38,16 @@ bool FBTTFEnhancedInputAssetsTest::RunTest(const FString& Parameters)
         TEXT("DeLorean input mapping context loads"),
         LoadObject<UInputMappingContext>(
             nullptr, TEXT("/Game/Input/IMC_DeLorean.IMC_DeLorean")));
+
+    const UClass* VehicleClass = LoadClass<ADeLoreanVehicle>(
+        nullptr, TEXT("/Game/Blueprints/BP_DeLorean.BP_DeLorean_C"));
+    TestNotNull(TEXT("Vehicle Blueprint class loads"), VehicleClass);
+    if (VehicleClass)
+    {
+        const ADeLoreanVehicle* Vehicle = GetDefault<ADeLoreanVehicle>(VehicleClass);
+        TestNotNull(TEXT("Reverse action is assigned on the vehicle"), Vehicle->ReverseAction);
+        TestNotNull(TEXT("Hover mode action is assigned on the vehicle"), Vehicle->HoverModeAction);
+    }
     return !HasAnyErrors();
 }
 

@@ -30,6 +30,8 @@ bool FBTTFVehicleInputNormalizationTest::RunTest(const FString& Parameters)
     TestEqual(TEXT("Steering clamps to negative one"), Movement->GetSteeringInput(), -1.0f);
     TestEqual(TEXT("Brake clamps to one"), Movement->GetBrakeInput(), 1.0f);
     TestTrue(TEXT("Handbrake is applied"), Movement->GetHandbrakeInput());
+    TestFalse(TEXT("Diagnostic keyboard fallback is disabled by default"),
+        Vehicle->bEnableDiagnosticKeyboardFallback);
     const bool bPassed = !HasAnyErrors();
     World->DestroyWorld(false);
     return bPassed;
@@ -66,6 +68,25 @@ bool FBTTFVehicleResetTest::RunTest(const FString& Parameters)
     const bool bPassed = !HasAnyErrors();
     World->DestroyWorld(false);
     return bPassed;
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FBTTFVehicleReverseGearTest,
+    "BTTF.Vehicle.Input.ReverseSelectsReverseGear",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFVehicleReverseGearTest::RunTest(const FString& Parameters)
+{
+    ADeLoreanVehicle* Vehicle = NewObject<ADeLoreanVehicle>();
+    Vehicle->ApplyReverseInput(true);
+    UChaosVehicleMovementComponent* Movement = Vehicle->GetVehicleMovementComponent();
+    TestEqual(TEXT("Reverse input selects reverse gear"), Movement->GetTargetGear(), -1);
+    TestEqual(TEXT("Reverse gear receives positive drive throttle"), Movement->GetThrottleInput(), 1.0f);
+
+    Vehicle->ApplyReverseInput(false);
+    TestEqual(TEXT("Releasing reverse restores first gear"), Movement->GetTargetGear(), 1);
+    TestEqual(TEXT("Releasing reverse clears throttle"), Movement->GetThrottleInput(), 0.0f);
+    return !HasAnyErrors();
 }
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(

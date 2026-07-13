@@ -171,14 +171,26 @@ void ADeLoreanVehicle::BeginPlay()
         TimeTravelSubsystem->OnTimeTravelCompleted.AddDynamic(this, &ADeLoreanVehicle::EndTimeTravelEffects);
     }
 
-    // Add input mapping context
+    InstallVehicleInputMapping();
+}
+
+void ADeLoreanVehicle::PawnClientRestart()
+{
+    Super::PawnClientRestart();
+    InstallVehicleInputMapping();
+}
+
+void ADeLoreanVehicle::InstallVehicleInputMapping()
+{
     if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
     {
         if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
         {
             if (VehicleMappingContext)
             {
-                Subsystem->AddMappingContext(VehicleMappingContext, 0);
+                Subsystem->RemoveMappingContext(VehicleMappingContext);
+                Subsystem->AddMappingContext(VehicleMappingContext, 1);
+                UE_LOG(LogTemp, Log, TEXT("DeLorean Enhanced Input context installed after possession"));
             }
         }
     }
@@ -210,11 +222,6 @@ void ADeLoreanVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
             EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleHandbrake);
             EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Completed, this, &ADeLoreanVehicle::HandleHandbrake);
         }
-        if (ReverseAction)
-        {
-            EnhancedInputComponent->BindAction(ReverseAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleReverse);
-            EnhancedInputComponent->BindAction(ReverseAction, ETriggerEvent::Completed, this, &ADeLoreanVehicle::HandleReverse);
-        }
         if (ResetVehicleAction)
             EnhancedInputComponent->BindAction(ResetVehicleAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::ResetVehicle);
         if (TimeCircuitsAction)
@@ -226,6 +233,13 @@ void ADeLoreanVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
         if (CycleDestinationAction)
             EnhancedInputComponent->BindAction(CycleDestinationAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleCycleDestination);
     }
+
+    PlayerInputComponent->BindKey(EKeys::Down, IE_Pressed, this, &ADeLoreanVehicle::BeginReverse);
+    PlayerInputComponent->BindKey(EKeys::Down, IE_Released, this, &ADeLoreanVehicle::EndReverse);
+    PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Right, IE_Pressed, this, &ADeLoreanVehicle::BeginReverse);
+    PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Right, IE_Released, this, &ADeLoreanVehicle::EndReverse);
+    PlayerInputComponent->BindKey(EKeys::H, IE_Pressed, this, &ADeLoreanVehicle::ToggleHoverMode);
+    PlayerInputComponent->BindKey(EKeys::Gamepad_DPad_Up, IE_Pressed, this, &ADeLoreanVehicle::ToggleHoverMode);
 }
 
 void ADeLoreanVehicle::HandleThrottle(const FInputActionValue& Value)
@@ -262,10 +276,17 @@ void ADeLoreanVehicle::HandleHandbrake(const FInputActionValue& Value)
 
 void ADeLoreanVehicle::HandleReverse(const FInputActionValue& Value)
 {
-    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
-    {
-        Movement->SetThrottleInput(Value.Get<bool>() ? -1.0f : 0.0f);
-    }
+    ApplyReverseInput(Value.Get<bool>());
+}
+
+void ADeLoreanVehicle::BeginReverse()
+{
+    ApplyReverseInput(true);
+}
+
+void ADeLoreanVehicle::EndReverse()
+{
+    ApplyReverseInput(false);
 }
 
 void ADeLoreanVehicle::HandleCycleDestination(const FInputActionValue& Value)
@@ -341,7 +362,10 @@ void ADeLoreanVehicle::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    ApplyKeyboardFallback();
+    if (bEnableDiagnosticKeyboardFallback)
+    {
+        ApplyKeyboardFallback();
+    }
     UpdateSpeedometer();
     UpdateFluxCapacitor(DeltaTime);
     UpdateHoverMode(DeltaTime);
@@ -365,15 +389,19 @@ void ADeLoreanVehicle::ApplyKeyboardFallback()
     // Poll the physical keys every frame. This remains dependable even if an
     // Enhanced Input mapping asset is missing, not applied, or initialized
     // before possession completes.
-    const float Throttle =
-        (PlayerController->IsInputKeyDown(EKeys::W) ? 1.0f : 0.0f) -
-        (PlayerController->IsInputKeyDown(EKeys::S) ? 1.0f : 0.0f);
+    const bool bReversePressed = PlayerController->IsInputKeyDown(EKeys::Down);
+    const float Throttle = PlayerController->IsInputKeyDown(EKeys::Up) ? 1.0f : 0.0f;
     const float Steering =
-        (PlayerController->IsInputKeyDown(EKeys::D) ? 1.0f : 0.0f) -
-        (PlayerController->IsInputKeyDown(EKeys::A) ? 1.0f : 0.0f);
+        (PlayerController->IsInputKeyDown(EKeys::Right) ? 1.0f : 0.0f) -
+        (PlayerController->IsInputKeyDown(EKeys::Left) ? 1.0f : 0.0f);
     const float Brake = PlayerController->IsInputKeyDown(EKeys::SpaceBar) ? 1.0f : 0.0f;
 
-    ApplyVehicleInput(Throttle, Steering, Brake, PlayerController->IsInputKeyDown(EKeys::SpaceBar));
+    if (bReversePressed != bLastKeyboardReverse)
+    {
+        ApplyReverseInput(bReversePressed);
+        bLastKeyboardReverse = bReversePressed;
+    }
+    ApplyVehicleInput(bReversePressed ? 1.0f : Throttle, Steering, Brake, PlayerController->IsInputKeyDown(EKeys::SpaceBar));
 
     if (PlayerController->WasInputKeyJustPressed(EKeys::R))
     {
@@ -441,6 +469,28 @@ void ADeLoreanVehicle::ApplyVehicleInput(
         Movement->SetSteeringInput(FMath::Clamp(Steering, -1.0f, 1.0f));
         Movement->SetBrakeInput(FMath::Clamp(Brake, 0.0f, 1.0f));
         Movement->SetHandbrakeInput(bHandbrake);
+    }
+}
+
+void ADeLoreanVehicle::ApplyReverseInput(bool bPressed)
+{
+    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+    {
+        Movement->SetUseAutomaticGears(false);
+        Movement->SetTargetGear(bPressed ? -1 : 1, true);
+        Movement->SetBrakeInput(0.0f);
+        Movement->SetThrottleInput(bPressed ? 1.0f : 0.0f);
+        if (!bPressed)
+        {
+            Movement->SetUseAutomaticGears(true);
+        }
+        UE_LOG(
+            LogTemp,
+            Log,
+            TEXT("Reverse input %s: targetGear=%d throttle=%.1f"),
+            bPressed ? TEXT("PRESSED") : TEXT("RELEASED"),
+            Movement->GetTargetGear(),
+            Movement->GetThrottleInput());
     }
 }
 

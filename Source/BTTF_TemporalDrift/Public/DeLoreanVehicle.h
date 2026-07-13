@@ -28,6 +28,7 @@ protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+    virtual void PawnClientRestart() override;
 
 public:
     // Enhanced Input
@@ -48,6 +49,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
     UInputAction* ReverseAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* HoverModeAction;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
     UInputAction* ResetVehicleAction;
@@ -114,6 +118,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
     bool bShowDebugInfo = true;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+    bool bEnableDiagnosticKeyboardFallback = false;
+
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
     bool bPrototypeVisualsEnabled = false;
 
@@ -154,6 +161,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Vehicle|Input")
     void ApplyVehicleInput(float Throttle, float Steering, float Brake, bool bHandbrake);
 
+    UFUNCTION(BlueprintCallable, Category = "Vehicle|Input")
+    void ApplyReverseInput(bool bPressed);
+
     UFUNCTION(BlueprintCallable, Category = "Vehicle|Recovery")
     void ResetVehicle();
 
@@ -189,10 +199,12 @@ protected:
     void ApplyTuningData(const UDeLoreanTuningData* TuningData);
     void UpdateHoverMode(float DeltaTime);
     void ApplyKeyboardFallback();
+    void InstallVehicleInputMapping();
 
     float LastKeyboardThrottle = 0.0f;
     float LastKeyboardSteering = 0.0f;
     float LastKeyboardBrake = 0.0f;
+    bool bLastKeyboardReverse = false;
 
     UPROPERTY(VisibleInstanceOnly, Category = "Vehicle|Recovery")
     FTransform LastSafeTransform;
@@ -207,4 +219,6 @@ protected:
     void HandleHandbrake(const FInputActionValue& Value);
     void HandleReverse(const FInputActionValue& Value);
     void HandleCycleDestination(const FInputActionValue& Value);
+    void BeginReverse();
+    void EndReverse();
 };
