@@ -10,10 +10,14 @@ This package contains the latest iteration of the project scaffold, including:
 
 ## Run the Playable Test
 
-Open the test map in a forced 1280x720 window (the script also overrides Unreal's remembered narrow window geometry):
+See **`Docs/PC_Setup_Guide.md`** for the full Windows setup (pull, build, Hill Valley, all eras, playtest).
+
+Quick start:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\run_game.ps1
+git pull origin cursor/all-timelines-ripple-effects-492a
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\setup_vertical_slice.ps1
+start .\BTTF_TemporalDrift.uproject
 ```
 
 ## What's Included

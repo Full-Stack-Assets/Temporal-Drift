@@ -33,6 +33,8 @@ Last updated: 2026-07-13
 - [x] `BTTF.UI.TimeCircuitsViewModel` verifies destination date, lightning countdown, and consequence summary fields.
 
 - [x] `BTTF.Population.SpawnSubsystemContract` verifies ambient pedestrian spawn and wander route setup.
+- [x] `BTTF.Timeline.CrossEraRippleGraph` verifies 1885 interventions propagate to 1985 and 2045.
+- [x] `BTTF.Timeline.VariantVisibilityContract` verifies timeline variant actor registration.
 
 ## Live transition evidence
 

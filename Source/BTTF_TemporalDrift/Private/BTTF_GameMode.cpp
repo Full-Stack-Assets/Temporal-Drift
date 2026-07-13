@@ -11,6 +11,7 @@
 #include "MissionSubsystem.h"
 #include "PopulationSpawnSubsystem.h"
 #include "EraWorldManager.h"
+#include "TimelineVariantSubsystem.h"
 
 ABTTF_GameMode::ABTTF_GameMode()
 {
@@ -48,6 +49,11 @@ void ABTTF_GameMode::BeginPlay()
             StartEra = EraManager->GetActiveEra();
         }
         PopulationSpawn->RefreshPopulationForEra(StartEra);
+    }
+
+    if (UTimelineVariantSubsystem* Variants = GetWorld()->GetSubsystem<UTimelineVariantSubsystem>())
+    {
+        Variants->RefreshAllVariants();
     }
 
     bool bContinuedFromSave = false;
