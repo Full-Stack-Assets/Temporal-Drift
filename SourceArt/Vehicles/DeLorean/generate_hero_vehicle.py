@@ -75,9 +75,9 @@ box('BeltTrim',(0,91,73),(155,2.2,5),TRIM,1.2)
 box('BeltTrim_R',(0,-91,73),(155,2.2,5),TRIM,1.2)
 
 # Cabin and glass use tapered wedges to avoid the rejected block silhouette.
-roof = wedge('RoofShell',[-90,-55,55,100],[61,72,70,55],[125,151,149,119],[90,91,92,90],STEEL)
+roof = wedge('RoofShell',[-90,-45,45,98],[58,68,64,48],[118,142,136,112],[88,89,90,88],GLASS)
 wind = wedge('GlassSet',[54,96],[65,53],[142,118],[96,91],GLASS)
-rear_glass = wedge('RearGlass',[-88,-58],[58,69],[122,145],[92,94],GLASS)
+rear_glass = wedge('RearGlass',[-92,-52],[56,66],[116,137],[91,93],GLASS)
 box('DoorSeam_L',(3,91.8,102),(72,1.0,26),TRIM,0.6,rotation=(0,0,math.radians(-2)))
 box('DoorSeam_R',(3,-91.8,102),(72,1.0,26),TRIM,0.6,rotation=(0,0,math.radians(-2)))
 

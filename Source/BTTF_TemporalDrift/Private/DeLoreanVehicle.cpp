@@ -473,16 +473,16 @@ void ADeLoreanVehicle::ToggleCamera()
         return;
     }
 
-    static const float ArmLengths[] = {800.0f, 120.0f, 25.0f, 0.0f};
+    static const float ArmLengths[] = {525.0f, 220.0f, 55.0f, 0.0f};
     static const FVector ArmLocations[] = {
-        FVector(0.0f, 0.0f, 175.0f),
-        FVector(160.0f, 0.0f, 105.0f),
-        FVector(270.0f, 0.0f, 55.0f),
+        FVector(0.0f, 0.0f, 105.0f),
+        FVector(205.0f, 0.0f, 155.0f),
+        FVector(275.0f, 0.0f, 85.0f),
         FVector(35.0f, -35.0f, 125.0f)};
     static const FRotator ArmRotations[] = {
-        FRotator(-12.0f, 0.0f, 0.0f),
-        FRotator(-4.0f, 0.0f, 0.0f),
-        FRotator(0.0f, 0.0f, 0.0f),
+        FRotator(-7.0f, 0.0f, 0.0f),
+        FRotator(-8.0f, 0.0f, 0.0f),
+        FRotator(-3.0f, 0.0f, 0.0f),
         FRotator(0.0f, 0.0f, 0.0f)};
 
     CameraSpringArm->TargetArmLength = ArmLengths[ActiveCameraIndex];
