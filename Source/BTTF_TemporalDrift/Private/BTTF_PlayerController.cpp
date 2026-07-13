@@ -6,12 +6,22 @@
 
 ABTTF_PlayerController::ABTTF_PlayerController()
 {
-    bShowMouseCursor = false;
+    bShowMouseCursor = true;
+    bEnableClickEvents = true;
+    bEnableMouseOverEvents = true;
 }
 
 void ABTTF_PlayerController::BeginPlay()
 {
     Super::BeginPlay();
+
+    bShowMouseCursor = true;
+    bEnableClickEvents = true;
+    bEnableMouseOverEvents = true;
+    FInputModeGameAndUI InputMode;
+    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+    InputMode.SetHideCursorDuringCapture(false);
+    SetInputMode(InputMode);
 
     if (UEnhancedInputLocalPlayerSubsystem* Subsystem = 
         ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
