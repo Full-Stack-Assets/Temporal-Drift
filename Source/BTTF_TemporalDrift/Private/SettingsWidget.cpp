@@ -98,8 +98,8 @@ UTextBlock* USettingsWidget::AddLabel(UVerticalBox* Parent, const FText& Label)
     Text->SetFont(Font);
     if (Parent)
     {
-        UVerticalBoxSlot* Slot = Parent->AddChildToVerticalBox(Text);
-        Slot->SetPadding(FMargin(0.0f, 4.0f));
+        UVerticalBoxSlot* AddedSlot = Parent->AddChildToVerticalBox(Text);
+        AddedSlot->SetPadding(FMargin(0.0f, 4.0f));
     }
     return Text;
 }

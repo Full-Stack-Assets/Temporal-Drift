@@ -11,6 +11,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
 #include "TimeTravelPresentationComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
@@ -36,6 +37,12 @@ ADeLoreanVehicle::ADeLoreanVehicle()
     TimeTravelNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("TimeTravelNiagara"));
     TimeTravelNiagaraComponent->SetupAttachment(RootComponent);
     TimeTravelNiagaraComponent->SetAutoActivate(false);
+    static ConstructorHelpers::FObjectFinder<UNiagaraSystem> TemporalVortexAsset(
+        TEXT("/Game/Niagara/NS_TemporalVortex.NS_TemporalVortex"));
+    if (TemporalVortexAsset.Succeeded())
+    {
+        TimeTravelNiagaraComponent->SetAsset(TemporalVortexAsset.Object);
+    }
 
     TimeTravelPresentationComponent = CreateDefaultSubobject<UTimeTravelPresentationComponent>(TEXT("TimeTravelPresentation"));
 
@@ -132,7 +139,8 @@ void ADeLoreanVehicle::ApplyTuningData(const UDeLoreanTuningData* TuningData)
     const int32 WheelCount = Movement->GetNumWheels();
     for (int32 WheelIndex = 0; WheelIndex < WheelCount; ++WheelIndex)
     {
-        if (UChaosVehicleWheel* Wheel = Movement->GetWheel(WheelIndex))
+        if (UChaosVehicleWheel* Wheel = Movement->Wheels.IsValidIndex(WheelIndex)
+            ? Movement->Wheels[WheelIndex].Get() : nullptr)
         {
             Wheel->SuspensionMaxRaise = TuningData->SuspensionMaxRaiseCm;
             Wheel->SuspensionMaxDrop = TuningData->SuspensionMaxDropCm;
@@ -706,8 +714,14 @@ void ADeLoreanVehicle::ApplyVehicleInput(
     TargetThrottleInput = FMath::Clamp(Throttle, -1.0f, 1.0f);
     TargetSteeringInput = FMath::Clamp(Steering, -1.0f, 1.0f);
     TargetBrakeInput = FMath::Clamp(Brake, 0.0f, 1.0f);
+    SmoothedThrottleInput = TargetThrottleInput;
+    SmoothedSteeringInput = TargetSteeringInput;
+    SmoothedBrakeInput = TargetBrakeInput;
     if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
     {
+        Movement->SetThrottleInput(SmoothedThrottleInput);
+        Movement->SetSteeringInput(SmoothedSteeringInput);
+        Movement->SetBrakeInput(SmoothedBrakeInput);
         Movement->SetHandbrakeInput(bHandbrake);
     }
 }
@@ -785,10 +799,17 @@ void ADeLoreanVehicle::ApplyDigitalDriveInput(bool bForward, bool bReverse, bool
         if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
         {
             TargetThrottleInput = bForward ? 1.0f : 0.0f;
+            SmoothedThrottleInput = TargetThrottleInput;
+            Movement->SetThrottleInput(SmoothedThrottleInput);
         }
     }
 
     TargetSteeringInput = (bRight ? 1.0f : 0.0f) - (bLeft ? 1.0f : 0.0f);
+    SmoothedSteeringInput = TargetSteeringInput;
+    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+    {
+        Movement->SetSteeringInput(SmoothedSteeringInput);
+    }
 }
 
 void ADeLoreanVehicle::ApplyReverseInput(bool bPressed)

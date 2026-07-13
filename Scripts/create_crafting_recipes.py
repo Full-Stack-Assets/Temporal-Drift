@@ -11,8 +11,8 @@ def main():
     if not asset:
         unreal.EditorAssetLibrary.make_directory(DEST)
         factory = unreal.DataAssetFactory()
-        # Recipes are loaded at runtime via BootstrapCampaignSystems; this asset documents intended IDs.
-        asset = TOOLS.create_asset("DA_Crafting_VerticalSlice", DEST, unreal.PrimaryDataAsset, factory)
+        asset = TOOLS.create_asset(
+            "DA_Crafting_VerticalSlice", DEST, unreal.CraftingRecipeDataAsset, factory)
         unreal.log(f"CRAFTING_PLACEHOLDER {path}")
 
     unreal.EditorAssetLibrary.save_asset(path, only_if_is_dirty=False)

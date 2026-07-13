@@ -7,15 +7,26 @@
 #include "Components/AudioComponent.h"
 #include "Sound/SoundBase.h"
 
-void UEraMusicSubsystem::OnWorldBeginPlay(UWorld& InWorld)
+void UEraMusicSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
+    Super::Initialize(Collection);
     if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))
     {
         MusicVolume = GameInstance->GetMusicVolume();
     }
 
-    BindWorldDelegates(&InWorld);
-    PlayMusicForEra(ETimelineState::Present1985);
+    if (UWorld* World = GetWorld())
+    {
+        BindWorldDelegates(World);
+        PlayMusicForEra(ETimelineState::Present1985);
+    }
+}
+
+void UEraMusicSubsystem::Deinitialize()
+{
+    UnbindWorldDelegates(GetWorld());
+    StopMusic(0.0f);
+    Super::Deinitialize();
 }
 
 void UEraMusicSubsystem::BindWorldDelegates(UWorld* World)
@@ -155,6 +166,7 @@ bool UEraMusicSubsystem::ResolveTrackForEra(
 
 void UEraMusicSubsystem::PlayMusicForEra(ETimelineState Era, bool bUseAlternateTrack)
 {
+    BindWorldDelegates(GetWorld());
     FEraMusicTrackInfo Track;
     if (!ResolveTrackForEra(Era, bUseAlternateTrack, Track))
     {

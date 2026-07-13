@@ -277,8 +277,8 @@ FDialogueProgressSnapshot UDialogueSubsystem::GetProgressSnapshot() const
     Snapshot.CurrentNodeId = CurrentNodeId;
     Snapshot.InterruptedNodeId = InterruptedNodeId;
     Snapshot.bConversationActive = bActive;
-    StoryFlags.GenerateKeyArray(Snapshot.StoryFlags);
-    DispatchedEventKeys.GenerateKeyArray(Snapshot.DispatchedEventKeys);
+    Snapshot.StoryFlags = StoryFlags.Array();
+    Snapshot.DispatchedEventKeys = DispatchedEventKeys.Array();
     return Snapshot;
 }
 

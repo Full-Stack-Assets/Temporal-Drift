@@ -9,12 +9,20 @@ TOOLS = unreal.AssetToolsHelpers.get_asset_tools()
 def ensure_sound(name):
     path = f"{AUDIO_DEST}/{name}"
     if unreal.EditorAssetLibrary.does_asset_exist(path):
-        return path
+        return f"{path}.{name}"
     unreal.EditorAssetLibrary.make_directory(AUDIO_DEST)
-    asset = TOOLS.create_asset(name, AUDIO_DEST, unreal.SoundWave, unreal.SoundFactory())
+    asset = TOOLS.create_asset(name, AUDIO_DEST, unreal.SoundCue, unreal.SoundCueFactoryNew())
+    if not asset:
+        raise RuntimeError(f"Could not create dialogue sound cue {path}")
     unreal.EditorAssetLibrary.save_loaded_asset(asset, False)
     unreal.log(f"DIALOGUE_AUDIO_ASSET {path}")
-    return path
+    return f"{path}.{name}"
+
+
+def soft_object_path(path):
+    result = unreal.SoftObjectPath()
+    result.import_text(path)
+    return result
 
 
 def save_dialogue(asset_name, conversation_id, entry_node_id, nodes):
@@ -41,7 +49,7 @@ def build_m01_garage_tutorial():
     node.set_editor_property("speaker_display_name", "Dr. Emmett Vale")
     node.set_editor_property("line", "Collect the calibration parts, install them on the DeLorean, then complete the courthouse course.")
     node.set_editor_property("localization_key", "dialogue.m01.vale.tutorial")
-    node.set_editor_property("voice_audio_path", voice_path)
+    node.set_editor_property("voice_audio_path", soft_object_path(voice_path))
     node.set_editor_property("minimum_display_seconds", 2.0)
     node.set_editor_property("mission_event", "TalkedToVale")
     save_dialogue("DA_Dialogue_M01_GarageTutorial", "M01.GarageTutorial", "ValeTutorial", [node])
@@ -55,7 +63,7 @@ def build_m02_briefing():
     node.set_editor_property("speaker_display_name", "Dr. Emmett Vale")
     node.set_editor_property("line", "June and I need you at the courthouse. Install the sensor package, then jump to 1955.")
     node.set_editor_property("localization_key", "dialogue.m02.vale.greeting")
-    node.set_editor_property("voice_audio_path", voice_path)
+    node.set_editor_property("voice_audio_path", soft_object_path(voice_path))
     node.set_editor_property("minimum_display_seconds", 2.0)
     node.set_editor_property("mission_event", "TalkedToValeAndJune")
     node.set_editor_property("automatic_next_node_id", "JuneReminder")
@@ -77,7 +85,7 @@ def build_m03_archive_briefing():
     node.set_editor_property("speaker_display_name", "June Parker")
     node.set_editor_property("line", "The courthouse archives changed overnight. Inspect the diner sign, school dedication, and founder portrait.")
     node.set_editor_property("localization_key", "dialogue.m03.june.archive")
-    node.set_editor_property("voice_audio_path", voice_path)
+    node.set_editor_property("voice_audio_path", soft_object_path(voice_path))
     node.set_editor_property("minimum_display_seconds", 2.0)
     node.set_editor_property("mission_event", "ArchiveBriefingComplete")
     save_dialogue("DA_Dialogue_M03_ArchiveBriefing", "M03.ArchiveBriefing", "JuneArchive", [node])
@@ -91,7 +99,7 @@ def build_m04_workshop_briefing():
     node.set_editor_property("speaker_display_name", "Dr. Emmett Vale")
     node.set_editor_property("line", "The temporal regulator failed in transit. Recover the alloy and install the replacement before the storm window closes.")
     node.set_editor_property("localization_key", "dialogue.m04.vale.workshop")
-    node.set_editor_property("voice_audio_path", voice_path)
+    node.set_editor_property("voice_audio_path", soft_object_path(voice_path))
     node.set_editor_property("minimum_display_seconds", 2.0)
     node.set_editor_property("mission_event", "WorkshopEntered")
     save_dialogue("DA_Dialogue_M04_WorkshopBriefing", "M04.WorkshopBriefing", "ValeWorkshop", [node])
@@ -107,7 +115,7 @@ def build_m05_finale():
     vale.set_editor_property("speaker_id", "Vale")
     vale.set_editor_property("speaker_display_name", "Dr. Emmett Vale")
     vale.set_editor_property("line", "The lightning will strike the clocktower at 10:04. Hit eighty-eight on the courthouse run and do not stop.")
-    vale.set_editor_property("voice_audio_path", voice_vale)
+    vale.set_editor_property("voice_audio_path", soft_object_path(voice_vale))
     vale.set_editor_property("minimum_display_seconds", 2.5)
     vale.set_editor_property("automatic_next_node_id", "ElenaWitness")
 
@@ -116,7 +124,7 @@ def build_m05_finale():
     elena.set_editor_property("speaker_id", "Elena")
     elena.set_editor_property("speaker_display_name", "Elena Crane")
     elena.set_editor_property("line", "I will keep the square clear. When you return, inspect the plaque and tell us what changed.")
-    elena.set_editor_property("voice_audio_path", voice_elena)
+    elena.set_editor_property("voice_audio_path", soft_object_path(voice_elena))
     elena.set_editor_property("minimum_display_seconds", 2.0)
     elena.set_editor_property("automatic_next_node_id", "CraneWarning")
 
@@ -125,7 +133,7 @@ def build_m05_finale():
     crane.set_editor_property("speaker_id", "Crane")
     crane.set_editor_property("speaker_display_name", "Officer Crane")
     crane.set_editor_property("line", "Move the crowd back from the cable route. This storm is not a drill.")
-    crane.set_editor_property("voice_audio_path", voice_crane)
+    crane.set_editor_property("voice_audio_path", soft_object_path(voice_crane))
     crane.set_editor_property("minimum_display_seconds", 1.5)
     crane.set_editor_property("mission_event", "CampaignResolved")
 

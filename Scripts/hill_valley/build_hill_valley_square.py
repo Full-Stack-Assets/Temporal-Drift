@@ -580,7 +580,7 @@ def main():
         "water": create_color_material("M_HV_Water", (0.04, 0.18, 0.32), 0.15),
         "sand": create_color_material("M_HV_Sand", (0.62, 0.54, 0.38), 0.9),
         "yellow_line": create_color_material("M_HV_YellowLine", (0.82, 0.72, 0.08), 0.7),
-        }
+    }
 
     build_roads_and_square(materials_global)
     build_courthouse(materials_global)
