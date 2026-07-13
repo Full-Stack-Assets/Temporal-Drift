@@ -8,6 +8,7 @@
 class UInputMappingContext;
 class UInputAction;
 class ABTTFHeroCharacter;
+class UPauseMenuWidget;
 
 UCLASS()
 class BTTF_TEMPORALDRIFT_API ABTTF_PlayerController : public APlayerController
@@ -22,6 +23,14 @@ public:
     bool ToggleVehicleHeroPossession();
 
     void HandleToggleVehicleHeroPossession();
+
+    UFUNCTION(BlueprintCallable, Category = "UI")
+    void TogglePauseMenu();
+
+    UFUNCTION(BlueprintPure, Category = "UI")
+    bool IsMenuPaused() const { return bMenuPaused; }
+
+    void EnsurePauseMenuWidget();
 
     UFUNCTION(BlueprintPure, Category="Vehicle")
     ABTTFHeroCharacter* GetCachedHero() const { return CachedHero; }
@@ -56,4 +65,9 @@ protected:
 
     UPROPERTY(Transient)
     TObjectPtr<ABTTFHeroCharacter> CachedHero;
+
+    UPROPERTY(Transient)
+    TObjectPtr<UPauseMenuWidget> PauseMenuWidget;
+
+    bool bMenuPaused = false;
 };

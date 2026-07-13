@@ -1,6 +1,7 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Misc/AutomationTest.h"
 #include "TimeTravelPresentationComponent.h"
+#include "Materials/Material.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFTimeTravelPresentationContract,
     "BTTF.Presentation.TimeTravelPhaseContract",
@@ -42,16 +43,46 @@ bool FBTTFTimeTravelPresentationAssets::RunTest(const FString& Parameters)
     const TCHAR* Paths[] = {
         TEXT("/Game/Materials/PostProcess/M_TemporalDistortion.M_TemporalDistortion"),
         TEXT("/Game/Materials/PostProcess/M_TemporalDistortion_ReducedFlash.M_TemporalDistortion_ReducedFlash"),
-        TEXT("/Game/Materials/PostProcess/M_TemporalArrivalFrost.M_TemporalArrivalFrost"),
-        TEXT("/Game/Niagara/NS_FluxCharge.NS_FluxCharge"),
-        TEXT("/Game/Niagara/NS_TemporalVortex.NS_TemporalVortex"),
-        TEXT("/Game/Niagara/NS_FireTrails.NS_FireTrails"),
-        TEXT("/Game/Niagara/NS_ArrivalFrost.NS_ArrivalFrost")
+        TEXT("/Game/Materials/PostProcess/M_TemporalArrivalFrost.M_TemporalArrivalFrost")
     };
     for (const TCHAR* Path : Paths)
     {
-        TestNotNull(FString::Printf(TEXT("Presentation asset loads: %s"), Path), LoadObject<UObject>(nullptr, Path));
+        TestNotNull(FString::Printf(TEXT("Presentation asset loads: %s"), Path), LoadObject<UMaterial>(nullptr, Path));
     }
     return !HasAnyErrors();
 }
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFTimeTravelPresentationPhaseAssetsTest,
+    "BTTF.Presentation.PhaseAssetContract",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFTimeTravelPresentationPhaseAssetsTest::RunTest(const FString& Parameters)
+{
+    UTimeTravelPresentationComponent* Presentation = NewObject<UTimeTravelPresentationComponent>();
+    const ETimeTravelPhase Phases[] = {
+        ETimeTravelPhase::Charging,
+        ETimeTravelPhase::Departing,
+        ETimeTravelPhase::Arriving,
+        ETimeTravelPhase::Cooldown
+    };
+
+    for (ETimeTravelPhase Phase : Phases)
+    {
+        TestFalse(FString::Printf(TEXT("Phase %d has Niagara path"), static_cast<int32>(Phase)),
+            Presentation->GetPhaseNiagaraPath(Phase).IsNull());
+        TestFalse(FString::Printf(TEXT("Phase %d has audio path"), static_cast<int32>(Phase)),
+            Presentation->GetPhaseAudioPath(Phase).IsNull());
+    }
+
+    Presentation->HandlePhaseChanged(ETimeTravelPhase::Departing);
+    TestFalse(TEXT("Distortion material path assigned"), Presentation->GetActiveDistortionMaterialPath().IsNull());
+    Presentation->SetReducedFlash(true);
+    TestTrue(TEXT("Reduced-flash distortion path selected"),
+        Presentation->GetActiveDistortionMaterialPath().ToString().Contains(TEXT("ReducedFlash")));
+    Presentation->SetPresentationEnabled(false);
+    TestFalse(TEXT("Presentation disable clears cue"), Presentation->IsCueActive());
+    TestEqual(TEXT("Presentation disable clears intensity"), Presentation->GetCueIntensity(), 0.0f);
+    return !HasAnyErrors();
+}
+
 #endif

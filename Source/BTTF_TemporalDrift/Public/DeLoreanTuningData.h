@@ -42,4 +42,22 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Handling")
     float TargetTopSpeedMph = 125.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Handling")
+    float MaxSteerAngleDegrees = 40.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Handling")
+    float ChassisDragCoefficient = 0.32f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Handling")
+    float BrakeTorqueNm = 2800.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
+    float ChaseBaseFov = 90.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
+    float ChaseHighSpeedFov = 99.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Camera")
+    float ChaseHighSpeedMph = 65.0f;
 };

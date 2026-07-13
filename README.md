@@ -10,10 +10,14 @@ This package contains the latest iteration of the project scaffold, including:
 
 ## Run the Playable Test
 
-Open the test map in a forced 1280x720 window (the script also overrides Unreal's remembered narrow window geometry):
+See **`Docs/PC_Setup_Guide.md`** for the full Windows setup (pull, build, Hill Valley, all eras, playtest).
+
+Quick start:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\run_game.ps1
+git pull origin cursor/all-timelines-ripple-effects-492a
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\setup_vertical_slice.ps1
+start .\BTTF_TemporalDrift.uproject
 ```
 
 ## What's Included
@@ -101,12 +105,22 @@ The project is now at a strong mid-prototype stage. The remaining work is mostly
 
 ## VS Code Development Commands
 
-Open `C:\Users\Shadow\Downloads\BTTF_TemporalDrift_v3` as the VS Code workspace, then use a PowerShell terminal:
+Open the repo root as your VS Code workspace, then use a PowerShell terminal.
+
+**First-time Unreal connection:** see `Docs/QA/UnrealEditorConnection.md` and run:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\setup_vertical_slice.ps1
+```
+
+**Daily commands:**
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\build_editor.ps1
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\run_automation.ps1 -Filter BTTF
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\package_windows.ps1 -Configuration Development
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\package_smoke_test.ps1 -Configuration Development
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\package_smoke_test.ps1 -Configuration Shipping
 ```
 
 Close Unreal Editor before compiling C++ from VS Code. If Unreal reports that modules are missing or were built with another engine version, run `build_editor.ps1`, confirm `Result: Succeeded`, and reopen `BTTF_TemporalDrift.uproject`. Automation output is written to `Saved\Logs\BTTF_Automation.log`; packaging output defaults to `Builds\Windows-Development` or `Builds\Windows-Shipping`.

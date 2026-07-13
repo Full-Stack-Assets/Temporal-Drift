@@ -52,3 +52,45 @@ bool UTemporalDriveSubsystem::RestoreSnapshot(const FTemporalDriveSnapshot& Snap
 {
     if(Snapshot.PlutoniumCells<0||Snapshot.FusionFuel<0.0f||Snapshot.FusionFuel>100.0f)return false;State=Snapshot;return true;
 }
+
+FTemporalDestinationDate UTemporalDriveSubsystem::GetDefaultDateForEra(ETimelineState Era)
+{
+    FTemporalDestinationDate Date;
+    switch (Era)
+    {
+    case ETimelineState::WildWest1885:
+        Date.Year = 1885; Date.Month = 9; Date.Day = 7; Date.Hour = 8; Date.Minute = 0;
+        break;
+    case ETimelineState::Past1955:
+        Date.Year = 1955; Date.Month = 11; Date.Day = 12; Date.Hour = 22; Date.Minute = 4;
+        break;
+    case ETimelineState::Present1985:
+        Date.Year = 1985; Date.Month = 10; Date.Day = 26; Date.Hour = 12; Date.Minute = 0;
+        break;
+    case ETimelineState::Alternate1985:
+        Date.Year = 1985; Date.Month = 10; Date.Day = 26; Date.Hour = 18; Date.Minute = 0;
+        break;
+    case ETimelineState::Future2015:
+        Date.Year = 2015; Date.Month = 10; Date.Day = 21; Date.Hour = 16; Date.Minute = 29;
+        break;
+    case ETimelineState::DeepFuture2045:
+        Date.Year = 2045; Date.Month = 3; Date.Day = 15; Date.Hour = 6; Date.Minute = 0;
+        break;
+    default:
+        Date.Year = 1985; Date.Month = 10; Date.Day = 26; Date.Hour = 12; Date.Minute = 0;
+        break;
+    }
+    return Date;
+}
+
+FText UTemporalDriveSubsystem::FormatDestinationDate(const FTemporalDestinationDate& Date)
+{
+    static const TCHAR* MonthNames[] = {
+        TEXT("???"), TEXT("JAN"), TEXT("FEB"), TEXT("MAR"), TEXT("APR"), TEXT("MAY"), TEXT("JUN"),
+        TEXT("JUL"), TEXT("AUG"), TEXT("SEP"), TEXT("OCT"), TEXT("NOV"), TEXT("DEC")};
+    const FString Month = (Date.Month >= 1 && Date.Month <= 12) ? MonthNames[Date.Month] : TEXT("???");
+  const int32 DisplayHour = Date.Hour % 12 == 0 ? 12 : Date.Hour % 12;
+    const TCHAR* AmPm = Date.Hour >= 12 ? TEXT("PM") : TEXT("AM");
+    return FText::FromString(FString::Printf(TEXT("%s %02d %04d %d:%02d %s"),
+        Month, Date.Day, Date.Year, DisplayHour, Date.Minute, AmPm));
+}

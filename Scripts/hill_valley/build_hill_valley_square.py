@@ -570,6 +570,19 @@ def main():
     build_storefronts(materials_global)
     build_streetscape(materials_global)
     build_complete_region(materials_global)
+    import os
+    import sys
+    import importlib.util
+    _metro_dir = os.path.dirname(os.path.abspath(__file__))
+    if _metro_dir not in sys.path:
+        sys.path.insert(0, _metro_dir)
+    _spec = importlib.util.spec_from_file_location(
+        "build_hill_valley_metro",
+        os.path.join(_metro_dir, "build_hill_valley_metro.py"),
+    )
+    _metro = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_metro)
+    _metro.build_metro_expansion(materials_global)
     set_default_era_data_layer()
     if not level_subsystem.save_current_level():
         raise RuntimeError("Unable to save the current Hill Valley level")

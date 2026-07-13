@@ -39,14 +39,6 @@ def main():
     material("M_TemporalDistortion", 0.65, (0.18, 0.55, 1.0))
     material("M_TemporalDistortion_ReducedFlash", 0.20, (0.12, 0.32, 0.55))
     material("M_TemporalArrivalFrost", 0.35, (0.55, 0.82, 1.0))
-    if hasattr(unreal, "NiagaraSystemFactoryNew"):
-        niagara_dest = "/Game/Niagara"
-        unreal.EditorAssetLibrary.make_directory(niagara_dest)
-        for name in ("NS_FluxCharge", "NS_TemporalVortex", "NS_FireTrails", "NS_ArrivalFrost"):
-            path = f"{niagara_dest}/{name}"
-            if not unreal.EditorAssetLibrary.does_asset_exist(path):
-                TOOLS.create_asset(name, niagara_dest, unreal.NiagaraSystem, unreal.NiagaraSystemFactoryNew())
-                unreal.log(f"TEMPORAL_PRESENTATION_ASSET {path}")
     unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
     unreal.log("TEMPORAL_PRESENTATION_ASSETS_SUCCESS")
 

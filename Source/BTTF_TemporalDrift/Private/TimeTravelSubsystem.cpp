@@ -301,6 +301,11 @@ void UTimeTravelSubsystem::ApplyParadoxFromAction(float Severity)
     AddParadoxInternal(Severity * ParadoxIncreasePerMajorChange);
 }
 
+void UTimeTravelSubsystem::ApplyDirectParadoxDelta(float Delta)
+{
+    AddParadoxInternal(Delta);
+}
+
 void UTimeTravelSubsystem::UpdateParadoxOverTime(float DeltaTime)
 {
     if (CurrentParadoxLevel > 0.0f)
