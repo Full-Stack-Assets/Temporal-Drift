@@ -1,7 +1,6 @@
 #if WITH_DEV_AUTOMATION_TESTS
 #include "Misc/AutomationTest.h"
 #include "TimeTravelPresentationComponent.h"
-#include "Materials/Material.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFTimeTravelPresentationContract,
     "BTTF.Presentation.TimeTravelPhaseContract",
@@ -43,11 +42,15 @@ bool FBTTFTimeTravelPresentationAssets::RunTest(const FString& Parameters)
     const TCHAR* Paths[] = {
         TEXT("/Game/Materials/PostProcess/M_TemporalDistortion.M_TemporalDistortion"),
         TEXT("/Game/Materials/PostProcess/M_TemporalDistortion_ReducedFlash.M_TemporalDistortion_ReducedFlash"),
-        TEXT("/Game/Materials/PostProcess/M_TemporalArrivalFrost.M_TemporalArrivalFrost")
+        TEXT("/Game/Materials/PostProcess/M_TemporalArrivalFrost.M_TemporalArrivalFrost"),
+        TEXT("/Game/Niagara/NS_FluxCharge.NS_FluxCharge"),
+        TEXT("/Game/Niagara/NS_TemporalVortex.NS_TemporalVortex"),
+        TEXT("/Game/Niagara/NS_FireTrails.NS_FireTrails"),
+        TEXT("/Game/Niagara/NS_ArrivalFrost.NS_ArrivalFrost")
     };
     for (const TCHAR* Path : Paths)
     {
-        TestNotNull(FString::Printf(TEXT("Presentation asset loads: %s"), Path), LoadObject<UMaterial>(nullptr, Path));
+        TestNotNull(FString::Printf(TEXT("Presentation asset loads: %s"), Path), LoadObject<UObject>(nullptr, Path));
     }
     return !HasAnyErrors();
 }
