@@ -5,7 +5,7 @@ Last updated: 2026-07-13
 ## Automated evidence
 
 > **Integration baseline — 2026-07-13** (Gate A · Task 1, local UE 5.8):
-> `build_editor.ps1` → `Result: Succeeded`. `run_automation.ps1 -Filter BTTF` → **69 found / 69 passed / 0 failed / 0 not-run** after the shared keyboard camera and control-stability integration.
+> `build_editor.ps1` -> `Result: Succeeded`. `run_automation.ps1 -Filter BTTF` -> **70 found / 70 passed / 0 failed / 0 not-run** after the shared keyboard camera, control-stability, and character arrow-key movement integration.
 > Baseline commit `08e9a6a` had one failure — `BTTF.World.HillValleyComplete` (*"Playable region does not cover the required metro town and rural bounds"*, Y location-span 76000 < required 80000 UU). Fixed by adding North/South rural approach content; the neutral map was regenerated and the test now passes. `BTTF.Hero.VehicleHandoff` passes. Full log: `Saved/Logs/BTTF_Automation.log`.
 
 - [x] `Scripts/Build/build_editor.ps1` completed with `Result: Succeeded` after the asynchronous era-readiness changes (re-confirmed 2026-07-13).
@@ -43,6 +43,7 @@ Last updated: 2026-07-13
 - [x] `BTTF.Camera` — 2026-07-13: **8 tests, 8 passed**. Verifies shared keyboard camera yaw/pitch, pitch/yaw clamps, exact 1.5s auto-chase recenter delay, smooth recentering, `V` toggle persistence, `C` preset wrapping, hover roll isolation, and hero/vehicle pawn ownership.
 - [x] `BTTF.Vehicle.Input` — 2026-07-13: **7 tests, 7 passed** after shared camera wiring remained compatible with arrow driving, reverse, reset, destination cycling, and camera preset cycling.
 - [x] `BTTF.Hero.VehicleToggleIsControllerBoundOnly` verifies `G` is not double-polled in `PlayerTick`.
+- [x] `BTTF.Hero.ArrowKeyMovementConfig` verifies character movement uses arrow keys and rejects stale `W/A/S/D` movement bindings.
 - [x] `BTTF.Presentation.ArmedPhaseDoesNotFullscreenDistort` verifies `T` arming does not apply the full-screen temporal post-process.
 - [x] `BTTF.Vehicle.Hover.StabilityContract` now includes conservative hover force/tuning bounds.
 
@@ -69,5 +70,10 @@ Test configuration: Unreal Editor 5.8 Development game mode, 1280x720 window, `/
 - [ ] Verify save/quit/continue at each objective boundary. *(Auto-load on start, shutdown autosave, Escape pause/save, and checkpoint snapshot tests added; packaged verification still required.)*
 - [ ] Run Development and Shipping packaged-build smoke tests on a machine without Unreal Editor. *(Use `Scripts/Build/package_smoke_test.ps1`.)*
 - [ ] Complete keyboard/mouse and controller acceptance at 1080p.
-  - [ ] Live-confirm `W/A/S/D` camera orbit plus `C` preset cycling and `V` auto-chase toggle in walking, driving, and hover modes.
+  - [ ] Start in the DeLorean: `Up/Down/Left/Right` drive, reverse, and steer; `W/A/S/D` moves only the camera.
+  - [ ] Press `G` to exit: hero appears safely beside/rear of the vehicle and remains controllable.
+  - [ ] On foot: `Up/Down/Left/Right` move the hero; Space jumps; `W/A/S/D` moves only the camera.
+  - [ ] Re-enter with `G`; repeat enter/exit three times without double-toggle or lost possession.
+  - [ ] Live-confirm `C` preset cycling and `V` auto-chase toggle in walking, driving, and hover modes.
+  - [ ] Live-confirm `T` arms circuits without a full blue-screen overlay; `Q/E` cycle destinations; `F` requests jump only when valid.
   - [ ] Live-confirm softened hover mode with held-key forward/reverse/left/right and verify no roll/camera chaos.
