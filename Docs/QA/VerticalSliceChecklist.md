@@ -5,7 +5,8 @@ Last updated: 2026-07-12
 ## Automated evidence
 
 - [x] `Scripts/Build/build_editor.ps1` completed with `Result: Succeeded` after the asynchronous era-readiness changes.
-- [x] `Scripts/Build/run_automation.ps1 -Filter BTTF` found 34 tests and completed all 34 with `Result={Success}`.
+- [x] `Scripts/Build/run_automation.ps1 -Filter BTTF` found 35 tests and completed all 35 with `Result={Success}`.
+- [x] `BTTF.Presentation.TimeTravelPhaseContract` verifies phase cues, reduced-flash intensity, and idle cleanup.
 - [x] `Scripts/Build/package_windows.ps1 -Configuration Development` completed cook, stage, pak, archive, and exited with `BUILD SUCCESSFUL`.
 - [x] Development package artifact was produced at `Builds/Windows-Development/BTTF_TemporalDrift.exe`.
 - [x] Packaged executable launched from its archive directory with `-nullrhi -nosound -unattended -ExecCmds=quit` and exited cleanly with code 0.
