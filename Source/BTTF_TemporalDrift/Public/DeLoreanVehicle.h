@@ -158,25 +158,25 @@ public:
     float HoverTargetHeight = 250.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
-    float HoverSpringStrength = 12.0f;
+    float HoverSpringStrength = 4.5f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
-    float HoverDamping = 3.0f;
+    float HoverDamping = 10.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
-    float HoverStabilizationStrength = 8.0f;
+    float HoverStabilizationStrength = 5.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
-    float HoverAngularDamping = 5.0f;
+    float HoverAngularDamping = 12.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
-    float HoverMaxVerticalAcceleration = 1600.0f;
+    float HoverMaxVerticalAcceleration = 800.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
-    float HoverForwardAcceleration = 500.0f;
+    float HoverForwardAcceleration = 240.0f;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
-    float HoverYawAcceleration = 1.5f;
+    float HoverYawAcceleration = 0.45f;
 
     // Functions
     UFUNCTION(BlueprintCallable, Category = "Time Travel")

@@ -102,7 +102,6 @@ void ABTTFHeroCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
     PlayerInputComponent->BindAction(TEXT("Crouch"), IE_Pressed, this, &ABTTFHeroCharacter::ToggleCrouch);
     PlayerInputComponent->BindAction(TEXT("Interact"), IE_Pressed, this, &ABTTFHeroCharacter::Interact);
     PlayerInputComponent->BindKey(EKeys::C, IE_Pressed, this, &ABTTFHeroCharacter::CycleCameraPreset);
-    PlayerInputComponent->BindKey(EKeys::V, IE_Pressed, this, &ABTTFHeroCharacter::ToggleAutoChaseCamera);
 }
 
 void ABTTFHeroCharacter::SetSprinting(bool bEnabled)
@@ -232,6 +231,14 @@ void ABTTFHeroCharacter::ToggleAutoChaseCamera()
     if (KeyboardCamera)
     {
         KeyboardCamera->ToggleAutoChase();
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(
+                -1, 1.5f, FColor::Cyan,
+                KeyboardCamera->IsAutoChaseEnabled()
+                    ? TEXT("Auto-chase camera ON")
+                    : TEXT("Auto-chase camera OFF"));
+        }
     }
 }
 

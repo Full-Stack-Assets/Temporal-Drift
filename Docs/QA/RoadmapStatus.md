@@ -34,6 +34,17 @@ Anchored on a failing `BTTF.Camera.PawnOwnership` test proving the hero and DeLo
 - **Verification:** `build_editor.ps1` → `Result: Succeeded`; `run_automation.ps1 -Filter BTTF.Camera` → **8 found, 8 passed**; `run_automation.ps1 -Filter BTTF.Vehicle.Input` → **7 found, 7 passed**; full `run_automation.ps1 -Filter BTTF` → **67 found, 67 passed**.
 - **Still open for acceptance:** live PIE confirmation that `W/A/S/D`, `C`, and `V` behave correctly in walking, driving, and hover modes.
 
+## Control and Presentation Stability Fixes (2026-07-13)
+
+Follow-up to live playtest reports: `V` had no readable feedback, `G` could fail to appear to exit, hover mode was unstable, and `T` could turn the screen fully blue when merely arming time circuits.
+
+- **`G` exit root cause:** controller handled `G` through both an input binding and `PlayerTick` polling. The tick polling path was removed so one key press cannot exit and immediately re-enter the vehicle.
+- **`V` auto-chase:** auto-chase toggle is now controller-owned and displays a short on-screen `Auto-chase camera ON/OFF` message for both hero and vehicle.
+- **Hover stability:** hover defaults were softened, gravity is disabled while hover is active, angular velocity is reset on hover entry, and wheel drivetrain inputs are prevented from fighting the hover controller.
+- **`T` blue screen:** full-screen temporal post-process is now gated to actual departure/switching/arrival phases; arming or charging the time circuits no longer applies the distortion material.
+- **Verification:** `build_editor.ps1` -> `Result: Succeeded`; focused automation passed: `BTTF.Hero` **6/6**, `BTTF.Vehicle` **13/13**, `BTTF.Presentation` **4/4**, `BTTF.Camera` **8/8**; full `run_automation.ps1 -Filter BTTF` -> **69 found, 69 passed**.
+- **Live check:** fresh game launched in `/Game/Levels/LVL_TimeTravelTest`; tapping `T` armed the circuits without the full blue-screen post-process. Held-key hover/driving tuning still needs hands-on play confirmation.
+
 ## Tasks 1–8 (Vertical-slice foundation)
 
 | Task | Status | Notes |

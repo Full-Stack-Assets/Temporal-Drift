@@ -127,6 +127,16 @@ bool FBTTFVehicleHoverStabilityTest::RunTest(const FString& Parameters)
 {
     const ADeLoreanVehicle* Vehicle = GetDefault<ADeLoreanVehicle>();
     TestFalse(TEXT("Chase camera does not inherit vehicle roll"), Vehicle->CameraSpringArm->bInheritRoll);
+    TestTrue(TEXT("Hover spring is gentle enough for prototype physics"),
+        Vehicle->HoverSpringStrength <= 6.0f);
+    TestTrue(TEXT("Hover damping prevents bounce amplification"),
+        Vehicle->HoverDamping >= 8.0f);
+    TestTrue(TEXT("Hover vertical acceleration is bounded"),
+        Vehicle->HoverMaxVerticalAcceleration <= 900.0f);
+    TestTrue(TEXT("Hover yaw is conservative enough for keyboard taps"),
+        Vehicle->HoverYawAcceleration <= 0.75f);
+    TestTrue(TEXT("Hover forward acceleration is conservative"),
+        Vehicle->HoverForwardAcceleration <= 300.0f);
 
     const FVector TiltedUp = FVector(0.0f, 0.5f, 0.8660254f).GetSafeNormal();
     const FVector CorrectiveAxis = FVector::CrossProduct(TiltedUp, FVector::UpVector).GetSafeNormal();

@@ -85,4 +85,31 @@ bool FBTTFTimeTravelPresentationPhaseAssetsTest::RunTest(const FString& Paramete
     return !HasAnyErrors();
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFTimeTravelPresentationArmedNoPostProcessTest,
+    "BTTF.Presentation.ArmedPhaseDoesNotFullscreenDistort",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFTimeTravelPresentationArmedNoPostProcessTest::RunTest(const FString& Parameters)
+{
+    const UTimeTravelPresentationComponent* Presentation = GetDefault<UTimeTravelPresentationComponent>();
+    const bool bArmedAppliesPostProcess =
+        Presentation->ShouldApplyPostProcessForPhase(ETimeTravelPhase::Armed);
+    const bool bChargingAppliesPostProcess =
+        Presentation->ShouldApplyPostProcessForPhase(ETimeTravelPhase::Charging);
+    const bool bDepartureAppliesPostProcess =
+        Presentation->ShouldApplyPostProcessForPhase(ETimeTravelPhase::Departing);
+    const bool bArrivalAppliesPostProcess =
+        Presentation->ShouldApplyPostProcessForPhase(ETimeTravelPhase::Arriving);
+
+    TestFalse(TEXT("Arming time circuits does not apply fullscreen post-process"),
+        bArmedAppliesPostProcess);
+    TestFalse(TEXT("Charging flux does not apply fullscreen post-process"),
+        bChargingAppliesPostProcess);
+    TestTrue(TEXT("Departure still allows temporal post-process"),
+        bDepartureAppliesPostProcess);
+    TestTrue(TEXT("Arrival still allows arrival post-process"),
+        bArrivalAppliesPostProcess);
+    return !HasAnyErrors();
+}
+
 #endif

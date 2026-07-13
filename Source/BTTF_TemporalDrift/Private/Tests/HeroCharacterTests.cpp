@@ -2,6 +2,7 @@
 
 #include "Misc/AutomationTest.h"
 #include "BTTFHeroCharacter.h"
+#include "BTTF_PlayerController.h"
 #include "DeLoreanVehicle.h"
 #include "VehicleInteractionComponent.h"
 #include "GameFramework/PlayerController.h"
@@ -76,6 +77,18 @@ bool FBTTFHeroVehicleHandoffTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Controller repossesses hero"), Controller->GetPawn() == Hero);
 
     World->DestroyWorld(false);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFHeroVehicleToggleIsControllerBoundOnlyTest,
+    "BTTF.Hero.VehicleToggleIsControllerBoundOnly",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFHeroVehicleToggleIsControllerBoundOnlyTest::RunTest(const FString& Parameters)
+{
+    const ABTTF_PlayerController* Controller = GetDefault<ABTTF_PlayerController>();
+    TestFalse(TEXT("G handoff is not also polled in PlayerTick"),
+        Controller->ShouldPollVehicleToggleInTick());
     return !HasAnyErrors();
 }
 

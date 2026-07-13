@@ -53,6 +53,9 @@ public:
     UFUNCTION(BlueprintPure, Category="Time Travel|Presentation")
     FSoftObjectPath GetPhaseAudioPath(ETimeTravelPhase Phase) const;
 
+    UFUNCTION(BlueprintPure, Category="Time Travel|Presentation")
+    bool ShouldApplyPostProcessForPhase(ETimeTravelPhase Phase) const;
+
     UFUNCTION(BlueprintCallable, Category="Time Travel|Presentation")
     void HandlePhaseChanged(ETimeTravelPhase NewPhase);
 

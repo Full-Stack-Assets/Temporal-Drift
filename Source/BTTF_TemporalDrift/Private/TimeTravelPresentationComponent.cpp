@@ -144,6 +144,13 @@ FSoftObjectPath UTimeTravelPresentationComponent::GetPhaseAudioPath(ETimeTravelP
     }
 }
 
+bool UTimeTravelPresentationComponent::ShouldApplyPostProcessForPhase(ETimeTravelPhase Phase) const
+{
+    return Phase == ETimeTravelPhase::Departing
+        || Phase == ETimeTravelPhase::SwitchingEra
+        || Phase == ETimeTravelPhase::Arriving;
+}
+
 void UTimeTravelPresentationComponent::HandlePhaseChanged(ETimeTravelPhase NewPhase)
 {
     PresentationPhase = NewPhase;
@@ -216,19 +223,23 @@ void UTimeTravelPresentationComponent::ApplyPresentationEffects()
         FPostProcessSettings& Settings = PostProcessComponent->Settings;
         Settings.WeightedBlendables.Array.Reset();
 
-        const FSoftObjectPath MaterialPath = (PresentationPhase == ETimeTravelPhase::Arriving
-            || PresentationPhase == ETimeTravelPhase::Cooldown)
-            ? GetActiveArrivalMaterialPath()
-            : GetActiveDistortionMaterialPath();
-
-        if (UMaterialInterface* Material = Cast<UMaterialInterface>(MaterialPath.TryLoad()))
+        if (ShouldApplyPostProcessForPhase(PresentationPhase))
         {
-            FWeightedBlendable Blendable;
-            Blendable.Object = Material;
-            Blendable.Weight = CueIntensity;
-            Settings.WeightedBlendables.Array.Add(Blendable);
+            const FSoftObjectPath MaterialPath = (PresentationPhase == ETimeTravelPhase::Arriving)
+                ? GetActiveArrivalMaterialPath()
+                : GetActiveDistortionMaterialPath();
+
+            if (UMaterialInterface* Material = Cast<UMaterialInterface>(MaterialPath.TryLoad()))
+            {
+                FWeightedBlendable Blendable;
+                Blendable.Object = Material;
+                Blendable.Weight = CueIntensity;
+                Settings.WeightedBlendables.Array.Add(Blendable);
+            }
         }
-        PostProcessComponent->BlendWeight = CueIntensity;
+        PostProcessComponent->BlendWeight = ShouldApplyPostProcessForPhase(PresentationPhase)
+            ? CueIntensity
+            : 0.0f;
     }
 
     if (PresentationNiagaraComponent)

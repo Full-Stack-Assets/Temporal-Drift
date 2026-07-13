@@ -33,6 +33,12 @@ public:
     UFUNCTION(BlueprintCallable, Category="Hero|Recovery")
     void ResetToSafeTransform();
 
+    UFUNCTION(BlueprintCallable, Category="Camera")
+    void CycleCameraPreset();
+
+    UFUNCTION(BlueprintCallable, Category="Camera")
+    void ToggleAutoChaseCamera();
+
     UFUNCTION(BlueprintPure, Category="Interaction")
     UVehicleInteractionComponent* GetVehicleInteractionComponent() const { return VehicleInteraction; }
     UFUNCTION(BlueprintPure,Category="Combat") UHeroCombatComponent* GetCombatComponent()const{return Combat;}
@@ -45,8 +51,6 @@ protected:
     void EndSprint();
     void ToggleCrouch();
     void Interact();
-    void CycleCameraPreset();
-    void ToggleAutoChaseCamera();
     void UpdateKeyboardCameraInput(float DeltaSeconds);
     bool TryInteractMissionTaggedActor();
 

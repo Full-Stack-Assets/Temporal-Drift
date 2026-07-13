@@ -22,10 +22,6 @@ ABTTF_PlayerController::ABTTF_PlayerController()
 void ABTTF_PlayerController::PlayerTick(float DeltaTime)
 {
     Super::PlayerTick(DeltaTime);
-    if (WasInputKeyJustPressed(EKeys::G))
-    {
-        ToggleVehicleHeroPossession();
-    }
 }
 
 bool ABTTF_PlayerController::ToggleVehicleHeroPossession()
@@ -114,6 +110,8 @@ void ABTTF_PlayerController::SetupInputComponent()
     // polling is not guaranteed to run while the game is in GameAndUI mode.
     InputComponent->BindKey(EKeys::G, IE_Pressed, this,
         &ABTTF_PlayerController::HandleToggleVehicleHeroPossession);
+    InputComponent->BindKey(EKeys::V, IE_Pressed, this,
+        &ABTTF_PlayerController::HandleToggleAutoChaseCamera);
     InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ABTTF_PlayerController::TogglePauseMenu);
 
     if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
@@ -156,6 +154,20 @@ void ABTTF_PlayerController::ToggleHoverMode()
 void ABTTF_PlayerController::HandleToggleVehicleHeroPossession()
 {
     ToggleVehicleHeroPossession();
+}
+
+void ABTTF_PlayerController::HandleToggleAutoChaseCamera()
+{
+    if (ADeLoreanVehicle* Vehicle = Cast<ADeLoreanVehicle>(GetPawn()))
+    {
+        Vehicle->ToggleAutoChaseCamera();
+        return;
+    }
+
+    if (ABTTFHeroCharacter* Hero = Cast<ABTTFHeroCharacter>(GetPawn()))
+    {
+        Hero->ToggleAutoChaseCamera();
+    }
 }
 
 void ABTTF_PlayerController::TogglePauseMenu()

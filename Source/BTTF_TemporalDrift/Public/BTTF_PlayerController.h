@@ -23,6 +23,10 @@ public:
     bool ToggleVehicleHeroPossession();
 
     void HandleToggleVehicleHeroPossession();
+    void HandleToggleAutoChaseCamera();
+
+    UFUNCTION(BlueprintPure, Category="Vehicle")
+    bool ShouldPollVehicleToggleInTick() const { return false; }
 
     UFUNCTION(BlueprintCallable, Category = "UI")
     void TogglePauseMenu();

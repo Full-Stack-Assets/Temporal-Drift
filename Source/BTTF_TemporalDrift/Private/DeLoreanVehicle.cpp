@@ -322,7 +322,6 @@ void ADeLoreanVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
     PlayerInputComponent->BindKey(EKeys::T, IE_Pressed, this, &ADeLoreanVehicle::ToggleTimeCircuits);
     PlayerInputComponent->BindKey(EKeys::F, IE_Pressed, this, &ADeLoreanVehicle::TryTimeTravelFromInput);
     PlayerInputComponent->BindKey(EKeys::C, IE_Pressed, this, &ADeLoreanVehicle::ToggleCamera);
-    PlayerInputComponent->BindKey(EKeys::V, IE_Pressed, this, &ADeLoreanVehicle::ToggleAutoChaseCamera);
     PlayerInputComponent->BindKey(EKeys::R, IE_Pressed, this, &ADeLoreanVehicle::ResetVehicle);
 }
 
@@ -445,7 +444,31 @@ void ADeLoreanVehicle::TryTimeTravelFromInput()
 void ADeLoreanVehicle::ToggleHoverMode()
 {
     bHoverModeActive = !bHoverModeActive;
+    if (USkeletalMeshComponent* Body = GetMesh())
+    {
+        Body->SetEnableGravity(!bHoverModeActive);
+        Body->SetPhysicsAngularVelocityInRadians(FVector::ZeroVector);
+        if (bHoverModeActive)
+        {
+            Body->SetPhysicsLinearVelocity(
+                FVector(Body->GetPhysicsLinearVelocity().X, Body->GetPhysicsLinearVelocity().Y, 0.0f));
+        }
+    }
+    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+    {
+        Movement->SetThrottleInput(0.0f);
+        Movement->SetBrakeInput(0.0f);
+        Movement->SetSteeringInput(0.0f);
+        Movement->SetHandbrakeInput(false);
+        Movement->SetUseAutomaticGears(!bHoverModeActive);
+    }
     UE_LOG(LogTemp, Log, TEXT("Hover mode %s"), bHoverModeActive ? TEXT("ENGAGED") : TEXT("DISENGAGED"));
+    if (GEngine)
+    {
+        GEngine->AddOnScreenDebugMessage(
+            -1, 1.5f, bHoverModeActive ? FColor::Cyan : FColor::Silver,
+            bHoverModeActive ? TEXT("Hover mode ON") : TEXT("Hover mode OFF"));
+    }
 }
 
 void ADeLoreanVehicle::UpdateHoverMode(float DeltaTime)
@@ -458,8 +481,10 @@ void ADeLoreanVehicle::UpdateHoverMode(float DeltaTime)
 
     if (!bHoverModeActive)
     {
+        Body->SetEnableGravity(true);
         return;
     }
+    Body->SetEnableGravity(false);
 
     // Maintain the target hover height with a spring-damper force.
     FHitResult Hit;
@@ -485,7 +510,7 @@ void ADeLoreanVehicle::UpdateHoverMode(float DeltaTime)
 
     const FVector StabilizationTorque = CalculateHoverStabilizationTorque(
         GetActorUpVector(), Body->GetPhysicsAngularVelocityInRadians(), Body->GetMass());
-    Body->AddTorqueInRadians(StabilizationTorque);
+    Body->AddTorqueInRadians(StabilizationTorque, NAME_None, false);
 
     const APlayerController* PlayerController = Cast<APlayerController>(GetController());
     const bool bLiveForward = bForwardKeyPressed ||
@@ -772,7 +797,7 @@ void ADeLoreanVehicle::ApplyDigitalDriveInput(bool bForward, bool bReverse, bool
         }
         if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
         {
-            TargetThrottleInput = bForward ? 1.0f : 0.0f;
+            TargetThrottleInput = (!bHoverModeActive && bForward) ? 1.0f : 0.0f;
             SmoothedThrottleInput = TargetThrottleInput;
             Movement->SetThrottleInput(SmoothedThrottleInput);
         }
@@ -782,7 +807,7 @@ void ADeLoreanVehicle::ApplyDigitalDriveInput(bool bForward, bool bReverse, bool
     SmoothedSteeringInput = TargetSteeringInput;
     if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
     {
-        Movement->SetSteeringInput(SmoothedSteeringInput);
+        Movement->SetSteeringInput(bHoverModeActive ? 0.0f : SmoothedSteeringInput);
     }
 }
 
@@ -865,6 +890,14 @@ void ADeLoreanVehicle::ToggleAutoChaseCamera()
     if (KeyboardCamera)
     {
         KeyboardCamera->ToggleAutoChase();
+        if (GEngine)
+        {
+            GEngine->AddOnScreenDebugMessage(
+                -1, 1.5f, FColor::Cyan,
+                KeyboardCamera->IsAutoChaseEnabled()
+                    ? TEXT("Auto-chase camera ON")
+                    : TEXT("Auto-chase camera OFF"));
+        }
     }
 }
 
