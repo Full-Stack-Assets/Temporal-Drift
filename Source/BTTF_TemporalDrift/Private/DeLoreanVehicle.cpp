@@ -10,6 +10,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/SceneComponent.h"
 #include "NiagaraComponent.h"
+#include "TimeTravelPresentationComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
@@ -32,6 +33,8 @@ ADeLoreanVehicle::ADeLoreanVehicle()
     TimeTravelNiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("TimeTravelNiagara"));
     TimeTravelNiagaraComponent->SetupAttachment(RootComponent);
     TimeTravelNiagaraComponent->SetAutoActivate(false);
+
+    TimeTravelPresentationComponent = CreateDefaultSubobject<UTimeTravelPresentationComponent>(TEXT("TimeTravelPresentation"));
 
     VisualCarBody = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualCarBody"));
     VisualCarBody->SetupAttachment(GetMesh());

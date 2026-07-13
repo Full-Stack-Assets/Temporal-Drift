@@ -7,6 +7,7 @@
 #include "DeLoreanVehicle.generated.h"
 
 class UNiagaraComponent;
+class UTimeTravelPresentationComponent;
 class UInputMappingContext;
 class UInputAction;
 class USpringArmComponent;
@@ -81,6 +82,9 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Time Travel")
     UNiagaraComponent* TimeTravelNiagaraComponent;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Time Travel|Presentation", meta=(AllowPrivateAccess="true"))
+    TObjectPtr<UTimeTravelPresentationComponent> TimeTravelPresentationComponent;
 
     // High-detail visible body. The lightweight skeletal import is retained as
     // the Chaos physics root, while this component supplies the actual car art.
