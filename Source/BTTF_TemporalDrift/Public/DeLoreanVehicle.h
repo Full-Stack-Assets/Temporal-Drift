@@ -142,6 +142,21 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
     float HoverDamping = 3.0f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
+    float HoverStabilizationStrength = 8.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
+    float HoverAngularDamping = 5.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
+    float HoverMaxVerticalAcceleration = 1600.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
+    float HoverForwardAcceleration = 500.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
+    float HoverYawAcceleration = 1.5f;
+
     // Functions
     UFUNCTION(BlueprintCallable, Category = "Time Travel")
     void ToggleTimeCircuits();
@@ -166,6 +181,10 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Vehicle|Input")
     void ApplyDigitalDriveInput(bool bForward, bool bReverse, bool bLeft, bool bRight);
+
+    UFUNCTION(BlueprintPure, Category = "Hover Mode")
+    FVector CalculateHoverStabilizationTorque(const FVector& CurrentUp,
+        const FVector& AngularVelocityRadians, float BodyMass) const;
 
     UFUNCTION(BlueprintCallable, Category = "Vehicle|Recovery")
     void ResetVehicle();

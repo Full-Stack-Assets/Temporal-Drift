@@ -4,6 +4,7 @@
 #include "DeLoreanVehicle.h"
 #include "ChaosVehicleMovementComponent.h"
 #include "Engine/World.h"
+#include "GameFramework/SpringArmComponent.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FBTTFVehicleInputNormalizationTest,
@@ -114,6 +115,28 @@ bool FBTTFVehicleArrowKeyContractTest::RunTest(const FString& Parameters)
     Vehicle->ApplyDigitalDriveInput(false, false, false, false);
     TestEqual(TEXT("Releasing all arrows restores first gear"), Movement->GetTargetGear(), 1);
     TestEqual(TEXT("Releasing all arrows clears steering"), Movement->GetSteeringInput(), 0.0f);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FBTTFVehicleHoverStabilityTest,
+    "BTTF.Vehicle.Hover.StabilityContract",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFVehicleHoverStabilityTest::RunTest(const FString& Parameters)
+{
+    const ADeLoreanVehicle* Vehicle = GetDefault<ADeLoreanVehicle>();
+    TestFalse(TEXT("Chase camera does not inherit vehicle roll"), Vehicle->CameraSpringArm->bInheritRoll);
+
+    const FVector TiltedUp = FVector(0.0f, 0.5f, 0.8660254f).GetSafeNormal();
+    const FVector CorrectiveAxis = FVector::CrossProduct(TiltedUp, FVector::UpVector).GetSafeNormal();
+    const FVector Torque = Vehicle->CalculateHoverStabilizationTorque(
+        TiltedUp, FVector::ZeroVector, 1500.0f);
+    TestTrue(TEXT("Hover torque corrects vehicle tilt"), FVector::DotProduct(Torque, CorrectiveAxis) > 0.0f);
+    TestTrue(TEXT("Hover torque remains finite"), !Torque.ContainsNaN());
+    const FVector DampingTorque = Vehicle->CalculateHoverStabilizationTorque(
+        FVector::UpVector, FVector(2.0f, 0.0f, 0.0f), 1500.0f);
+    TestTrue(TEXT("Hover torque damps roll velocity"), DampingTorque.X < 0.0f);
     return !HasAnyErrors();
 }
 

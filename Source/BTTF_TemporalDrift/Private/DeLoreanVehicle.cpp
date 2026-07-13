@@ -74,6 +74,7 @@ ADeLoreanVehicle::ADeLoreanVehicle()
     CameraSpringArm->bDoCollisionTest = false;
     CameraSpringArm->bEnableCameraLag = true;
     CameraSpringArm->CameraLagSpeed = 8.0f;
+    CameraSpringArm->bInheritRoll = false;
 
     ChaseCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ChaseCamera"));
     ChaseCamera->SetupAttachment(CameraSpringArm);
@@ -372,7 +373,7 @@ void ADeLoreanVehicle::ToggleHoverMode()
 
 void ADeLoreanVehicle::UpdateHoverMode(float DeltaTime)
 {
-    UPrimitiveComponent* Body = Cast<UPrimitiveComponent>(GetRootComponent());
+    UPrimitiveComponent* Body = GetMesh();
     if (!Body || !Body->IsSimulatingPhysics())
     {
         return;
@@ -399,9 +400,32 @@ void ADeLoreanVehicle::UpdateHoverMode(float DeltaTime)
         // Spring force counteracts gravity plus corrects height; damping prevents oscillation.
         const float Gravity = -GetWorld()->GetGravityZ();
         const float SpringForce = HeightError * HoverSpringStrength - VerticalVelocity * HoverDamping;
-        const FVector Force = FVector(0, 0, Gravity + SpringForce) * Body->GetMass();
+        const float VerticalAcceleration = FMath::Clamp(
+            Gravity + SpringForce, -HoverMaxVerticalAcceleration, HoverMaxVerticalAcceleration);
+        const FVector Force = FVector(0, 0, VerticalAcceleration) * Body->GetMass();
         Body->AddForce(Force);
     }
+
+    const FVector StabilizationTorque = CalculateHoverStabilizationTorque(
+        GetActorUpVector(), Body->GetPhysicsAngularVelocityInRadians(), Body->GetMass());
+    Body->AddTorqueInRadians(StabilizationTorque);
+
+    const float ForwardCommand = (bForwardKeyPressed ? 1.0f : 0.0f) - (bReverseKeyPressed ? 1.0f : 0.0f);
+    Body->AddForce(GetActorForwardVector() * ForwardCommand * HoverForwardAcceleration * Body->GetMass());
+
+    const float YawCommand = (bRightKeyPressed ? 1.0f : 0.0f) - (bLeftKeyPressed ? 1.0f : 0.0f);
+    Body->AddTorqueInRadians(FVector::UpVector * YawCommand * HoverYawAcceleration * Body->GetMass());
+}
+
+FVector ADeLoreanVehicle::CalculateHoverStabilizationTorque(const FVector& CurrentUp,
+    const FVector& AngularVelocityRadians, float BodyMass) const
+{
+    const FVector NormalizedUp = CurrentUp.GetSafeNormal(SMALL_NUMBER, FVector::UpVector);
+    const FVector TiltAxis = FVector::CrossProduct(NormalizedUp, FVector::UpVector);
+    const float YawRate = FVector::DotProduct(AngularVelocityRadians, FVector::UpVector);
+    const FVector TiltAngularVelocity = AngularVelocityRadians - FVector::UpVector * YawRate;
+    return (TiltAxis * HoverStabilizationStrength - TiltAngularVelocity * HoverAngularDamping) *
+        FMath::Max(BodyMass, 1.0f);
 }
 
 void ADeLoreanVehicle::Tick(float DeltaTime)
@@ -415,6 +439,17 @@ void ADeLoreanVehicle::Tick(float DeltaTime)
     UpdateSpeedometer();
     UpdateFluxCapacitor(DeltaTime);
     UpdateHoverMode(DeltaTime);
+
+    if (bReverseKeyPressed && !bHoverModeActive)
+    {
+        if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+        {
+            Movement->SetUseAutomaticGears(false);
+            Movement->SetTargetGear(-1, true);
+            Movement->SetBrakeInput(0.0f);
+            Movement->SetThrottleInput(1.0f);
+        }
+    }
 
     if (bShowDebugInfo && TimeTravelSubsystem)
     {
