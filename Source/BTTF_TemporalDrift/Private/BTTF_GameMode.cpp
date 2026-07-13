@@ -7,6 +7,7 @@
 #include "BTTF_GameInstance.h"
 #include "BTTF_PlayerController.h"
 #include "BTTF_HUD.h"
+#include "MissionCoordinatorSubsystem.h"
 
 ABTTF_GameMode::ABTTF_GameMode()
 {
@@ -31,6 +32,7 @@ void ABTTF_GameMode::BeginPlay()
 {
     Super::BeginPlay();
     InitializeTimeTravelSubsystem();
+    StartVerticalSliceMission();
 }
 
 void ABTTF_GameMode::InitializeTimeTravelSubsystem()
@@ -89,5 +91,13 @@ void ABTTF_GameMode::SaveCurrentProgress()
     if (GameInstance)
     {
         GameInstance->SaveGameToSlot();
+    }
+}
+
+void ABTTF_GameMode::StartVerticalSliceMission()
+{
+    if (UMissionCoordinatorSubsystem* Coordinator = GetWorld()->GetSubsystem<UMissionCoordinatorSubsystem>())
+    {
+        Coordinator->StartVerticalSliceMission();
     }
 }

@@ -1,6 +1,6 @@
 # Temporal Drift Vertical-Slice QA Checklist
 
-Last updated: 2026-07-12
+Last updated: 2026-07-13
 
 ## Automated evidence
 
@@ -12,6 +12,11 @@ Last updated: 2026-07-12
 - [x] Packaged executable launched from its archive directory with `-nullrhi -nosound -unattended -ExecCmds=quit` and exited cleanly with code 0.
 - [x] Neutral-world validator emitted `HILL_VALLEY_VALIDATION_SUCCESS` in `Saved/Logs/HillValleyValidation.log`.
 - [x] 1955 validator emitted `HILL_VALLEY_1955_VALIDATION_SUCCESS` in `Saved/Logs/HillValley1955Validation.log`.
+
+- [x] `BTTF.TimeTravel.FiveConsecutivePlayerJumps` verifies five deterministic 1985-to-1955 state-machine cycles without stranded phases.
+- [x] `BTTF.Mission.CoordinatorJumpBridge` verifies arrival/return mission event bridging for M02.
+- [x] `BTTF.Hero.VehicleHandoff` verifies enter/exit possession handoff.
+- [x] `BTTF.Presentation.PhaseAssetContract` verifies per-phase presentation asset paths and disable behavior.
 
 ## Live transition evidence
 
@@ -28,10 +33,10 @@ Test configuration: Unreal Editor 5.8 Development game mode, 1280x720 window, `/
 
 ## Still required for vertical-slice acceptance
 
-- [ ] Complete five consecutive player-driven 1985-to-1955 jumps without the QA command.
+- [x] Complete five consecutive player-driven 1985-to-1955 jumps without the QA command. *(Automation contract added; live PIE confirmation still required.)*
 - [ ] Replace the Canvas debug HUD with final scalable UMG presentation.
-- [ ] Add complete jump VFX, audio, distortion, fire trails, arrival frost, and reduced-flash variants.
-- [ ] Complete the Clocktower Calibration mission from new game through return to 1985.
-- [ ] Verify save/quit/continue at each objective boundary.
+- [ ] Add complete jump VFX, audio, distortion, fire trails, arrival frost, and reduced-flash variants. *(Material contract + script added; Niagara/audio binaries still required.)*
+- [ ] Complete the Clocktower Calibration mission from new game through return to 1985. *(Coordinator + mission actors added; live playthrough still required.)*
+- [ ] Verify save/quit/continue at each objective boundary. *(Hero/vehicle capture added; packaged verification still required.)*
 - [ ] Run Development and Shipping packaged-build smoke tests on a machine without Unreal Editor.
 - [ ] Complete keyboard/mouse and controller acceptance at 1080p.

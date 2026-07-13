@@ -36,6 +36,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Game State")
     void SaveCurrentProgress();
 
+    UFUNCTION(BlueprintCallable, Category = "Game State")
+    void StartVerticalSliceMission();
+
 protected:
     UPROPERTY()
     UTimeTravelSubsystem* TimeTravelSubsystem;

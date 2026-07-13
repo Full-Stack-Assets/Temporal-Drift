@@ -8,7 +8,9 @@ Last updated: 2026-07-12
 - The driving HUD is still Canvas/debug presentation and exposes enum-style era names.
 - Time travel changes the era reliably, but final transition VFX, audio, camera treatment, and arrival feedback are incomplete.
 - The 1955 dressing is visibly distinct at courthouse square but remains sparse and highly modular.
-- The full Clocktower Calibration mission has not yet passed a start-to-finish packaged playthrough.
+- Mission coordinator, event volumes, and interactables now wire M02 objectives in C++.
+- Save/load now captures hero and vehicle transforms at checkpoint boundaries.
+- Full Clocktower Calibration mission still requires a live packaged playthrough after running `Scripts/hill_valley/place_mission_volumes.py`.
 - Clean-machine Development and Shipping package acceptance is not yet recorded.
 
 ## Non-blocking development warnings
