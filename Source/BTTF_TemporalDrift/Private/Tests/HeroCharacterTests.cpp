@@ -17,6 +17,7 @@ bool FBTTFHeroCharacterContractTest::RunTest(const FString& Parameters)
 {
     const ABTTFHeroCharacter* Hero = GetDefault<ABTTFHeroCharacter>();
     TestNotNull(TEXT("Hero has vehicle interaction"), Hero->GetVehicleInteractionComponent());
+    TestNotNull(TEXT("Hero has keyboard camera"), Hero->GetKeyboardCameraComponent());
     TestNotNull(TEXT("Hero has combat component"),Hero->GetCombatComponent());
     TestNotNull(TEXT("Hero has stealth component"),Hero->GetStealthComponent());
     TestNotNull(TEXT("Hero has visible skeletal presentation"),Hero->GetMesh()->GetSkeletalMeshAsset());
@@ -27,6 +28,8 @@ bool FBTTFHeroCharacterContractTest::RunTest(const FString& Parameters)
         Hero->GetVehicleInteractionComponent()->InteractionRange <= 500.0f);
     TestTrue(TEXT("Exit clearance exceeds capsule width"),
         Hero->GetVehicleInteractionComponent()->ExitSideOffset >= 100.0f);
+    TestTrue(TEXT("Behind exit offset is configured"),
+        Hero->GetVehicleInteractionComponent()->ExitBehindOffset >= 150.0f);
     return !HasAnyErrors();
 }
 
@@ -71,6 +74,12 @@ bool FBTTFHeroVehicleHandoffTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Hero can enter vehicle"), Interaction->EnterVehicle(Vehicle));
     TestTrue(TEXT("Controller possesses vehicle"), Controller->GetPawn() == Vehicle);
     TestTrue(TEXT("Hero hidden while in vehicle"), Hero->IsHidden());
+    TestTrue(TEXT("Exit blocked when overlapping"), !Interaction->ExitVehicle(Vehicle));
+    TestFalse(TEXT("Blocked exit provides feedback reason"),
+        Interaction->GetLastExitFailureReason().IsEmpty());
+    TestTrue(TEXT("Blocked exit keeps vehicle possessed"), Controller->GetPawn() == Vehicle);
+    Vehicle->SetActorLocation(FVector(0, 0, 200), false, nullptr, ETeleportType::TeleportPhysics);
+    Hero->SetActorLocation(FVector(500, 0, 200), false, nullptr, ETeleportType::TeleportPhysics);
     TestTrue(TEXT("Hero can exit on clear side"), Interaction->ExitVehicle(Vehicle));
     TestFalse(TEXT("Hero visible after exit"), Hero->IsHidden());
     TestTrue(TEXT("Controller repossesses hero"), Controller->GetPawn() == Hero);

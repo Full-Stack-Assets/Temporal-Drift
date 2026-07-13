@@ -16,6 +16,7 @@ class UCameraComponent;
 class UStaticMeshComponent;
 class USceneComponent;
 class UDeLoreanTuningData;
+class UKeyboardCameraComponent;
 struct FInputActionValue;
 
 UCLASS()
@@ -70,6 +71,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
     UInputAction* ToggleCameraAction;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* ToggleAutoChaseAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* CameraOrbitYawAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* CameraOrbitPitchAction;
+
     // Era targeted when the time travel input is pressed
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time Travel")
     ETimelineState InputTargetEra = ETimelineState::Past1955;
@@ -83,6 +93,9 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
     UCameraComponent* ChaseCamera;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+    UKeyboardCameraComponent* KeyboardCamera;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Time Travel")
     UNiagaraComponent* TimeTravelNiagaraComponent;
@@ -212,8 +225,14 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Camera")
     void ToggleCamera();
 
+    UFUNCTION(BlueprintCallable, Category = "Camera")
+    void ToggleAutoChaseCamera();
+
     UFUNCTION(BlueprintPure, Category = "Camera")
-    int32 GetActiveCameraIndex() const { return ActiveCameraIndex; }
+    int32 GetActiveCameraIndex() const;
+
+    UFUNCTION(BlueprintPure, Category = "Camera")
+    UKeyboardCameraComponent* GetKeyboardCameraComponent() const { return KeyboardCamera; }
 
     UFUNCTION(BlueprintCallable, Category = "Time Travel")
     void CycleDestinationEra(int32 Direction);
@@ -242,6 +261,11 @@ protected:
     void UpdateSafeTransformIfStable();
     void ApplyKeyboardFallback();
     void InstallVehicleInputMapping();
+    void InitializeKeyboardCameraPresets();
+    void HandleCameraOrbitYaw(const FInputActionValue& Value);
+    void HandleCameraOrbitPitch(const FInputActionValue& Value);
+    void CameraOrbitYawAxis(float Value);
+    void CameraOrbitPitchAxis(float Value);
 
     float LastKeyboardThrottle = 0.0f;
     float LastKeyboardSteering = 0.0f;
@@ -256,9 +280,6 @@ protected:
 
     UPROPERTY(VisibleInstanceOnly, Category = "Vehicle|Recovery")
     FTransform LastSafeTransform;
-
-    UPROPERTY(VisibleInstanceOnly, Category = "Camera")
-    int32 ActiveCameraIndex = 0;
 
     // Input handlers
     void HandleThrottle(const FInputActionValue& Value);

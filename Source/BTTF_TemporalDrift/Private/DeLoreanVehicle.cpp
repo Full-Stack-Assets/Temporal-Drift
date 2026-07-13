@@ -21,6 +21,7 @@
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "DeLoreanTuningData.h"
 #include "TemporalDriveSubsystem.h"
+#include "KeyboardCameraComponent.h"
 
 ADeLoreanVehicle::ADeLoreanVehicle()
 {
@@ -90,6 +91,8 @@ ADeLoreanVehicle::ADeLoreanVehicle()
 
     ChaseCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ChaseCamera"));
     ChaseCamera->SetupAttachment(CameraSpringArm);
+
+    KeyboardCamera = CreateDefaultSubobject<UKeyboardCameraComponent>(TEXT("KeyboardCamera"));
 
     // Chaos wheel setup (bone names match the UE5 SportsCar template skeleton)
     if (UChaosWheeledVehicleMovementComponent* Movement = Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent()))
@@ -201,12 +204,58 @@ void ADeLoreanVehicle::BeginPlay()
     }
 
     InstallVehicleInputMapping();
+    InitializeKeyboardCameraPresets();
+}
+
+void ADeLoreanVehicle::InitializeKeyboardCameraPresets()
+{
+    if (!KeyboardCamera || !CameraSpringArm)
+    {
+        return;
+    }
+
+    TArray<FKeyboardCameraPreset> Presets;
+    FKeyboardCameraPreset Chase;
+    Chase.TargetArmLength = 525.0f;
+    Chase.RelativeLocation = FVector(0.0f, 0.0f, 105.0f);
+    Chase.RelativeRotation = FRotator::ZeroRotator;
+    Chase.SocketOffset = FVector(0.0f, 0.0f, 45.0f);
+    Chase.ChasePitchOffset = -7.0f;
+    Presets.Add(Chase);
+
+    FKeyboardCameraPreset Hood;
+    Hood.TargetArmLength = 220.0f;
+    Hood.RelativeLocation = FVector(205.0f, 0.0f, 155.0f);
+    Hood.RelativeRotation = FRotator::ZeroRotator;
+    Hood.ChasePitchOffset = -8.0f;
+    Presets.Add(Hood);
+
+    FKeyboardCameraPreset Bumper;
+    Bumper.TargetArmLength = 55.0f;
+    Bumper.RelativeLocation = FVector(275.0f, 0.0f, 85.0f);
+    Bumper.RelativeRotation = FRotator::ZeroRotator;
+    Bumper.ChasePitchOffset = -3.0f;
+    Presets.Add(Bumper);
+
+    FKeyboardCameraPreset Cockpit;
+    Cockpit.TargetArmLength = 0.0f;
+    Cockpit.RelativeLocation = FVector(35.0f, -35.0f, 125.0f);
+    Cockpit.RelativeRotation = FRotator::ZeroRotator;
+    Cockpit.ChasePitchOffset = 0.0f;
+    Presets.Add(Cockpit);
+
+    KeyboardCamera->ConfigureSpringArm(CameraSpringArm, Presets);
+    KeyboardCamera->ResetCameraState();
 }
 
 void ADeLoreanVehicle::PawnClientRestart()
 {
     Super::PawnClientRestart();
     InstallVehicleInputMapping();
+    if (KeyboardCamera)
+    {
+        KeyboardCamera->ResetCameraState();
+    }
 }
 
 void ADeLoreanVehicle::InstallVehicleInputMapping()
@@ -215,6 +264,11 @@ void ADeLoreanVehicle::InstallVehicleInputMapping()
     {
         if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
         {
+            if (UInputMappingContext* HeroContext = LoadObject<UInputMappingContext>(
+                    nullptr, TEXT("/Game/Input/IMC_Hero.IMC_Hero")))
+            {
+                Subsystem->RemoveMappingContext(HeroContext);
+            }
             if (VehicleMappingContext)
             {
                 Subsystem->RemoveMappingContext(VehicleMappingContext);
@@ -264,9 +318,18 @@ void ADeLoreanVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
             EnhancedInputComponent->BindAction(TimeJumpAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::TryTimeTravelFromInput);
         if (ToggleCameraAction)
             EnhancedInputComponent->BindAction(ToggleCameraAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::ToggleCamera);
+        if (ToggleAutoChaseAction)
+            EnhancedInputComponent->BindAction(ToggleAutoChaseAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::ToggleAutoChaseCamera);
+        if (CameraOrbitYawAction)
+            EnhancedInputComponent->BindAction(CameraOrbitYawAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleCameraOrbitYaw);
+        if (CameraOrbitPitchAction)
+            EnhancedInputComponent->BindAction(CameraOrbitPitchAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleCameraOrbitPitch);
         if (CycleDestinationAction)
             EnhancedInputComponent->BindAction(CycleDestinationAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleCycleDestination);
     }
+
+    PlayerInputComponent->BindAxis(TEXT("CameraOrbitYaw"), this, &ADeLoreanVehicle::CameraOrbitYawAxis);
+    PlayerInputComponent->BindAxis(TEXT("CameraOrbitPitch"), this, &ADeLoreanVehicle::CameraOrbitPitchAxis);
 
     PlayerInputComponent->BindKey(EKeys::Up, IE_Pressed, this, &ADeLoreanVehicle::BeginForward);
     PlayerInputComponent->BindKey(EKeys::Up, IE_Released, this, &ADeLoreanVehicle::EndForward);
@@ -287,6 +350,7 @@ void ADeLoreanVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
     PlayerInputComponent->BindKey(EKeys::T, IE_Pressed, this, &ADeLoreanVehicle::ToggleTimeCircuits);
     PlayerInputComponent->BindKey(EKeys::F, IE_Pressed, this, &ADeLoreanVehicle::TryTimeTravelFromInput);
     PlayerInputComponent->BindKey(EKeys::C, IE_Pressed, this, &ADeLoreanVehicle::ToggleCamera);
+    PlayerInputComponent->BindKey(EKeys::V, IE_Pressed, this, &ADeLoreanVehicle::ToggleAutoChaseCamera);
     PlayerInputComponent->BindKey(EKeys::R, IE_Pressed, this, &ADeLoreanVehicle::ResetVehicle);
 }
 
@@ -409,6 +473,10 @@ void ADeLoreanVehicle::TryTimeTravelFromInput()
 void ADeLoreanVehicle::ToggleHoverMode()
 {
     bHoverModeActive = !bHoverModeActive;
+    if (KeyboardCamera)
+    {
+        KeyboardCamera->ResetCameraState();
+    }
     UE_LOG(LogTemp, Log, TEXT("Hover mode %s"), bHoverModeActive ? TEXT("ENGAGED") : TEXT("DISENGAGED"));
 }
 
@@ -575,6 +643,10 @@ void ADeLoreanVehicle::ApplyKeyboardFallback()
     {
         ToggleCamera();
     }
+    if (PlayerController->WasInputKeyJustPressed(EKeys::V))
+    {
+        ToggleAutoChaseCamera();
+    }
     if (PlayerController->WasInputKeyJustPressed(EKeys::Q))
     {
         CycleDestinationEra(-1);
@@ -659,7 +731,7 @@ void ADeLoreanVehicle::ApplySmoothedVehicleInput(float DeltaTime)
 
 void ADeLoreanVehicle::UpdateSpeedResponsiveCamera(float DeltaTime)
 {
-    if (!ChaseCamera || ActiveCameraIndex != 0)
+    if (!ChaseCamera || !KeyboardCamera || KeyboardCamera->GetActivePresetIndex() != 0)
     {
         return;
     }
@@ -678,7 +750,9 @@ void ADeLoreanVehicle::UpdateSpeedResponsiveCamera(float DeltaTime)
         {
             const float Shake = FMath::Sin(GetWorld()->GetTimeSeconds() * 24.0f)
                 * TimeTravelPresentationComponent->GetCueIntensity() * 0.35f;
-            CameraSpringArm->SetRelativeRotation(FRotator(-7.0f + Shake, 0.0f, Shake * 0.25f));
+            const float BasePitch = KeyboardCamera ? KeyboardCamera->GetOrbitPitch() : -7.0f;
+            CameraSpringArm->SetRelativeRotation(
+                FRotator(BasePitch + Shake, KeyboardCamera ? KeyboardCamera->GetOrbitYaw() : 0.0f, Shake * 0.25f));
         }
     }
 }
@@ -771,27 +845,55 @@ void ADeLoreanVehicle::ResetVehicle()
 
 void ADeLoreanVehicle::ToggleCamera()
 {
-    ActiveCameraIndex = (ActiveCameraIndex + 1) % 4;
-    if (!CameraSpringArm)
+    if (KeyboardCamera)
+    {
+        KeyboardCamera->CyclePreset();
+    }
+}
+
+void ADeLoreanVehicle::ToggleAutoChaseCamera()
+{
+    if (KeyboardCamera)
+    {
+        KeyboardCamera->ToggleAutoChase();
+    }
+}
+
+int32 ADeLoreanVehicle::GetActiveCameraIndex() const
+{
+    return KeyboardCamera ? KeyboardCamera->GetActivePresetIndex() : 0;
+}
+
+void ADeLoreanVehicle::HandleCameraOrbitYaw(const FInputActionValue& Value)
+{
+    CameraOrbitYawAxis(Value.Get<float>());
+}
+
+void ADeLoreanVehicle::HandleCameraOrbitPitch(const FInputActionValue& Value)
+{
+    CameraOrbitPitchAxis(Value.Get<float>());
+}
+
+void ADeLoreanVehicle::CameraOrbitYawAxis(float Value)
+{
+    if (!KeyboardCamera || FMath::IsNearlyZero(Value))
     {
         return;
     }
 
-    static const float ArmLengths[] = {525.0f, 220.0f, 55.0f, 0.0f};
-    static const FVector ArmLocations[] = {
-        FVector(0.0f, 0.0f, 105.0f),
-        FVector(205.0f, 0.0f, 155.0f),
-        FVector(275.0f, 0.0f, 85.0f),
-        FVector(35.0f, -35.0f, 125.0f)};
-    static const FRotator ArmRotations[] = {
-        FRotator(-7.0f, 0.0f, 0.0f),
-        FRotator(-8.0f, 0.0f, 0.0f),
-        FRotator(-3.0f, 0.0f, 0.0f),
-        FRotator(0.0f, 0.0f, 0.0f)};
+    const float DeltaTime = GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.016f;
+    KeyboardCamera->ApplyOrbitInput(Value, 0.0f, DeltaTime);
+}
 
-    CameraSpringArm->TargetArmLength = ArmLengths[ActiveCameraIndex];
-    CameraSpringArm->SetRelativeLocation(ArmLocations[ActiveCameraIndex]);
-    CameraSpringArm->SetRelativeRotation(ArmRotations[ActiveCameraIndex]);
+void ADeLoreanVehicle::CameraOrbitPitchAxis(float Value)
+{
+    if (!KeyboardCamera || FMath::IsNearlyZero(Value))
+    {
+        return;
+    }
+
+    const float DeltaTime = GetWorld() ? GetWorld()->GetDeltaSeconds() : 0.016f;
+    KeyboardCamera->ApplyOrbitInput(0.0f, Value, DeltaTime);
 }
 
 void ADeLoreanVehicle::CycleDestinationEra(int32 Direction)
