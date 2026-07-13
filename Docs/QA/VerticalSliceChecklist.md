@@ -8,6 +8,7 @@ Last updated: 2026-07-12
 - [x] `Scripts/Build/run_automation.ps1 -Filter BTTF` found 34 tests and completed all 34 with `Result={Success}`.
 - [x] `Scripts/Build/package_windows.ps1 -Configuration Development` completed cook, stage, pak, archive, and exited with `BUILD SUCCESSFUL`.
 - [x] Development package artifact was produced at `Builds/Windows-Development/BTTF_TemporalDrift.exe`.
+- [x] Packaged executable launched from its archive directory with `-nullrhi -nosound -unattended -ExecCmds=quit` and exited cleanly with code 0.
 - [x] Neutral-world validator emitted `HILL_VALLEY_VALIDATION_SUCCESS` in `Saved/Logs/HillValleyValidation.log`.
 - [x] 1955 validator emitted `HILL_VALLEY_1955_VALIDATION_SUCCESS` in `Saved/Logs/HillValley1955Validation.log`.
 
