@@ -8,6 +8,7 @@
 class AHillValleyAmbientPedestrian;
 class UEraPopulationManager;
 class UEraWorldManager;
+class UTimelineFactSubsystem;
 
 UCLASS()
 class BTTF_TEMPORALDRIFT_API UPopulationSpawnSubsystem : public UTickableWorldSubsystem
@@ -36,6 +37,9 @@ private:
     UFUNCTION()
     void HandleEraReady(ETimelineState ReadyEra);
 
+    UFUNCTION()
+    void HandleTimelineFactChanged(FName FactId, bool PreviousValue, bool NewValue);
+
     void ClearSpawnedPopulation();
     void CollectWorldAnchors();
     void SpawnAmbientPopulation(ETimelineState Era);
@@ -54,6 +58,10 @@ private:
 
     UPROPERTY()
     ETimelineState ActiveEra = ETimelineState::Present1985;
+
+    // Cached so OnFactChanged can be unbound in Deinitialize even if the game instance is
+    // being torn down; only used to remove the delegate binding.
+    TWeakObjectPtr<UTimelineFactSubsystem> BoundFactSubsystem;
 
     bool bAnchorsCollected = false;
 };

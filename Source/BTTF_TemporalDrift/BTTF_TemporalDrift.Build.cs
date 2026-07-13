@@ -21,6 +21,8 @@ public class BTTF_TemporalDrift : ModuleRules
 			,"UMG"
 			,"Slate"
 			,"SlateCore"
+			,"AIModule"
+			,"GameplayTasks"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

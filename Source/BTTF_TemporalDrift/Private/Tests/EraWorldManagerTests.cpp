@@ -30,4 +30,27 @@ bool FBTTFEraWorldMappingTest::RunTest(const FString& Parameters)
     return !HasAnyErrors();
 }
 
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFEraStreamingGateTest,
+    "BTTF.World.EraStreamingGate",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFEraStreamingGateTest::RunTest(const FString& Parameters)
+{
+    UEraWorldManager* Manager = NewObject<UEraWorldManager>();
+    TestTrue(TEXT("Fresh manager begins ready"), Manager->IsEraReady());
+    TestFalse(TEXT("Fresh manager has no transition in flight"), Manager->IsTransitionInFlight());
+
+    TestFalse(TEXT("A worldless request fails safely"), Manager->RequestEra(ETimelineState::Past1955));
+    TestFalse(TEXT("Failed request leaves no transition in flight"), Manager->IsTransitionInFlight());
+    TestTrue(TEXT("Failed request leaves current era ready"), Manager->IsEraReady());
+    TestEqual(TEXT("Failed request preserves active era"), Manager->GetActiveEra(), ETimelineState::Present1985);
+
+    // Prewarm without a world must also fail safely and not begin a transition.
+    Manager->PrewarmEra(ETimelineState::Future2015);
+    TestFalse(TEXT("Worldless prewarm starts no transition"), Manager->IsTransitionInFlight());
+    TestTrue(TEXT("Worldless prewarm keeps manager ready"), Manager->IsEraReady());
+
+    return !HasAnyErrors();
+}
+
 #endif

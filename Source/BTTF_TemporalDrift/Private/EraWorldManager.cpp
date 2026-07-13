@@ -54,12 +54,36 @@ bool UEraWorldManager::RequestEra(ETimelineState NewEra)
 
     PendingEra = NewEra;
     bEraReady = false;
+    bTransitionInFlight = true;
     return true;
+}
+
+void UEraWorldManager::PrewarmEra(ETimelineState Era)
+{
+    UWorld* World = GetWorld();
+    UDataLayerManager* Manager = World ? UDataLayerManager::GetDataLayerManager(World) : nullptr;
+    UDataLayerAsset* TargetLayer = GetDataLayerForEra(Era).LoadSynchronous();
+    if (!Manager || !TargetLayer)
+    {
+        return;
+    }
+
+    // Bring the target layer to a loaded-but-not-active state so the eventual swap
+    // has less to stream. This must not disturb the currently active era, so we only
+    // touch the target layer and never downgrade one that is already Activated.
+    const UDataLayerInstance* TargetInstance = Manager->GetDataLayerInstanceFromAsset(TargetLayer);
+    if (TargetInstance && TargetInstance->GetEffectiveRuntimeState() == EDataLayerRuntimeState::Activated)
+    {
+        return;
+    }
+
+    Manager->SetDataLayerRuntimeState(TargetLayer, EDataLayerRuntimeState::Loaded);
 }
 
 void UEraWorldManager::Tick(float DeltaTime)
 {
-    if (bEraReady)
+    // Only poll streaming while a transition is actually in flight; do zero work when idle.
+    if (!bTransitionInFlight || bEraReady)
     {
         return;
     }
@@ -84,6 +108,7 @@ void UEraWorldManager::Tick(float DeltaTime)
     const ETimelineState PreviousEra = ActiveEra;
     ActiveEra = PendingEra;
     bEraReady = true;
+    bTransitionInFlight = false;
     OnEraChanged.Broadcast(PreviousEra, ActiveEra);
     OnEraReady.Broadcast(ActiveEra);
 }
