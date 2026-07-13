@@ -18,6 +18,9 @@ public class BTTF_TemporalDrift : ModuleRules
 			"ChaosVehicles",
 			"PhysicsCore",
 			"Niagara"
+			,"UMG"
+			,"Slate"
+			,"SlateCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

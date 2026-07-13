@@ -4,9 +4,49 @@
 #include "DeLoreanVehicle.h"
 #include "TimeTravelSubsystem.h"
 #include "TimeCircuitsViewModel.h"
+#include "TimeCircuitsWidget.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "UObject/ConstructorHelpers.h"
+#include "HAL/IConsoleManager.h"
+
+static TAutoConsoleVariable<int32> CVarBTTFDebugCanvasHUD(
+    TEXT("bttf.DebugCanvasHUD"), 1,
+    TEXT("Show the legacy Canvas driving HUD over the runtime UMG HUD."), ECVF_Cheat);
+
+void ABTTF_HUD::BeginPlay()
+{
+    Super::BeginPlay();
+    EnsureRuntimeWidget();
+}
+
+void ABTTF_HUD::EnsureRuntimeWidget()
+{
+    if (!TimeCircuitsViewModel)
+    {
+        TimeCircuitsViewModel = NewObject<UTimeCircuitsViewModel>(this);
+    }
+    if (TimeCircuitsWidget)
+    {
+        return;
+    }
+    if (APlayerController* Controller = GetOwningPlayerController())
+    {
+        TimeCircuitsWidget = CreateWidget<UTimeCircuitsWidget>(Controller, UTimeCircuitsWidget::StaticClass());
+        if (TimeCircuitsWidget)
+        {
+            TimeCircuitsWidget->BindViewModel(TimeCircuitsViewModel);
+            TimeCircuitsWidget->AddToPlayerScreen(100);
+            TimeCircuitsWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+            TimeCircuitsWidget->SetRenderOpacity(1.0f);
+            UE_LOG(LogTemp, Display, TEXT("BTTF runtime UMG HUD created and added to viewport."));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("BTTF runtime UMG HUD creation failed."));
+        }
+    }
+}
 
 void ABTTF_HUD::DrawHUD()
 {
@@ -35,6 +75,13 @@ void ABTTF_HUD::DrawHUD()
             Subsystem->GetLastJumpFailureReason());
     }
     const FTimeCircuitsDisplayState Display = TimeCircuitsViewModel->GetDisplayState();
+
+    if (CVarBTTFDebugCanvasHUD.GetValueOnGameThread() == 0)
+    {
+        return;
+    }
+
+    EnsureRuntimeWidget();
 
     const float Margin = 40.0f;
     const float BarWidth = 300.0f;

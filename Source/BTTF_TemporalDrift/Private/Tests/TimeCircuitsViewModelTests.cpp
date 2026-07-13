@@ -2,6 +2,7 @@
 
 #include "Misc/AutomationTest.h"
 #include "TimeCircuitsViewModel.h"
+#include "TimeCircuitsWidget.h"
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFTimeCircuitsViewModelTest,
     "BTTF.UI.TimeCircuitsViewModel",
@@ -35,6 +36,20 @@ bool FBTTFTimeCircuitsViewModelTest::RunTest(const FString& Parameters)
         ViewModel->CycleDestination(ETimelineState::Present1985, 1), ETimelineState::Alternate1985);
     TestEqual(TEXT("Backward era cycle wraps to 1885"),
         ViewModel->CycleDestination(ETimelineState::Past1955, -1), ETimelineState::WildWest1885);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFTimeCircuitsWidgetContractTest,
+    "BTTF.UI.DrivingHUD.WidgetContract",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFTimeCircuitsWidgetContractTest::RunTest(const FString& Parameters)
+{
+    const UTimeCircuitsWidget* WidgetDefaults = GetDefault<UTimeCircuitsWidget>();
+    TestNotNull(TEXT("Runtime driving HUD class exists"), WidgetDefaults);
+    TestTrue(TEXT("HUD uses couch-readable base text"), WidgetDefaults->BaseFontSize >= 22);
+    TestTrue(TEXT("HUD exposes scalable text"), WidgetDefaults->TextScale >= 0.75f && WidgetDefaults->TextScale <= 2.0f);
+    TestTrue(TEXT("HUD keeps warnings readable without color"), WidgetDefaults->bShowWarningText);
     return !HasAnyErrors();
 }
 
