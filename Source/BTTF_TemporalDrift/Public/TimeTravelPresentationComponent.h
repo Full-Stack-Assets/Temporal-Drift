@@ -97,8 +97,21 @@ public:
         FSoftObjectPath(TEXT("/Game/Audio/MetaSounds/MS_TimeArrival.MS_TimeArrival"));
 
 private:
+    void EnsureRuntimeComponents();
+    void ApplyPresentationEffects();
+    void ClearPresentationEffects();
+
     UFUNCTION()
     void HandleSubsystemPhaseChanged(ETimeTravelPhase PreviousPhase, ETimeTravelPhase NewPhase);
+
+    UPROPERTY(Transient)
+    TObjectPtr<class UPostProcessComponent> PostProcessComponent;
+
+    UPROPERTY(Transient)
+    TObjectPtr<class UNiagaraComponent> PresentationNiagaraComponent;
+
+    UPROPERTY(Transient)
+    TObjectPtr<class UAudioComponent> PresentationAudioComponent;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Presentation", meta=(AllowPrivateAccess="true"))
     bool bReducedFlash = false;

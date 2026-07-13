@@ -12,7 +12,13 @@
 #include "CraftingSubsystem.h"
 #include "BTTFHeroCharacter.h"
 #include "DeLoreanVehicle.h"
+#include "TimeTravelPresentationComponent.h"
+#include "BTTF_HUD.h"
+#include "TimeCircuitsWidget.h"
 #include "GameFramework/PlayerController.h"
+#include "EngineUtils.h"
+
+const FString UBTTF_GameInstance::ProfileSlotName = TEXT("BTTF_Profile");
 
 UBTTF_GameInstance::UBTTF_GameInstance()
 {
@@ -24,13 +30,51 @@ UBTTF_GameInstance::UBTTF_GameInstance()
 void UBTTF_GameInstance::Init()
 {
     Super::Init();
-    // Optional: Auto-load last save on startup
-    // LoadGameFromSlot();
+    EnsureProfileLoaded();
 }
 
 void UBTTF_GameInstance::Shutdown()
 {
+    if (bAutoSaveOnShutdown)
+    {
+        if (UMissionSubsystem* Mission = GetSubsystem<UMissionSubsystem>())
+        {
+            if (Mission->IsMissionActive())
+            {
+                SaveGameToSlot(DefaultSaveSlot);
+            }
+        }
+    }
+
     Super::Shutdown();
+}
+
+bool UBTTF_GameInstance::HasSaveGame(const FString& SlotName) const
+{
+    const FString ResolvedSlot = SlotName.IsEmpty() ? DefaultSaveSlot : SlotName;
+    return UGameplayStatics::DoesSaveGameExist(ResolvedSlot, 0);
+}
+
+bool UBTTF_GameInstance::TryContinueGame(const FString& SlotName)
+{
+    const FString ResolvedSlot = SlotName.IsEmpty() ? DefaultSaveSlot : SlotName;
+    if (!HasSaveGame(ResolvedSlot))
+    {
+        return false;
+    }
+
+    return LoadGameFromSlot(ResolvedSlot);
+}
+
+bool UBTTF_GameInstance::DeleteSaveGame(const FString& SlotName)
+{
+    const FString ResolvedSlot = SlotName.IsEmpty() ? DefaultSaveSlot : SlotName;
+    if (!UGameplayStatics::DoesSaveGameExist(ResolvedSlot, 0))
+    {
+        return true;
+    }
+
+    return UGameplayStatics::DeleteGameInSlot(ResolvedSlot, 0);
 }
 
 void UBTTF_GameInstance::InitializeNewGame()
@@ -214,4 +258,87 @@ bool UBTTF_GameInstance::LoadGameFromSlot(const FString& SlotName)
     }
 
     return false;
+}
+
+bool UBTTF_GameInstance::EnsureProfileLoaded()
+{
+    if (ProfileSave)
+    {
+        return true;
+    }
+
+    if (UGameplayStatics::DoesSaveGameExist(ProfileSlotName, 0))
+    {
+        ProfileSave = Cast<UBTTF_ProfileSaveGame>(UGameplayStatics::LoadGameFromSlot(ProfileSlotName, 0));
+    }
+
+    if (!ProfileSave)
+    {
+        ProfileSave = Cast<UBTTF_ProfileSaveGame>(
+            UGameplayStatics::CreateSaveGameObject(UBTTF_ProfileSaveGame::StaticClass()));
+    }
+
+    return ProfileSave != nullptr;
+}
+
+bool UBTTF_GameInstance::LoadProfileSettings()
+{
+    ProfileSave = nullptr;
+    return EnsureProfileLoaded();
+}
+
+bool UBTTF_GameInstance::SaveProfileSettings()
+{
+    if (!EnsureProfileLoaded())
+    {
+        return false;
+    }
+
+    return UGameplayStatics::SaveGameToSlot(ProfileSave, ProfileSlotName, 0);
+}
+
+void UBTTF_GameInstance::SetReducedFlashEnabled(bool bEnabled)
+{
+    if (!EnsureProfileLoaded())
+    {
+        return;
+    }
+
+    ProfileSave->bReducedFlash = bEnabled;
+    SaveProfileSettings();
+    ApplyProfileAccessibility(GetWorld());
+}
+
+bool UBTTF_GameInstance::IsReducedFlashEnabled() const
+{
+    return ProfileSave && ProfileSave->bReducedFlash;
+}
+
+float UBTTF_GameInstance::GetUIScale() const
+{
+    return ProfileSave ? ProfileSave->UIScale : 1.0f;
+}
+
+void UBTTF_GameInstance::ApplyProfileAccessibility(UWorld* World)
+{
+    if (!World || !EnsureProfileLoaded())
+    {
+        return;
+    }
+
+    for (TActorIterator<ADeLoreanVehicle> It(World); It; ++It)
+    {
+        if (It->TimeTravelPresentationComponent)
+        {
+            It->TimeTravelPresentationComponent->SetReducedFlash(ProfileSave->bReducedFlash);
+        }
+    }
+
+    if (APlayerController* Controller = World->GetFirstPlayerController())
+    {
+        if (ABTTF_HUD* HUD = Cast<ABTTF_HUD>(Controller->GetHUD()))
+        {
+            HUD->ApplyAccessibilitySettings(ProfileSave->UIScale);
+        }
+    }
 }

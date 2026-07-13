@@ -49,3 +49,28 @@ FName UMissionSubsystem::GetActiveObjectiveId()const
 {
     return ActiveMission&&ActiveMission->Objectives.IsValidIndex(Progress.ActiveObjectiveIndex)?ActiveMission->Objectives[Progress.ActiveObjectiveIndex].ObjectiveId:NAME_None;
 }
+
+FText UMissionSubsystem::GetActiveObjectiveDescription()const
+{
+    if (ActiveMission && ActiveMission->Objectives.IsValidIndex(Progress.ActiveObjectiveIndex))
+    {
+        return ActiveMission->Objectives[Progress.ActiveObjectiveIndex].Description;
+    }
+    return FText::GetEmpty();
+}
+
+float UMissionSubsystem::GetObjectiveParadoxDelta(FName ObjectiveId)const
+{
+    if (!ActiveMission)
+    {
+        return 0.0f;
+    }
+    for (const FMissionObjectiveDefinition& Objective : ActiveMission->Objectives)
+    {
+        if (Objective.ObjectiveId == ObjectiveId)
+        {
+            return Objective.ParadoxDelta;
+        }
+    }
+    return 0.0f;
+}

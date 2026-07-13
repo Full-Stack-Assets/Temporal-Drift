@@ -71,6 +71,7 @@ void UTimeCircuitsWidget::BuildWidgetTree()
     DestinationText = AddReadout(Stack, FText::FromString(TEXT("DESTINATION 1955")), FLinearColor(1.0f, 0.3f, 0.18f));
     PhaseText = AddReadout(Stack, FText::FromString(TEXT("CIRCUITS OFF")), FLinearColor::White);
     WarningText = AddReadout(Stack, FText::GetEmpty(), FLinearColor(1.0f, 0.65f, 0.1f), 2);
+    MissionObjectiveText = AddReadout(Stack, FText::GetEmpty(), FLinearColor(0.55f, 1.0f, 0.65f), 0);
     ControlsText = AddReadout(Stack,
         FText::FromString(TEXT("UP/DOWN DRIVE  LEFT/RIGHT STEER\nT CIRCUITS  Q/E DEST  F JUMP  H HOVER  R RESET")),
         FLinearColor(0.72f, 0.78f, 0.88f), -8);
@@ -109,4 +110,11 @@ void UTimeCircuitsWidget::HandleDisplayChanged(FTimeCircuitsDisplayState NewStat
     WarningText->SetVisibility(bShowWarningText && !NewState.WarningText.IsEmpty()
         ? ESlateVisibility::HitTestInvisible : ESlateVisibility::Collapsed);
     WarningText->SetText(NewState.WarningText);
+    if (MissionObjectiveText)
+    {
+        MissionObjectiveText->SetVisibility(NewState.MissionObjectiveText.IsEmpty()
+            ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
+        MissionObjectiveText->SetText(FText::Format(
+            FText::FromString(TEXT("OBJECTIVE: {0}")), NewState.MissionObjectiveText));
+    }
 }

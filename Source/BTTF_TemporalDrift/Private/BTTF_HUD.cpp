@@ -3,8 +3,11 @@
 #include "TemporalDriftSettings.h"
 #include "DeLoreanVehicle.h"
 #include "TimeTravelSubsystem.h"
+#include "MissionSubsystem.h"
+#include "BTTF_GameInstance.h"
 #include "TimeCircuitsViewModel.h"
 #include "TimeCircuitsWidget.h"
+#include "BTTF_PlayerController.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "UObject/ConstructorHelpers.h"
@@ -18,6 +21,23 @@ void ABTTF_HUD::BeginPlay()
 {
     Super::BeginPlay();
     EnsureRuntimeWidget();
+
+    if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))
+    {
+        ApplyAccessibilitySettings(GameInstance->GetUIScale());
+        if (UWorld* World = GetWorld())
+        {
+            GameInstance->ApplyProfileAccessibility(World);
+        }
+    }
+}
+
+void ABTTF_HUD::ApplyAccessibilitySettings(float UIScale)
+{
+    if (TimeCircuitsWidget)
+    {
+        TimeCircuitsWidget->TextScale = FMath::Clamp(UIScale, 0.75f, 2.0f);
+    }
 }
 
 void ABTTF_HUD::EnsureRuntimeWidget()
@@ -32,14 +52,22 @@ void ABTTF_HUD::EnsureRuntimeWidget()
     }
     if (APlayerController* Controller = GetOwningPlayerController())
     {
-        TimeCircuitsWidget = CreateWidget<UTimeCircuitsWidget>(Controller, UTimeCircuitsWidget::StaticClass());
+        TSubclassOf<UTimeCircuitsWidget> WidgetClass = UTimeCircuitsWidget::StaticClass();
+        if (UClass* AuthoredClass = LoadClass<UTimeCircuitsWidget>(
+                nullptr, TEXT("/Game/UI/WBP_TimeCircuits.WBP_TimeCircuits")))
+        {
+            WidgetClass = AuthoredClass;
+        }
+
+        TimeCircuitsWidget = CreateWidget<UTimeCircuitsWidget>(Controller, WidgetClass);
         if (TimeCircuitsWidget)
         {
             TimeCircuitsWidget->BindViewModel(TimeCircuitsViewModel);
             TimeCircuitsWidget->AddToPlayerScreen(100);
             TimeCircuitsWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
             TimeCircuitsWidget->SetRenderOpacity(1.0f);
-            UE_LOG(LogTemp, Display, TEXT("BTTF runtime UMG HUD created and added to viewport."));
+            UE_LOG(LogTemp, Display, TEXT("BTTF runtime UMG HUD created (%s)."),
+                *WidgetClass->GetName());
         }
         else
         {
@@ -48,9 +76,66 @@ void ABTTF_HUD::EnsureRuntimeWidget()
     }
 }
 
+void ABTTF_HUD::RefreshTimeCircuitsDisplay()
+{
+    if (!TimeCircuitsViewModel)
+    {
+        TimeCircuitsViewModel = NewObject<UTimeCircuitsViewModel>(this);
+    }
+
+    UWorld* World = GetWorld();
+    UTimeTravelSubsystem* Subsystem = World ? World->GetSubsystem<UTimeTravelSubsystem>() : nullptr;
+    UMissionSubsystem* Mission = nullptr;
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        Mission = GameInstance->GetSubsystem<UMissionSubsystem>();
+    }
+
+    float Speed = 0.0f;
+    ETimelineState DestinationEra = ETimelineState::Present1985;
+    if (const ADeLoreanVehicle* Vehicle = Cast<ADeLoreanVehicle>(GetOwningPawn()))
+    {
+        Speed = Vehicle->GetCurrentSpeedMph();
+        DestinationEra = Vehicle->InputTargetEra;
+    }
+
+    const FText MissionObjective = Mission ? Mission->GetActiveObjectiveDescription() : FText::GetEmpty();
+    if (Subsystem)
+    {
+        TimeCircuitsViewModel->UpdateDisplay(Speed, Subsystem->GetFluxChargePercent(),
+            Subsystem->GetCurrentEra(), DestinationEra, Subsystem->GetTimeTravelPhase(),
+            Subsystem->CurrentParadoxLevel, Subsystem->WormholeStability,
+            Subsystem->GetLastJumpFailureReason(), MissionObjective);
+    }
+}
+
 void ABTTF_HUD::DrawHUD()
 {
     Super::DrawHUD();
+
+    RefreshTimeCircuitsDisplay();
+    EnsureRuntimeWidget();
+
+    if (Canvas)
+    {
+        if (const ABTTF_PlayerController* PlayerController = Cast<ABTTF_PlayerController>(GetOwningPlayerController()))
+        {
+            if (PlayerController->IsMenuPaused())
+            {
+                DrawRect(FLinearColor(0.0f, 0.0f, 0.0f, 0.55f), 0.0f, 0.0f, Canvas->SizeX, Canvas->SizeY);
+                UFont* Font = GEngine ? GEngine->GetLargeFont() : nullptr;
+                if (Font)
+                {
+                    const FString PauseText = TEXT("PAUSED — Press ESC to resume");
+                    const float TextWidth = Font->GetStringSize(*PauseText);
+                    const float X = (Canvas->SizeX - TextWidth) * 0.5f;
+                    const float Y = Canvas->SizeY * 0.45f;
+                    DrawText(PauseText, FLinearColor::White, X, Y, Font, 2.0f);
+                    DrawText(TEXT("Progress saved"), FLinearColor(0.7f, 0.9f, 1.0f), X, Y + 48.0f, Font, 1.2f);
+                }
+            }
+        }
+    }
 
     const ADeLoreanVehicle* Vehicle = Cast<ADeLoreanVehicle>(GetOwningPawn());
     if (!Vehicle || !Canvas)
@@ -58,71 +143,63 @@ void ABTTF_HUD::DrawHUD()
         return;
     }
 
-    UTimeTravelSubsystem* Subsystem = GetWorld()->GetSubsystem<UTimeTravelSubsystem>();
-    UFont* Font = GEngine->GetLargeFont();
-
-    if (!TimeCircuitsViewModel)
-    {
-        TimeCircuitsViewModel = NewObject<UTimeCircuitsViewModel>(this);
-    }
-
-    const float Speed = Vehicle->GetCurrentSpeedMph();
-    if (Subsystem)
-    {
-        TimeCircuitsViewModel->UpdateDisplay(Speed, Subsystem->GetFluxChargePercent(),
-            Subsystem->GetCurrentEra(), Vehicle->InputTargetEra, Subsystem->GetTimeTravelPhase(),
-            Subsystem->CurrentParadoxLevel, Subsystem->WormholeStability,
-            Subsystem->GetLastJumpFailureReason());
-    }
-    const FTimeCircuitsDisplayState Display = TimeCircuitsViewModel->GetDisplayState();
-
     if (CVarBTTFDebugCanvasHUD.GetValueOnGameThread() == 0)
     {
         return;
     }
 
-    EnsureRuntimeWidget();
+    UFont* Font = GEngine->GetLargeFont();
+    const FTimeCircuitsDisplayState Display = TimeCircuitsViewModel->GetDisplayState();
 
     const float Margin = 40.0f;
     const float BarWidth = 300.0f;
     const float BarHeight = 18.0f;
     float Y = Canvas->SizeY - 230.0f;
 
-    // Speed - highlight when the configured jump threshold is reached.
     const float JumpThreshold = GetDefault<UTemporalDriftSettings>()->JumpSpeedThresholdMph;
-    const FLinearColor SpeedColor = Speed >= JumpThreshold ? FLinearColor::Yellow : FLinearColor::White;
+    const FLinearColor SpeedColor = Vehicle->GetCurrentSpeedMph() >= JumpThreshold
+        ? FLinearColor::Yellow : FLinearColor::White;
     FCanvasTextItem SpeedText(FVector2D(Margin, Y), Display.SpeedText, Font, SpeedColor);
     SpeedText.Scale = FVector2D(2.5f, 2.5f);
     Canvas->DrawItem(SpeedText);
     Y += 55.0f;
 
-    // Flux charge bar
+    UTimeTravelSubsystem* Subsystem = GetWorld()->GetSubsystem<UTimeTravelSubsystem>();
     if (Subsystem)
     {
         const float Charge = Subsystem->GetFluxChargePercent();
-        const FLinearColor FluxColor = Subsystem->HasEnoughEnergyForJump() ? FLinearColor::Green : FLinearColor(1.0f, 0.5f, 0.0f);
+        const FLinearColor FluxColor = Subsystem->HasEnoughEnergyForJump()
+            ? FLinearColor::Green : FLinearColor(1.0f, 0.5f, 0.0f);
         DrawText(FString::Printf(TEXT("FLUX %s"), *Display.FluxText.ToString()), FluxColor, Margin, Y, Font);
         DrawBar(Margin + 110.0f, Y + 2.0f, BarWidth, BarHeight, Charge, FluxColor);
         Y += 30.0f;
     }
 
-    // Time circuits status
     const FLinearColor CircuitColor = Vehicle->bTimeCircuitsOn ? FLinearColor::Green : FLinearColor::Red;
-    DrawText(Vehicle->bTimeCircuitsOn ? TEXT("TIME CIRCUITS: ON") : TEXT("TIME CIRCUITS: OFF"), CircuitColor, Margin, Y, Font);
+    DrawText(Vehicle->bTimeCircuitsOn ? TEXT("TIME CIRCUITS: ON") : TEXT("TIME CIRCUITS: OFF"),
+        CircuitColor, Margin, Y, Font);
     Y += 30.0f;
 
-    // Current era + destination
     if (Subsystem)
     {
-        DrawText(FString::Printf(TEXT("ERA: %s"), *Display.CurrentEraText.ToString()), FLinearColor::White, Margin, Y, Font);
+        DrawText(FString::Printf(TEXT("ERA: %s"), *Display.CurrentEraText.ToString()),
+            FLinearColor::White, Margin, Y, Font);
         Y += 25.0f;
-        DrawText(FString::Printf(TEXT("DESTINATION: %s"), *Display.DestinationEraText.ToString()), FLinearColor(0.6f, 0.8f, 1.0f), Margin, Y, Font);
+        DrawText(FString::Printf(TEXT("DESTINATION: %s"), *Display.DestinationEraText.ToString()),
+            FLinearColor(0.6f, 0.8f, 1.0f), Margin, Y, Font);
         Y += 25.0f;
-        DrawText(Display.PhaseText.ToString(), Display.bJumpReady ? FLinearColor::Green : FLinearColor::White, Margin, Y, Font);
+        DrawText(Display.PhaseText.ToString(),
+            Display.bJumpReady ? FLinearColor::Green : FLinearColor::White, Margin, Y, Font);
         if (!Display.WarningText.IsEmpty())
         {
             Y += 25.0f;
             DrawText(Display.WarningText.ToString(), FLinearColor(1.0f, 0.35f, 0.1f), Margin, Y, Font);
+        }
+        if (!Display.MissionObjectiveText.IsEmpty())
+        {
+            Y += 25.0f;
+            DrawText(FString::Printf(TEXT("OBJECTIVE: %s"), *Display.MissionObjectiveText.ToString()),
+                FLinearColor(0.55f, 1.0f, 0.65f), Margin, Y, Font);
         }
     }
 }

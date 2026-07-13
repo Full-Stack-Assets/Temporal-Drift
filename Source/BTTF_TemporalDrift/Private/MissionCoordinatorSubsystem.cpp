@@ -103,10 +103,21 @@ void UMissionCoordinatorSubsystem::HandleJumpArrived(FTimeTravelRequest Request)
 
 void UMissionCoordinatorSubsystem::HandleObjectiveChanged(FName ObjectiveId, EMissionObjectiveState State)
 {
-    if (State == EMissionObjectiveState::Completed)
+    if (State != EMissionObjectiveState::Completed)
     {
-        TryAutoSaveCheckpoint();
+        return;
     }
+
+    if (MissionSubsystem && TimeTravelSubsystem)
+    {
+        const float ParadoxDelta = MissionSubsystem->GetObjectiveParadoxDelta(ObjectiveId);
+        if (!FMath::IsNearlyZero(ParadoxDelta))
+        {
+            TimeTravelSubsystem->ApplyDirectParadoxDelta(ParadoxDelta);
+        }
+    }
+
+    TryAutoSaveCheckpoint();
 }
 
 void UMissionCoordinatorSubsystem::TryAutoSaveCheckpoint()

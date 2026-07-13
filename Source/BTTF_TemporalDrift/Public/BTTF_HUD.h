@@ -17,8 +17,12 @@ public:
     virtual void BeginPlay() override;
     virtual void DrawHUD() override;
 
+    UFUNCTION(BlueprintCallable, Category = "Accessibility")
+    void ApplyAccessibilitySettings(float UIScale);
+
 private:
     void EnsureRuntimeWidget();
+    void RefreshTimeCircuitsDisplay();
     void DrawBar(float X, float Y, float Width, float Height, float Percent, const FLinearColor& FillColor);
 
     UPROPERTY(Transient)

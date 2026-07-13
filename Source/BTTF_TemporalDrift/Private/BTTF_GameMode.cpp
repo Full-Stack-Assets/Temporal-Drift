@@ -8,6 +8,7 @@
 #include "BTTF_PlayerController.h"
 #include "BTTF_HUD.h"
 #include "MissionCoordinatorSubsystem.h"
+#include "MissionSubsystem.h"
 
 ABTTF_GameMode::ABTTF_GameMode()
 {
@@ -31,8 +32,27 @@ ABTTF_GameMode::ABTTF_GameMode()
 void ABTTF_GameMode::BeginPlay()
 {
     Super::BeginPlay();
+    if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))
+    {
+        GameInstance->ApplyProfileAccessibility(GetWorld());
+    }
     InitializeTimeTravelSubsystem();
-    StartVerticalSliceMission();
+
+    bool bContinuedFromSave = false;
+    if (UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance()))
+    {
+        if (bAutoLoadSaveOnStart && GameInstance->TryContinueGame())
+        {
+            bContinuedFromSave = true;
+            UE_LOG(LogTemp, Display, TEXT("BTTF continued from save slot '%s'."),
+                *GameInstance->DefaultSaveSlot);
+        }
+    }
+
+    if (!bContinuedFromSave)
+    {
+        StartVerticalSliceMission();
+    }
 }
 
 void ABTTF_GameMode::InitializeTimeTravelSubsystem()
@@ -73,6 +93,7 @@ void ABTTF_GameMode::StartNewGame()
     UBTTF_GameInstance* GameInstance = Cast<UBTTF_GameInstance>(GetGameInstance());
     if (GameInstance)
     {
+        GameInstance->DeleteSaveGame();
         GameInstance->InitializeNewGame();
     }
 
@@ -82,6 +103,7 @@ void ABTTF_GameMode::StartNewGame()
         TimeTravelSubsystem->CurrentParadoxLevel = 0.0f;
     }
 
+    StartVerticalSliceMission();
     UE_LOG(LogTemp, Log, TEXT("New game started."));
 }
 
@@ -96,6 +118,17 @@ void ABTTF_GameMode::SaveCurrentProgress()
 
 void ABTTF_GameMode::StartVerticalSliceMission()
 {
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UMissionSubsystem* Mission = GameInstance->GetSubsystem<UMissionSubsystem>())
+        {
+            if (Mission->IsMissionActive())
+            {
+                return;
+            }
+        }
+    }
+
     if (UMissionCoordinatorSubsystem* Coordinator = GetWorld()->GetSubsystem<UMissionCoordinatorSubsystem>())
     {
         Coordinator->StartVerticalSliceMission();
