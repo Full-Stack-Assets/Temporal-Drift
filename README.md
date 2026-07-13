@@ -1,119 +1,145 @@
-# BTTF Temporal Drift - Updated Project (v2)
+# BTTF Temporal Drift
 
-**Back to the Future GTA-style Open World Unreal Engine 5.8 Prototype**
+**A Windows-first Unreal Engine 5.8 vertical-slice prototype for a Back to the Future-inspired open-world time-travel game.**
 
-This package contains the latest iteration of the project scaffold, including:
+Temporal Drift is no longer just a concept package. This repository contains a playable Unreal project scaffold with C++ gameplay systems, editor automation, deterministic world-building scripts, mission/content generation, and supporting concept/source art for a DeLorean-focused time-travel prototype.
 
-- Expanded TimeTravelSubsystem with full Paradox, Hawking Radiation, and Tipler Cylinder mechanics
-- All generated concept art (43 images)
-- Documentation and design files
+## Current Status
 
-## Run the Playable Test
+The project is in a **mid-prototype / vertical-slice** stage.
 
-See **`Docs/PC_Setup_Guide.md`** for the full Windows setup (pull, build, Hill Valley, all eras, playtest).
+What is already present in this repo:
+- A real UE 5.8 project: `BTTF_TemporalDrift.uproject`
+- C++ runtime code for the core vehicle, time-travel flow, UI, mission, save, and era systems
+- PowerShell build / package / automation scripts in `Scripts/Build/`
+- Unreal Python scripts that generate and validate content, input assets, dialogue, missions, and world state
+- Hill Valley world-building and era-dressing automation in `Scripts/hill_valley/`
+- Documentation for setup, design, implementation plans, and feature-specific systems
+- Concept art and source art used to support the prototype
 
-Quick start:
+What is **not** true yet:
+- This is not a finished game
+- Some docs still describe planned systems or future expansion
+- Several gameplay/content systems are scaffolded or partially implemented rather than fully production-complete
+
+## Repository Layout
+
+```text
+BTTF_TemporalDrift.uproject   Unreal Engine 5.8 project file
+Config/                       Maps, GameMode/GameInstance, renderer, input, project settings
+Content/                      Unreal content root
+Assets/                       Concept art and supporting visual assets
+Docs/                         Setup guides, implementation notes, design docs, improvement log
+Scripts/                      Unreal Python and utility scripts
+  Build/                      Build, automation, packaging, and setup pipeline
+  hill_valley/                Hill Valley generation, era dressing, placement, and validation
+Source/                       C++ game code and build targets
+  BTTF_TemporalDrift/         Runtime module
+SourceArt/                    Source-owned hero vehicle art and regeneration notes
+```
+
+## Core Implemented Areas
+
+### C++ Gameplay Systems
+Key runtime code lives under `Source/BTTF_TemporalDrift/`.
+
+Notable systems include:
+- `TimeTravelSubsystem` — jump state flow, flux energy, paradox, Hawking radiation, Tipler jump support
+- `DeLoreanVehicle` — driving, hover mode, camera presets, flux charging, time-jump initiation
+- `BTTF_GameMode` / `BTTF_GameInstance` — startup flow, save/load, mission bootstrapping
+- Mission systems — `MissionSubsystem`, `MissionCoordinatorSubsystem`, mission volumes and interactables
+- UI / presentation systems — time circuits, dialogue, pause/settings widgets, fading photograph, presentation effects
+- Era / world systems — timeline facts, timeline variants, era music, era weather, population/world support
+
+### Build and Automation Pipeline
+The main setup pipeline is:
+- `Scripts/Build/setup_vertical_slice.ps1`
+
+That script builds the editor, runs Unreal Python generators, builds Hill Valley and era variants, places mission volumes and traffic routes, validates content, and runs the `BTTF` automation suite.
+
+### Hill Valley World Building
+`Scripts/hill_valley/` contains deterministic procedural builders and validators for the main test level.
+
+This includes:
+- courthouse square generation
+- metro expansion generation
+- 1885 / 1955 / 1985A / 2015 / 2045 dressing
+- timeline-variant signage swaps
+- mission volume placement
+- traffic route placement
+- validation passes for square, 1955 dressing, era dressing, mission placement, and materials
+
+## Requirements
+
+Run this project on a **Windows PC** with:
+- **Windows 10 or 11**
+- **Unreal Engine 5.8**
+- **PowerShell**
+
+Default UE install path expected by scripts:
+
+```text
+C:\Program Files\Epic Games\UE_5.8
+```
+
+If your engine is installed elsewhere, pass `-UeRoot` to the setup script.
+
+## Getting Started
+
+See `Docs/PC_Setup_Guide.md` for the full playtest/setup guide.
+
+### 1. Get the latest code
+
+Current working branch for the latest vertical-slice updates:
 
 ```powershell
+git fetch origin
+git checkout cursor/all-timelines-ripple-effects-492a
 git pull origin cursor/all-timelines-ripple-effects-492a
+```
+
+After that branch is merged, switch back to `main`:
+
+```powershell
+git checkout main
+git pull origin main
+```
+
+### 2. Run the one-command setup
+
+From the repo root:
+
+```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\setup_vertical_slice.ps1
+```
+
+This setup pipeline:
+1. Builds `BTTF_TemporalDriftEditor`
+2. Generates missions, timeline facts, dialogue, UI, music placeholders, and presentation assets
+3. Builds Hill Valley plus all configured era dressing passes
+4. Places mission volumes and traffic routes
+5. Runs validators
+6. Runs the `BTTF` automation suite
+
+### 3. Open the project
+
+```powershell
 start .\BTTF_TemporalDrift.uproject
 ```
 
-## What's Included
-
-### Core Code (Latest)
-- `Source/BTTF_TemporalDrift/Public/TimeTravelSubsystem.h` (Fully expanded with Paradox + Hawking + Tipler)
-
-### Concept Art
-Located in `Assets/ConceptArt/` — includes all generated scenes:
-- DeLorean in different eras
-- Flux Capacitor diagrams
-- Time Circuits UMG mockups
-- Key story moments (Marty vs Biff, train rescue, lightning strike, etc.)
-- 2045 futuristic variations
-- Branching story flowchart
-
-### Documentation
-See the `Docs/` folder for Phase prompts, Asset Lists, Niagara setups, etc.
-
-## Next Steps to Complete the Project
-
-See the full list at the end of this document.
-
----
-
-## Complete List of Further Items Needed to Finish the Project
-
-### 1. Core Systems (High Priority)
-- Full `TimeTravelSubsystem.cpp` implementation (expanded version)
-- Updated `DeLoreanVehicle.h` and `.cpp` with flux charging, radiation damage, and Tipler support
-- GameInstance with timeline save/load system
-- Custom GameMode
-- Enhanced Input mappings for Time Circuits
-
-### 2. UI / Time Circuits
-- Actual UMG Widget files for Time Circuits (WBP_TimeCircuits)
-- Blueprint implementation that reads from TimeTravelSubsystem
-- Paradox warning indicators and Hawking radiation meter
-
-### 3. VFX / Niagara
-- Complete Niagara systems for:
-  - Flux Capacitor pulsing + arcs
-  - Temporal vortex / wormhole
-  - Hawking radiation particle feedback
-  - Tipler Cylinder charging effect
-- Material instances for temporal distortion post-process
-
-### 4. World & Level Design
-- Data Layers for all eras (1885, 1955, 1985, 1985A, 2015, 2045)
-- World Partition setup with era swapping
-- At least 2–3 test levels with different eras
-- Level Blueprints for testing time travel
-
-### 5. Data Assets
-- Multiple `UEraDataAsset` examples with building variants and Lumen scenarios
-- Sample Wheel Data Assets for Chaos Vehicles
-- Input Action and Input Mapping Context assets
-
-### 6. Gameplay Mechanics
-- Full Paradox consequence system (NPC changes, reality tears, timeline collapse events)
-- Hawking Radiation damage and venting minigame
-- Tipler Cylinder implementation as high-risk alternative
-- Hover mode for 2015 DeLorean (Chaos force application)
-
-### 7. Save & Progression
-- SaveGame class for timeline state, paradox level, and discovered eras
-- Persistent timeline flags across sessions
-
-### 8. Polish & Content
-- Sound design (time travel whoosh, flux charging hum, paradox warnings)
-- More concept art / storyboards for cutscenes
-- Basic AI for key characters (Biff, Doc, young Marty)
-- At least one vertical slice level that demonstrates a full time jump with consequences
-
-### 9. Technical
-- ChaosVehicles plugin configuration and Wheel Data Assets
-- Optimized DefaultEngine.ini for Lumen + Nanite + Niagara
-- Packaging settings for Windows
-
----
-
-**Status**: This v2 package contains the most up-to-date core systems and all visual concepts generated so far.
-
-The project is now at a strong mid-prototype stage. The remaining work is mostly implementation of the systems already designed in the documentation.
-
-## VS Code Development Commands
-
-Open the repo root as your VS Code workspace, then use a PowerShell terminal.
-
-**First-time Unreal connection:** see `Docs/QA/UnrealEditorConnection.md` and run:
+Or use:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\setup_vertical_slice.ps1
+.\Scripts\Build\run_game.ps1
 ```
 
-**Daily commands:**
+Default map:
+
+```text
+/Game/Levels/LVL_TimeTravelTest
+```
+
+## Daily Development Commands
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\build_editor.ps1
@@ -123,19 +149,47 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\package_
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\package_smoke_test.ps1 -Configuration Shipping
 ```
 
-Close Unreal Editor before compiling C++ from VS Code. If Unreal reports that modules are missing or were built with another engine version, run `build_editor.ps1`, confirm `Result: Succeeded`, and reopen `BTTF_TemporalDrift.uproject`. Automation output is written to `Saved\Logs\BTTF_Automation.log`; packaging output defaults to `Builds\Windows-Development` or `Builds\Windows-Shipping`.
+## Playtest Controls
 
-## Vehicle Controls
-
+Keyboard controls currently documented and wired for the test flow include:
 - Up Arrow: accelerate
 - Down Arrow: reverse
-- Left/Right Arrow: steer
+- Left / Right Arrow: steer
 - Space: handbrake
 - H: toggle hover mode
 - R: reset vehicle
-- C: cycle chase, hood, bumper, and cockpit cameras
-- Q/E: select destination era
+- C: cycle chase / hood / bumper / cockpit cameras
+- V: toggle auto-chase camera
+- Q / E: cycle destination era
 - T: toggle time circuits
 - F: initiate time travel
 
-Controller equivalents remain available through `/Game/Input/IMC_DeLorean`.
+Controller support is also wired through Unreal input assets such as `/Game/Input/IMC_DeLorean`.
+
+## Important Notes
+
+- Cloud coding agents can edit code, but **your Windows machine must run Unreal builds, commandlets, and playtests**
+- If Unreal says modules were built with a different version or are missing, rerun `Scripts/Build/build_editor.ps1`
+- Close Unreal Editor before rebuilding C++ from VS Code or PowerShell
+- Some documentation files describe target-state systems that are only partially implemented today; treat `Source/` and the setup scripts as the best source of truth for what currently works
+
+## Recommended Docs
+
+Start here:
+- `Docs/PC_Setup_Guide.md`
+- `Docs/IMPROVEMENT_PLAN.md`
+- `Docs/QA/UnrealEditorConnection.md`
+
+Feature-specific docs worth reading:
+- `Docs/Paradox_Consequences.md`
+- `Docs/DataLayer_EraSwitching.md`
+- `Docs/TimeCircuits_UMG_Implementation.md`
+- `Docs/Niagara_Systems_Guide.md`
+- `Docs/HoverMode_Implementation.md`
+
+## Known Limitations
+
+- The repo mixes implemented runtime systems with forward-looking design docs
+- Some systems are scaffolds or prototype implementations rather than full content-complete features
+- Packaging, world generation, and content creation depend on Unreal Editor commandlets and local engine installation
+- The project is best understood as a **playable prototype and tooling-heavy vertical slice**, not a content-complete production game
