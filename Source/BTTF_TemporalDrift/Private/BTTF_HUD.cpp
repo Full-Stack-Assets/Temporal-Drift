@@ -11,7 +11,7 @@
 #include "HAL/IConsoleManager.h"
 
 static TAutoConsoleVariable<int32> CVarBTTFDebugCanvasHUD(
-    TEXT("bttf.DebugCanvasHUD"), 1,
+    TEXT("bttf.DebugCanvasHUD"), 0,
     TEXT("Show the legacy Canvas driving HUD over the runtime UMG HUD."), ECVF_Cheat);
 
 void ABTTF_HUD::BeginPlay()
