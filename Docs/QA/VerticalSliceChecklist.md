@@ -5,7 +5,9 @@ Last updated: 2026-07-12
 ## Automated evidence
 
 - [x] `Scripts/Build/build_editor.ps1` completed with `Result: Succeeded` after the asynchronous era-readiness changes.
-- [x] `Scripts/Build/run_automation.ps1 -Filter BTTF` found 28 tests and completed all 28 with `Result={Success}`.
+- [x] `Scripts/Build/run_automation.ps1 -Filter BTTF` found 34 tests and completed all 34 with `Result={Success}`.
+- [x] `Scripts/Build/package_windows.ps1 -Configuration Development` completed cook, stage, pak, archive, and exited with `BUILD SUCCESSFUL`.
+- [x] Development package artifact was produced at `Builds/Windows-Development/BTTF_TemporalDrift.exe`.
 - [x] Neutral-world validator emitted `HILL_VALLEY_VALIDATION_SUCCESS` in `Saved/Logs/HillValleyValidation.log`.
 - [x] 1955 validator emitted `HILL_VALLEY_1955_VALIDATION_SUCCESS` in `Saved/Logs/HillValley1955Validation.log`.
 
@@ -31,4 +33,3 @@ Test configuration: Unreal Editor 5.8 Development game mode, 1280x720 window, `/
 - [ ] Verify save/quit/continue at each objective boundary.
 - [ ] Run Development and Shipping packaged-build smoke tests on a machine without Unreal Editor.
 - [ ] Complete keyboard/mouse and controller acceptance at 1080p.
-
