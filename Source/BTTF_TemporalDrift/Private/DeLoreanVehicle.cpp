@@ -150,6 +150,17 @@ void ADeLoreanVehicle::ApplyTuningData(const UDeLoreanTuningData* TuningData)
             }
         }
     }
+
+    InputSmoothingRate = TuningData->InputSmoothingRate;
+    ReverseAssistAcceleration = TuningData->ReverseAssistAcceleration;
+    ReverseAssistMaxSpeedMph = TuningData->ReverseAssistMaxSpeedMph;
+    HoverTargetHeight = TuningData->HoverTargetHeight;
+    HoverSpringStrength = TuningData->HoverSpringStrength;
+    HoverDamping = TuningData->HoverDamping;
+    HoverStabilizationStrength = TuningData->HoverStabilizationStrength;
+    HoverAngularDamping = TuningData->HoverAngularDamping;
+    HoverForwardAcceleration = TuningData->HoverForwardAcceleration;
+    HoverYawAcceleration = TuningData->HoverYawAcceleration;
 }
 
 void ADeLoreanVehicle::BeginPlay()
@@ -201,6 +212,7 @@ void ADeLoreanVehicle::BeginPlay()
     if (TimeTravelSubsystem)
     {
         TimeTravelSubsystem->OnTimeTravelCompleted.AddDynamic(this, &ADeLoreanVehicle::EndTimeTravelEffects);
+        TimeTravelSubsystem->OnJumpFailed.AddDynamic(this, &ADeLoreanVehicle::HandleTimeTravelJumpFailed);
     }
 
     InstallVehicleInputMapping();
@@ -991,10 +1003,26 @@ void ADeLoreanVehicle::StartTimeTravelEffects()
 void ADeLoreanVehicle::EndTimeTravelEffects()
 {
     bIsTimeTraveling = false;
+    if (TimeTravelSubsystem)
+    {
+        bTimeCircuitsOn = TimeTravelSubsystem->GetTimeTravelPhase() == ETimeTravelPhase::Armed
+            || TimeTravelSubsystem->GetTimeTravelPhase() == ETimeTravelPhase::Charging;
+    }
     if (TimeTravelPresentationComponent)
     {
         TimeTravelPresentationComponent->HandlePhaseChanged(ETimeTravelPhase::Idle);
     }
+}
+
+void ADeLoreanVehicle::HandleTimeTravelJumpFailed(FTimeTravelRequest Request, FText Reason)
+{
+    EndTimeTravelEffects();
+    bTimeCircuitsOn = false;
+    if (TimeTravelSubsystem)
+    {
+        TimeTravelSubsystem->SetTimeCircuitsArmed(false);
+    }
+    UE_LOG(LogTemp, Warning, TEXT("Time travel failed: %s"), *Reason.ToString());
 }
 
 void ADeLoreanVehicle::ApplyRadiationDamage(float Amount)

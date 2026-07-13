@@ -33,7 +33,8 @@ namespace
             Facts->SetBaseFact(FName(TEXT("C_SchoolDedication")), true);
             Facts->SetBaseFact(FName(TEXT("C_FounderMissing")), true);
         }
-        else if (MissionId == FName(TEXT("M04.MissingComponent")) && ObjectiveId == FName(TEXT("RegulatorInstalled")))
+        else if (MissionId == FName(TEXT("M04.MissingComponent"))
+            && (ObjectiveId == FName(TEXT("RegulatorInstalled")) || ObjectiveId == FName(TEXT("InstallRegulator"))))
         {
             Facts->SetBaseFact(FName(TEXT("1885.RailSurveyApproved")), true);
         }

@@ -81,27 +81,66 @@ bool ABTTF_PlayerController::ToggleVehicleHeroPossession()
     return false;
 }
 
-void ABTTF_PlayerController::BeginPlay()
+void ABTTF_PlayerController::SetupInputConstraints()
 {
-    Super::BeginPlay();
-
     bShowMouseCursor = true;
     bEnableClickEvents = true;
     bEnableMouseOverEvents = true;
+
     FInputModeGameAndUI InputMode;
     InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
     InputMode.SetHideCursorDuringCapture(false);
     SetInputMode(InputMode);
+}
 
-    if (UEnhancedInputLocalPlayerSubsystem* Subsystem = 
-        ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+void ABTTF_PlayerController::ApplyPossessionInputMappings(APawn* InPawn)
+{
+    if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+            ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
     {
+        Subsystem->ClearAllMappings();
+
         if (DefaultMappingContext)
         {
             Subsystem->AddMappingContext(DefaultMappingContext, 0);
         }
+
+        if (Cast<ABTTFHeroCharacter>(InPawn))
+        {
+            if (MovementMappingContext)
+            {
+                Subsystem->AddMappingContext(MovementMappingContext, 1);
+            }
+            if (CameraMappingContext)
+            {
+                Subsystem->AddMappingContext(CameraMappingContext, 2);
+            }
+        }
+    }
+}
+
+void ABTTF_PlayerController::OnPossess(APawn* InPawn)
+{
+    Super::OnPossess(InPawn);
+    ApplyPossessionInputMappings(InPawn);
+}
+
+void ABTTF_PlayerController::OnUnPossess()
+{
+    if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+            ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
+    {
+        Subsystem->ClearAllMappings();
     }
 
+    Super::OnUnPossess();
+}
+
+void ABTTF_PlayerController::BeginPlay()
+{
+    Super::BeginPlay();
+    SetupInputConstraints();
+    ApplyPossessionInputMappings(GetPawn());
     EnsurePauseMenuWidget();
 }
 
@@ -135,19 +174,9 @@ void ABTTF_PlayerController::SetupInputComponent()
     // polling is not guaranteed to run while the game is in GameAndUI mode.
     InputComponent->BindKey(EKeys::G, IE_Pressed, this,
         &ABTTF_PlayerController::HandleToggleVehicleHeroPossession);
-    InputComponent->BindKey(EKeys::Escape, IE_Pressed, this, &ABTTF_PlayerController::TogglePauseMenu);
-
-    if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent))
-    {
-        if (TimeCircuitsToggleAction)
-            EnhancedInput->BindAction(TimeCircuitsToggleAction, ETriggerEvent::Triggered, this, &ABTTF_PlayerController::ToggleTimeCircuits);
-
-        if (TimeJumpAction)
-            EnhancedInput->BindAction(TimeJumpAction, ETriggerEvent::Triggered, this, &ABTTF_PlayerController::RequestTimeJump);
-
-        if (HoverModeAction)
-            EnhancedInput->BindAction(HoverModeAction, ETriggerEvent::Triggered, this, &ABTTF_PlayerController::ToggleHoverMode);
-    }
+    FInputKeyBinding& EscapeBinding = InputComponent->BindKey(
+        EKeys::Escape, IE_Pressed, this, &ABTTF_PlayerController::TogglePauseMenu);
+    EscapeBinding.bExecuteWhenPaused = true;
 }
 
 void ABTTF_PlayerController::ToggleTimeCircuits()

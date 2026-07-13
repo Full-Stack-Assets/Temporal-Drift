@@ -56,7 +56,7 @@ protected:
     void CycleCameraPreset();
     void ToggleAutoChase();
     void InstallHeroInputMapping();
-    void UpdateMovementFacingYaw();
+    float GetMovementYaw() const;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Hero|Interaction")
     float MissionTagInteractRadius = 250.0f;

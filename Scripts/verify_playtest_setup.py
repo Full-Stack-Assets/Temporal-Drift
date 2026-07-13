@@ -28,6 +28,8 @@ pc_gc = unreal.load_object(None, "/Game/Blueprints/BP_BTTF_PlayerController.BP_B
 pc_cdo = unreal.get_default_object(pc_gc)
 check("BP_BTTF_PlayerController class", pc_gc)
 check("DefaultMappingContext", pc_cdo.get_editor_property("DefaultMappingContext"))
+check("MovementMappingContext", pc_cdo.get_editor_property("MovementMappingContext"))
+check("CameraMappingContext", pc_cdo.get_editor_property("CameraMappingContext"))
 check("TimeCircuitsToggleAction", pc_cdo.get_editor_property("TimeCircuitsToggleAction"))
 check("TimeJumpAction", pc_cdo.get_editor_property("TimeJumpAction"))
 check("HoverModeAction", pc_cdo.get_editor_property("HoverModeAction"))

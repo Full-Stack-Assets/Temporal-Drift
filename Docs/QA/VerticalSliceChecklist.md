@@ -34,7 +34,12 @@ Last updated: 2026-07-13
 
 - [x] `BTTF.Population.SpawnSubsystemContract` verifies ambient pedestrian spawn and wander route setup.
 - [x] `BTTF.Timeline.CrossEraRippleGraph` verifies 1885 interventions propagate to 1985 and 2045.
-- [x] `BTTF.Timeline.VariantVisibilityContract` verifies timeline variant actor registration.
+- [x] `BTTF.Camera.Keyboard.OrbitClampsPitch` and related camera contract tests verify shared keyboard camera behavior.
+- [x] `BTTF.Mission.EventFactsApplyOnlyAfterAccept` verifies timeline facts mutate only after mission events are accepted.
+- [x] `BTTF.Vehicle.TimeTravel.JumpFailureClearsVehicleState` verifies failed jumps do not strand the DeLorean in a traveling state.
+- [x] `BTTF.Save.RuntimeTimelineFactOverridesRestore` verifies runtime fact overrides survive save/load restore.
+- [x] `BTTF.Vehicle.Gameplay.ReverseHoverAndResetContracts` verifies tuning apply, reverse transition, hover roll isolation, and reset recovery.
+- [x] `BTTF.World.PhotorealMaterialLibraryContract` verifies PBR masters/instances load with valid parents.
 
 ## Live transition evidence
 

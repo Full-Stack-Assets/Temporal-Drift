@@ -1,4 +1,4 @@
-"""Creates controller input assets (time circuits, time jump, hover) and BP_BTTF_PlayerController."""
+"""Creates controller input assets and BP_BTTF_PlayerController (vehicle actions stay on the DeLorean)."""
 import unreal
 
 ASSET_PATH = "/Game/Input"
@@ -7,51 +7,44 @@ BP_PATH = "/Game/Blueprints"
 asset_tools = unreal.AssetToolsHelpers.get_asset_tools()
 
 
-def create_input_action(name, value_type):
-    factory = unreal.DataAssetFactory()
-    ia = asset_tools.create_asset(name, ASSET_PATH, unreal.InputAction, factory)
-    ia.set_editor_property("value_type", value_type)
-    return ia
+def load_or_create_context(name):
+    path = f"{ASSET_PATH}/{name}.{name}"
+    context = unreal.load_object(None, path)
+    if context is None:
+        context = asset_tools.create_asset(name, ASSET_PATH, unreal.InputMappingContext, unreal.DataAssetFactory())
+    return context
 
 
-# 1. Input Actions (all boolean)
-ia_circuits = create_input_action("IA_TimeCircuits", unreal.InputActionValueType.BOOLEAN)
-ia_jump = create_input_action("IA_TimeJump", unreal.InputActionValueType.BOOLEAN)
-ia_hover = create_input_action("IA_HoverMode", unreal.InputActionValueType.BOOLEAN)
+imc_path = f"{ASSET_PATH}/IMC_PlayerController.IMC_PlayerController"
+imc = unreal.load_object(None, imc_path)
+if imc is None:
+    imc = asset_tools.create_asset(
+        "IMC_PlayerController", ASSET_PATH, unreal.InputMappingContext, unreal.DataAssetFactory())
 
-# 2. Mapping context: C = circuits, Enter = jump, H = hover
-imc = asset_tools.create_asset("IMC_PlayerController", ASSET_PATH, unreal.InputMappingContext, unreal.DataAssetFactory())
+# Controller context is intentionally empty — time circuits, jump, and hover bind on the DeLorean pawn.
+imc.set_editor_property("mappings", [])
 
+movement_context = load_or_create_context("IMC_Movement")
+camera_context = load_or_create_context("IMC_CameraOrbit")
 
-def make_mapping(action, key_name):
-    m = unreal.EnhancedActionKeyMapping()
-    m.action = action
-    key = unreal.Key()
-    key.set_editor_property("key_name", key_name)
-    m.key = key
-    return m
+bp_path = f"{BP_PATH}/BP_BTTF_PlayerController.BP_BTTF_PlayerController_C"
+bp_gc = unreal.load_object(None, bp_path)
+if bp_gc is None:
+    bp_factory = unreal.BlueprintFactory()
+    bp_factory.set_editor_property(
+        "parent_class",
+        unreal.load_class(None, "/Script/BTTF_TemporalDrift.BTTF_PlayerController"))
+    bp = asset_tools.create_asset("BP_BTTF_PlayerController", BP_PATH, unreal.Blueprint, bp_factory)
+    bp_gc = unreal.load_object(None, bp.get_path_name() + "_C")
 
-
-mappings = [
-    make_mapping(ia_circuits, "C"),
-    make_mapping(ia_jump, "Enter"),
-    make_mapping(ia_hover, "H"),
-]
-imc.set_editor_property("mappings", mappings)
-
-# 3. BP_BTTF_PlayerController based on ABTTF_PlayerController
-bp_factory = unreal.BlueprintFactory()
-bp_factory.set_editor_property("parent_class", unreal.load_class(None, "/Script/BTTF_TemporalDrift.BTTF_PlayerController"))
-bp = asset_tools.create_asset("BP_BTTF_PlayerController", BP_PATH, unreal.Blueprint, bp_factory)
-
-bp_gc = unreal.load_object(None, bp.get_path_name() + "_C")
 cdo = unreal.get_default_object(bp_gc)
 cdo.set_editor_property("DefaultMappingContext", imc)
-cdo.set_editor_property("TimeCircuitsToggleAction", ia_circuits)
-cdo.set_editor_property("TimeJumpAction", ia_jump)
-cdo.set_editor_property("HoverModeAction", ia_hover)
+cdo.set_editor_property("MovementMappingContext", movement_context)
+cdo.set_editor_property("CameraMappingContext", camera_context)
+cdo.set_editor_property("TimeCircuitsToggleAction", None)
+cdo.set_editor_property("TimeJumpAction", None)
+cdo.set_editor_property("HoverModeAction", None)
 
-# 4. Save
 unreal.EditorAssetLibrary.save_directory("/Game/Input")
 unreal.EditorAssetLibrary.save_directory("/Game/Blueprints")
 unreal.log("Controller input assets and BP_BTTF_PlayerController created")

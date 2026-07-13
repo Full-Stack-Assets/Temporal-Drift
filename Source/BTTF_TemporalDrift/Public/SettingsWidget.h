@@ -7,6 +7,8 @@
 class USlider;
 class UCheckBox;
 class UTextBlock;
+class UButton;
+class UPauseMenuWidget;
 
 UCLASS(BlueprintType, Blueprintable)
 class BTTF_TEMPORALDRIFT_API USettingsWidget : public UUserWidget
@@ -19,6 +21,8 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Settings")
     void ApplyToProfile();
+
+    void SetOwnerPauseMenu(UPauseMenuWidget* InOwner) { OwnerPauseMenu = InOwner; }
 
 protected:
     virtual void NativeOnInitialized() override;
@@ -44,5 +48,6 @@ private:
     UPROPERTY(Transient) TObjectPtr<USlider> UIScaleSlider;
     UPROPERTY(Transient) TObjectPtr<USlider> SubtitleScaleSlider;
     UPROPERTY(Transient) TObjectPtr<UCheckBox> ReducedFlashCheck;
+    UPROPERTY(Transient) TObjectPtr<UPauseMenuWidget> OwnerPauseMenu;
     bool bApplyingProfile = false;
 };

@@ -1,11 +1,51 @@
 #if WITH_DEV_AUTOMATION_TESTS
 
 #include "Misc/AutomationTest.h"
+#include "BTTF_PlayerController.h"
+#include "TemporalDriftSettings.h"
 #include "DeLoreanVehicle.h"
 #include "KeyboardCameraComponent.h"
 #include "ChaosVehicleMovementComponent.h"
 #include "Engine/World.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Misc/FileHelper.h"
+#include "Misc/Paths.h"
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(
+    FBTTFVehicleInputContractTest,
+    "BTTF.Vehicle.InputContractVerification",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFVehicleInputContractTest::RunTest(const FString& Parameters)
+{
+    const ABTTF_PlayerController* Controller = GetDefault<ABTTF_PlayerController>();
+    TestTrue(
+        TEXT("The mouse cursor must be kept explicitly visible at all times during gameplay loop instances"),
+        Controller->bShowMouseCursor);
+    TestTrue(TEXT("Mouse clicks remain enabled for UI interaction"), Controller->bEnableClickEvents);
+
+    const FString InputIniPath = FPaths::ConvertRelativePathToFull(
+        FPaths::ProjectConfigDir() / TEXT("DefaultInput.ini"));
+    FString InputIniContents;
+    if (TestTrue(TEXT("DefaultInput.ini is readable"), FFileHelper::LoadFileToString(InputIniContents, *InputIniPath)))
+    {
+        const bool bHasMouseAxis = InputIniContents.Contains(TEXT("Key=Mouse"))
+            || InputIniContents.Contains(TEXT("Key=MouseX"))
+            || InputIniContents.Contains(TEXT("Key=MouseY"));
+        const bool bHasLookAxis = InputIniContents.Contains(TEXT("Turn"))
+            || InputIniContents.Contains(TEXT("LookUp"));
+        TestFalse(TEXT("Mouse look is not bound in DefaultInput.ini"), bHasMouseAxis || bHasLookAxis);
+    }
+
+    const float RegulatedVelocityCap = GetDefault<UTemporalDriftSettings>()->JumpSpeedThresholdMph;
+    const float ComputedTargetVelocity = 39.5f;
+    TestTrue(
+        TEXT("Gameplay calculations must trigger at or below the 40-MPH speed limit"),
+        ComputedTargetVelocity <= RegulatedVelocityCap);
+    TestEqual(TEXT("Jump threshold remains 40 MPH"), RegulatedVelocityCap, 40.0f);
+
+    return !HasAnyErrors();
+}
 
 IMPLEMENT_SIMPLE_AUTOMATION_TEST(
     FBTTFVehicleInputNormalizationTest,

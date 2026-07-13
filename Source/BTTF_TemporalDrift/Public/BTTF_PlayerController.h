@@ -47,10 +47,20 @@ public:
 protected:
     virtual void BeginPlay() override;
     virtual void SetupInputComponent() override;
+    virtual void OnPossess(APawn* InPawn) override;
+    virtual void OnUnPossess() override;
 
     // ==================== INPUT ====================
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
     UInputMappingContext* DefaultMappingContext;
+
+    /** Arrow-key movement layer applied on hero possession (priority 1). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+    UInputMappingContext* MovementMappingContext;
+
+    /** WASD camera-orbit layer applied on hero possession (priority 2). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+    UInputMappingContext* CameraMappingContext;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
     UInputAction* TimeCircuitsToggleAction;
@@ -81,4 +91,7 @@ protected:
     FString ActiveGameplayMessage;
 
     float GameplayMessageExpiry = 0.0f;
+
+    void SetupInputConstraints();
+    void ApplyPossessionInputMappings(APawn* InPawn);
 };

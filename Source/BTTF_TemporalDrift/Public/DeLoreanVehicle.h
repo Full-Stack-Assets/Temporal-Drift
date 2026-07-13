@@ -249,6 +249,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Time Travel")
     void EndTimeTravelEffects();
 
+    UFUNCTION()
+    void HandleTimeTravelJumpFailed(FTimeTravelRequest Request, FText Reason);
+
     UFUNCTION(BlueprintCallable, Category = "Hawking Radiation")
     void ApplyRadiationDamage(float Amount);
 

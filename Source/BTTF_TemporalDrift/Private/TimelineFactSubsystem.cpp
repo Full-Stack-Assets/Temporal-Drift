@@ -88,6 +88,18 @@ bool UTimelineFactSubsystem::GetFact(FName FactId, bool& bFound) const
 
 bool UTimelineFactSubsystem::RestoreOverrideSnapshot(const TMap<FName, bool>& Snapshot)
 {
+    for (const TPair<FName, bool>& Pair : Snapshot)
+    {
+        if (!Definitions.Contains(Pair.Key))
+        {
+            FTimelineFactDefinition DynamicFact;
+            DynamicFact.FactId = Pair.Key;
+            DynamicFact.DefaultValue = false;
+            Definitions.Add(Pair.Key, DynamicFact);
+            ComputedValues.Add(Pair.Key, false);
+        }
+    }
+
     BaseOverrides = Snapshot;
     return RecomputeFacts();
 }

@@ -1,4 +1,15 @@
 import unreal
+import os
+import sys
+
+_SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+if _SCRIPT_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPT_DIR)
+
+try:
+    import hill_valley_common as hv
+except ImportError:
+    hv = None
 
 
 LEVEL = "/Game/Levels/LVL_TimeTravelTest"
@@ -548,7 +559,10 @@ def main():
         raise RuntimeError(f"Unable to load level: {LEVEL}")
     delete_previous_generated()
 
-    materials_global = {
+    if hv:
+        materials_global = hv.create_default_materials()
+    else:
+        materials_global = {
         "asphalt": create_color_material("M_HV_Asphalt", (0.035, 0.04, 0.045), 0.92),
         "concrete": create_color_material("M_HV_Concrete", (0.42, 0.43, 0.40), 0.82),
         "grass": create_color_material("M_HV_Grass", (0.08, 0.24, 0.07), 0.95),

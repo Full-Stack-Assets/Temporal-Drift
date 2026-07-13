@@ -25,9 +25,12 @@ def mapping(input_action, key_name, negate=False):
     return result
 
 
-context = unreal.load_asset(f"{PATH}/IMC_Hero")
-if not context:
-    context = TOOLS.create_asset("IMC_Hero", PATH, unreal.InputMappingContext, unreal.DataAssetFactory())
+def ensure_context(name):
+    context = unreal.load_asset(f"{PATH}/{name}")
+    if not context:
+        context = TOOLS.create_asset(name, PATH, unreal.InputMappingContext, unreal.DataAssetFactory())
+    return context
+
 
 move = action("IA_HeroMove", unreal.InputActionValueType.AXIS2D)
 camera_orbit = action("IA_HeroCameraOrbit", unreal.InputActionValueType.AXIS2D)
@@ -37,15 +40,24 @@ interact = action("IA_HeroInteract", unreal.InputActionValueType.BOOLEAN)
 cycle_camera = action("IA_HeroCycleCamera", unreal.InputActionValueType.BOOLEAN)
 toggle_chase = action("IA_HeroToggleAutoChase", unreal.InputActionValueType.BOOLEAN)
 
-context.set_editor_property("mappings", [
+movement_context = ensure_context("IMC_Movement")
+movement_context.set_editor_property("mappings", [
     mapping(move, "Up"),
     mapping(move, "Down", negate=True),
     mapping(move, "Right"),
     mapping(move, "Left", negate=True),
+])
+
+camera_context = ensure_context("IMC_CameraOrbit")
+camera_context.set_editor_property("mappings", [
     mapping(camera_orbit, "D"),
     mapping(camera_orbit, "A", negate=True),
     mapping(camera_orbit, "W"),
     mapping(camera_orbit, "S", negate=True),
+])
+
+hero_context = ensure_context("IMC_Hero")
+hero_context.set_editor_property("mappings", [
     mapping(sprint, "LeftShift"),
     mapping(crouch, "LeftControl"),
     mapping(interact, "E"),
@@ -56,7 +68,19 @@ context.set_editor_property("mappings", [
 hero_class = unreal.load_class(None, "/Script/BTTF_TemporalDrift.BTTFHeroCharacter")
 if hero_class:
     cdo = unreal.get_default_object(hero_class)
-    cdo.set_editor_property("HeroMappingContext", context)
+    cdo.set_editor_property("HeroMappingContext", hero_context)
+
+controller_class = unreal.load_class(None, "/Script/BTTF_TemporalDrift.BTTF_PlayerController")
+if controller_class:
+    cdo = unreal.get_default_object(controller_class)
+    cdo.set_editor_property("MovementMappingContext", movement_context)
+    cdo.set_editor_property("CameraMappingContext", camera_context)
+
+bp_path = "/Game/Blueprints/BP_BTTF_PlayerController.BP_BTTF_PlayerController_C"
+bp_cdo = unreal.load_object(None, bp_path)
+if bp_cdo:
+    bp_cdo.set_editor_property("MovementMappingContext", movement_context)
+    bp_cdo.set_editor_property("CameraMappingContext", camera_context)
 
 unreal.EditorAssetLibrary.save_directory(PATH)
 unreal.log("BTTF_HERO_INPUT_SUCCESS")
