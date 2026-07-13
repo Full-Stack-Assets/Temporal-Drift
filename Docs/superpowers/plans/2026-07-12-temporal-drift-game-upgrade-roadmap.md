@@ -36,7 +36,7 @@
 |---|---|---|
 | M0 Stability | Repeatable launch, drive, reset, test, and package workflow | 10-minute smoke test without blocker |
 | M1 Hero Vehicle | Recognizable DeLorean with tuned handling and cameras | Drive/stop/reverse/reset tests pass |
-| M2 Time Travel Loop | Reach 88 MPH, trigger jump, arrive in 1955 | Automated state tests plus live transition |
+| M2 Time Travel Loop | Reach the 40 MPH gameplay threshold, trigger jump, arrive in 1955 | Automated state tests plus live transition |
 | M3 Hill Valley 1955 | Courthouse square visibly changes era | Layer validation and performance budget pass |
 | M4 Vertical Slice | One mission with consequence and return jump | Start-to-finish playthrough succeeds |
 | M5 Presentation | Final HUD, VFX, audio, lighting, accessibility | No debug-only presentation required |
@@ -103,7 +103,7 @@
 - [ ] Move hard-coded drivetrain values from the constructor into `UDeLoreanTuningData` and apply them during initialization.
 - [ ] Tune acceleration, braking distance, steering response, center of mass, suspension travel, tire friction, and chase camera using a marked test course.
 - [ ] Add exterior, hood, bumper, and cockpit camera presets.
-- [ ] Gate: vehicle completes the test course without rollover or oscillation, reaches the chosen 88-MPH window predictably, and remains controllable at top speed.
+- [ ] Gate: vehicle completes the test course without rollover or oscillation, reaches the configured 40-MPH jump threshold predictably, and remains controllable at top speed.
 
 ### Task 4: Make Time Travel a Deterministic State Machine
 
@@ -120,7 +120,7 @@
 - Produces: `FTimeTravelRequest { ETimelineState Destination; FVector Origin; float EntrySpeedMph; }`.
 - Produces delegates: `OnPhaseChanged`, `OnJumpDeparted`, `OnEraSwitchRequested`, `OnJumpArrived`, `OnJumpFailed`.
 
-- [ ] Write tests for energy clamping, circuit arming, 88-MPH threshold, insufficient energy, duplicate request rejection, phase order, energy consumption, and cooldown completion.
+- [ ] Write tests for energy clamping, circuit arming, configurable 40-MPH threshold, insufficient energy, duplicate request rejection, phase order, energy consumption, and cooldown completion.
 - [ ] Run `BTTF.TimeTravel`; expect phase-transition tests to fail against the current boolean implementation.
 - [ ] Replace the subsystem/vehicle pair of overlapping booleans with the enum state machine and one authoritative transition function.
 - [ ] Require circuits on, valid destination, adequate flux, threshold speed, and stable cooldown before departure.
@@ -184,7 +184,7 @@
 
 - [ ] Write view-model tests for display formatting, warning thresholds, destination cycling, and phase messages.
 - [ ] Replace per-frame Canvas debug text with UMG bound to explicit view-model change events.
-- [ ] Build readable speedometer, 88-MPH indicator, flux meter, destination/current/departed time rows, paradox/stability warnings, mission objective, and control prompts.
+- [ ] Build readable speedometer, configurable jump-threshold indicator, flux meter, destination/current/departed time rows, paradox/stability warnings, mission objective, and control prompts.
 - [ ] Add scalable UI, subtitle-safe layout, color-blind-safe warnings, text-size options, reduced-flash setting, and controller glyph switching.
 - [ ] Keep the Canvas HUD behind a developer-only console variable.
 - [ ] Gate: all critical state is understandable at 1080p from couch distance without opening logs or Blueprint debugging.
@@ -372,7 +372,7 @@
 
 - [ ] Write `Docs/Design/MissionCampaign.md` with the campaign premise, character roster, location roster, mission dependency graph, objective-by-objective flows, dialogue beats, optional choices, paradox consequences, rewards, checkpoints, failure recovery, and required assets.
 - [ ] Mission 1 — **First Test Run:** meet the inventor in 1985, learn on-foot/vehicle controls, collect calibration parts across town, install them, and complete a timed driving test.
-- [ ] Mission 2 — **Clocktower Calibration:** charge flux, select 1955, cross 88 MPH, arrive safely, reach courthouse square on foot, install the clocktower sensor, and avoid one documented paradox action.
+- [ ] Mission 2 — **Clocktower Calibration:** charge flux, select 1955, cross the 40-MPH gameplay threshold, arrive safely, reach courthouse square on foot, install the clocktower sensor, and avoid one documented paradox action.
 - [ ] Mission 3 — **A Town Out of Time:** investigate changed storefront signs and NPC memories, follow dialogue clues through the diner/school/courthouse, and identify the altered historical event.
 - [ ] Mission 4 — **The Missing Component:** use driving, pedestrian exploration, dialogue choices, and a restricted-area interaction to recover a time-machine component without exposing future technology.
 - [ ] Mission 5 — **Race the Lightning:** prepare the courthouse route, coordinate NPC positions through dialogue, complete a checkpointed high-speed finale, trigger the return jump, and arrive in consequence-altered 1985.
@@ -451,7 +451,7 @@
 
 - [ ] Add visual/mechanical damage, repair, hover conversion, whitewalls, railroad wheels, mag-lev skids, and stable handling profiles for each configuration.
 - [ ] Implement diegetic destination date entry that honors valid mistyped dates through authored date/content routing and safely rejects impossible/unavailable destinations.
-- [ ] Keep physical 88-MPH runway planning authoritative in ground eras and full 3D corridor travel in 2045.
+- [ ] Keep compact 40-MPH acceleration-route planning authoritative in ground eras and full 3D corridor travel in 2045.
 - [ ] Implement plutonium, scheduled lightning, Mr. Fusion, and era-appropriate repair/fuel economies with inventory/crafting/save support.
 - [ ] Gate: every configuration completes its era test course, damages/repairs deterministically, jumps correctly, and passes clean-package controller smoke tests.
 
@@ -498,7 +498,7 @@
 
 ## Definition of Done for the Vertical Slice
 
-- The player can start a new game, drive a recognizable DeLorean, operate complete controls, charge flux, select 1955, cross 88 MPH, see/hear a polished transition, arrive safely in transformed Hill Valley, complete the clocktower mission, return to a visibly affected 1985, save, quit, and continue.
+- The player can start a new game, drive a recognizable DeLorean, operate complete controls, charge flux, select 1955, cross the configured 40-MPH gameplay threshold, see/hear a polished transition, arrive safely in transformed Hill Valley, complete the clocktower mission, return to a visibly affected 1985, save, quit, and continue.
 - No required action depends on debug text, Output Log inspection, or editor-only intervention.
 - The full automation suite, map validators, editor build, cook, and Windows package succeed from documented PowerShell commands.
 - Known non-blocking limitations are recorded in `Docs/QA/KnownIssues.md` with reproduction steps.

@@ -19,14 +19,15 @@ bool FBTTFTimeTravelStateMachineTest::RunTest(const FString& Parameters)
 
     FTimeTravelRequest Request;
     Request.Destination = ETimelineState::Past1955;
-    Request.EntrySpeedMph = 87.9f;
+    TestEqual(TEXT("Default jump threshold is map-friendly"), System->GetJumpSpeedThresholdMph(), 40.0f);
+    Request.EntrySpeedMph = 39.9f;
     TestFalse(TEXT("Unarmed request is rejected"), System->RequestTimeTravel(Request));
 
     System->SetTimeCircuitsArmed(true);
     TestEqual(TEXT("Arming enters Armed phase"), System->GetTimeTravelPhase(), ETimeTravelPhase::Armed);
     TestFalse(TEXT("Sub-threshold request is rejected"), System->RequestTimeTravel(Request));
 
-    Request.EntrySpeedMph = 88.0f;
+    Request.EntrySpeedMph = 40.0f;
     TestTrue(TEXT("Valid request begins departure"), System->RequestTimeTravel(Request));
     TestEqual(TEXT("Threshold is reached first"), System->GetTimeTravelPhase(), ETimeTravelPhase::ThresholdReached);
     TestFalse(TEXT("Duplicate request is rejected"), System->RequestTimeTravel(Request));

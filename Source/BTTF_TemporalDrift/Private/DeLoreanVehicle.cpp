@@ -1,5 +1,6 @@
 // DeLoreanVehicle.cpp - Updated Implementation
 #include "DeLoreanVehicle.h"
+#include "TemporalDriftSettings.h"
 #include "DeLoreanWheel.h"
 #include "TimeTravelSubsystem.h"
 #include "ChaosVehicleMovementComponent.h"
@@ -592,12 +593,13 @@ void ADeLoreanVehicle::UpdateFluxCapacitor(float DeltaTime)
 {
     if (!TimeTravelSubsystem || bIsTimeTraveling) return;
 
-    if (CurrentSpeedMph >= 80.0f)
+    const UTemporalDriftSettings* TravelSettings = GetDefault<UTemporalDriftSettings>();
+    if (CurrentSpeedMph >= TravelSettings->FluxChargeStartSpeedMph)
     {
-        float ChargeRate = TimeTravelSubsystem->EnergyPerSecondAt88mph * DeltaTime;
+        float ChargeRate = TravelSettings->EnergyPerSecondAtThreshold * DeltaTime;
 
-        if (CurrentSpeedMph >= 87.0f)
-            ChargeRate *= 1.4f; // Bonus near 88 mph
+        if (CurrentSpeedMph >= TravelSettings->JumpSpeedThresholdMph)
+            ChargeRate *= 1.4f;
 
         TimeTravelSubsystem->AddFluxEnergy(ChargeRate);
     }

@@ -27,7 +27,7 @@ bool FBTTFVehicleTuningDefaultsTest::RunTest(const FString& Parameters)
         Tuning->SuspensionMaxRaiseCm > 0.0f &&
         Tuning->SuspensionMaxDropCm > Tuning->SuspensionMaxRaiseCm);
     TestTrue(TEXT("Target top speed clears time-travel threshold"),
-        Tuning->TargetTopSpeedMph >= 95.0f);
+        Tuning->TargetTopSpeedMph >= 50.0f);
     return !HasAnyErrors();
 }
 

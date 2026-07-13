@@ -12,6 +12,7 @@ public class BTTF_TemporalDrift : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
+			"DeveloperSettings",
 			"InputCore",
 			"EnhancedInput",
 			"ChaosVehicles",

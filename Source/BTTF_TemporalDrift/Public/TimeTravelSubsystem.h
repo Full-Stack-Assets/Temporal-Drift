@@ -57,8 +57,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flux Capacitor")
     float FluxCapacitorMaxEnergy = 1210.0f;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flux Capacitor")
-    float EnergyPerSecondAt88mph = 45.0f;
+    UFUNCTION(BlueprintPure, Category = "Time Travel")
+    float GetJumpSpeedThresholdMph() const;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Flux Capacitor")
     float EnergyDrainOnJump = 1150.0f;

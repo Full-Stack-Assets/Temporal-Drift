@@ -94,7 +94,7 @@ After each C++ integration step, build `BTTF_TemporalDriftEditor Win64 Developme
 2. Inspect stationary silhouette from chase, hood, bumper, and cockpit views.
 3. Accelerate, steer, brake, reverse, handbrake, and reset.
 4. Drive the marked test course and check rollover, oscillation, wheel clipping, and camera obstruction.
-5. Reach the intended 88-MPH window predictably while retaining steering control.
+5. Reach the configured 40-MPH jump threshold predictably while retaining steering control.
 6. Inspect brushed-metal response, glass, lamps, and emissive equipment in daylight and night lighting.
 
 ## Acceptance Criteria
@@ -108,7 +108,7 @@ Task 3 is accepted only when:
 - chase, hood, bumper, and cockpit cameras are usable and unobstructed;
 - vehicle controls, reset, possession, physics, and input tests show no regression;
 - the vehicle completes the marked course without rollover or persistent oscillation;
-- it reaches the chosen 88-MPH window predictably and remains controllable at top speed;
+- it reaches the configured 40-MPH jump threshold predictably and remains controllable at top speed;
 - the editor build and all `BTTF.Vehicle` automated tests pass;
 - a final live playtest is approved from representative exterior and cockpit views.
 

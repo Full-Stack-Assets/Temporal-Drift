@@ -1,4 +1,5 @@
 #include "TemporalDriveSubsystem.h"
+#include "TemporalDriftSettings.h"
 
 bool UTemporalDriveSubsystem::ValidateDestinationDate(const FTemporalDestinationDate& Date,FText& Error)const
 {
@@ -29,7 +30,8 @@ void UTemporalDriveSubsystem::ArmLightningCapture(bool bArmed){State.bLightningC
 bool UTemporalDriveSubsystem::CanPowerJump(ETemporalFuelType Fuel,float SpeedMph,const FTemporalDestinationDate& Date,FText& Error)const
 {
     if(!ValidateDestinationDate(Date,Error))return false;
-    if(SpeedMph<88.0f){Error=FText::FromString(TEXT("Vehicle must reach 88 MPH."));return false;}
+    const float RequiredSpeed = GetDefault<UTemporalDriftSettings>()->JumpSpeedThresholdMph;
+    if(SpeedMph<RequiredSpeed){Error=FText::FromString(FString::Printf(TEXT("Vehicle must reach %.0f MPH."),RequiredSpeed));return false;}
     bool bPowered=false;
     switch(Fuel){case ETemporalFuelType::Plutonium:bPowered=State.PlutoniumCells>0;break;case ETemporalFuelType::Lightning:bPowered=State.bLightningCaptureArmed;break;case ETemporalFuelType::MrFusion:bPowered=State.bMrFusionInstalled&&State.FusionFuel>=10.0f;break;}
     if(!bPowered)Error=FText::FromString(TEXT("Selected temporal fuel source is unavailable."));return bPowered;

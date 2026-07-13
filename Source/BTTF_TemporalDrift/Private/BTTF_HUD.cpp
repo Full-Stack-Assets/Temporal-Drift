@@ -1,5 +1,6 @@
 // BTTF_HUD.cpp
 #include "BTTF_HUD.h"
+#include "TemporalDriftSettings.h"
 #include "DeLoreanVehicle.h"
 #include "TimeTravelSubsystem.h"
 #include "Engine/Canvas.h"
@@ -24,9 +25,10 @@ void ABTTF_HUD::DrawHUD()
     const float BarHeight = 18.0f;
     float Y = Canvas->SizeY - 170.0f;
 
-    // Speed - highlight when in the 88 mph jump window
+    // Speed - highlight when the configured jump threshold is reached.
     const float Speed = Vehicle->GetCurrentSpeedMph();
-    const FLinearColor SpeedColor = Speed >= 88.0f ? FLinearColor::Yellow : FLinearColor::White;
+    const float JumpThreshold = GetDefault<UTemporalDriftSettings>()->JumpSpeedThresholdMph;
+    const FLinearColor SpeedColor = Speed >= JumpThreshold ? FLinearColor::Yellow : FLinearColor::White;
     FCanvasTextItem SpeedText(FVector2D(Margin, Y), FText::FromString(FString::Printf(TEXT("%.0f MPH"), Speed)), Font, SpeedColor);
     SpeedText.Scale = FVector2D(2.5f, 2.5f);
     Canvas->DrawItem(SpeedText);

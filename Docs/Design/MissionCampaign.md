@@ -59,7 +59,7 @@ Side B: Special Delivery (unlocks after M01, changes between eras)
 **Purpose:** Teach on-foot movement, interaction, inventory, entering/exiting the vehicle, driving controls, reset, and checkpoints without a detached tutorial menu.
 
 1. Spawn outside Vale Garage in 1985; objective marker and Vale's greeting establish the test.
-2. Talk to Vale. Optional questions explain flux, the 88-MPH threshold, and why courthouse square is the controlled test site.
+2. Talk to Vale. Optional questions explain flux, the configurable 40-MPH threshold, and why courthouse square is the controlled test site.
 3. Collect three calibration parts: oscillator from the garage bench, shielded cable from the electronics shop, and coolant cell from the service station.
 4. Install each part through contextual interaction at the parked vehicle.
 5. Enter the vehicle; complete accelerate, steer, brake, reverse, handbrake, camera, and reset prompts on the marked route.
@@ -76,7 +76,7 @@ Side B: Special Delivery (unlocks after M01, changes between eras)
 
 1. Meet Vale and June at the courthouse. Dialogue establishes that the clocktower can provide a stable temporal reference.
 2. Collect and install the clocktower sensor package.
-3. Charge flux while driving, select 1955, arm circuits, and cross 88 MPH on the rural approach.
+3. Charge flux while driving, select 1955, arm circuits, and cross 40 MPH on the rural approach.
 4. Arrive at the corresponding road location in 1955 with input restored and no duplicated jump.
 5. Drive to courthouse square, park, exit, and carry the sensor to its marked installation point.
 6. Optional paradox action: reveal the future vehicle to a gathering crowd. Avoiding it grants stability; triggering it changes later dialogue and adds paradox.

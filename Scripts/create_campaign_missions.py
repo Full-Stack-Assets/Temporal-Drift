@@ -13,7 +13,7 @@ MISSIONS = {
     "M02_ClocktowerCalibration": [
         ("Briefing", "Meet Vale and June at the courthouse", "TalkedToValeAndJune", "M02_Briefing", 0.0),
         ("InstallSensorVehicle", "Install the clocktower sensor package", "SensorInstalledVehicle", "M02_SensorInstalledVehicle", 0.0),
-        ("Jump1955", "Reach 88 MPH and travel to 1955", "Arrived1955", "M02_Arrived1955", 0.0),
+        ("Jump1955", "Reach 40 MPH and travel to 1955", "Arrived1955", "M02_Arrived1955", 0.0),
         ("ReachClocktower", "Reach courthouse square on foot", "ClocktowerReached", "M02_ClocktowerReached", 0.0),
         ("Calibrate", "Install and calibrate the clocktower sensor", "ClocktowerCalibrated", "M02_Calibrated", -3.0),
         ("Return1985", "Return safely to 1985", "Returned1985", "M02_Returned1985", 0.0),

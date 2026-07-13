@@ -24,7 +24,7 @@
 - Strong Curl Noise + World Position Offset for swirling effect
 - Camera-facing + additive blending
 - Color: Cyan / Blue / White
-- Spawn Rate ramps up dramatically at 88 mph
+- Spawn Rate ramps up dramatically at the configured jump threshold (40 MPH by default)
 
 **Secondary Emitters:**
 - Fire trail from tires (when jumping)

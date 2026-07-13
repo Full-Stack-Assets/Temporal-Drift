@@ -250,7 +250,7 @@ Open `LVL_TimeTravelTest`, enter PIE, verify automatic possession, and capture r
 
 - [ ] **Step 3: Perform live Computer Use driving acceptance**
 
-Accelerate, steer in both directions, brake, reverse, handbrake, reset, and cycle all cameras. Complete the marked course, check full-lock steering and suspension compression for wheel clipping, confirm no rollover or persistent oscillation, and reach the selected 88-MPH window while retaining control.
+Accelerate, steer in both directions, brake, reverse, handbrake, reset, and cycle all cameras. Complete the marked course, check full-lock steering and suspension compression for wheel clipping, confirm no rollover or persistent oscillation, and reach the configured 40-MPH jump threshold while retaining control.
 
 - [ ] **Step 4: Record evidence and update roadmap checkboxes**
 

@@ -1,5 +1,6 @@
 // TimeTravelSubsystem.cpp - Fully Expanded Implementation
 #include "TimeTravelSubsystem.h"
+#include "TemporalDriftSettings.h"
 #include "DeLoreanVehicle.h"
 #include "EraDataAsset.h"
 #include "EraWorldManager.h"
@@ -86,7 +87,7 @@ void UTimeTravelSubsystem::SetTimeCircuitsArmed(bool bArmed)
 bool UTimeTravelSubsystem::RequestTimeTravel(const FTimeTravelRequest& Request)
 {
     if (!bTimeCircuitsArmed || bIsTimeTraveling || TimeTravelPhase == ETimeTravelPhase::Cooldown ||
-        Request.Destination == CurrentTimelineState || Request.EntrySpeedMph < 88.0f || !HasEnoughEnergyForJump())
+        Request.Destination == CurrentTimelineState || Request.EntrySpeedMph < GetJumpSpeedThresholdMph() || !HasEnoughEnergyForJump())
     {
         return false;
     }
@@ -326,3 +327,7 @@ void UTimeTravelSubsystem::DebugDrawFluxStatus(const ADeLoreanVehicle* DeLorean)
 }
 
 #pragma endregion
+float UTimeTravelSubsystem::GetJumpSpeedThresholdMph() const
+{
+    return GetDefault<UTemporalDriftSettings>()->JumpSpeedThresholdMph;
+}
