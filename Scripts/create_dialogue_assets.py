@@ -83,10 +83,61 @@ def build_m03_archive_briefing():
     save_dialogue("DA_Dialogue_M03_ArchiveBriefing", "M03.ArchiveBriefing", "JuneArchive", [node])
 
 
+def build_m04_workshop_briefing():
+    voice_path = ensure_sound("VO_M04_ValeWorkshop")
+    node = unreal.DialogueNode()
+    node.set_editor_property("node_id", "ValeWorkshop")
+    node.set_editor_property("speaker_id", "Vale")
+    node.set_editor_property("speaker_display_name", "Dr. Emmett Vale")
+    node.set_editor_property("line", "The temporal regulator failed in transit. Recover the alloy and install the replacement before the storm window closes.")
+    node.set_editor_property("localization_key", "dialogue.m04.vale.workshop")
+    node.set_editor_property("voice_audio_path", voice_path)
+    node.set_editor_property("minimum_display_seconds", 2.0)
+    node.set_editor_property("mission_event", "WorkshopEntered")
+    save_dialogue("DA_Dialogue_M04_WorkshopBriefing", "M04.WorkshopBriefing", "ValeWorkshop", [node])
+
+
+def build_m05_finale():
+    voice_vale = ensure_sound("VO_M05_ValeFinale")
+    voice_elena = ensure_sound("VO_M05_ElenaWitness")
+    voice_crane = ensure_sound("VO_M05_CraneWarning")
+
+    vale = unreal.DialogueNode()
+    vale.set_editor_property("node_id", "ValeFinale")
+    vale.set_editor_property("speaker_id", "Vale")
+    vale.set_editor_property("speaker_display_name", "Dr. Emmett Vale")
+    vale.set_editor_property("line", "The lightning will strike the clocktower at 10:04. Hit eighty-eight on the courthouse run and do not stop.")
+    vale.set_editor_property("voice_audio_path", voice_vale)
+    vale.set_editor_property("minimum_display_seconds", 2.5)
+    vale.set_editor_property("automatic_next_node_id", "ElenaWitness")
+
+    elena = unreal.DialogueNode()
+    elena.set_editor_property("node_id", "ElenaWitness")
+    elena.set_editor_property("speaker_id", "Elena")
+    elena.set_editor_property("speaker_display_name", "Elena Crane")
+    elena.set_editor_property("line", "I will keep the square clear. When you return, inspect the plaque and tell us what changed.")
+    elena.set_editor_property("voice_audio_path", voice_elena)
+    elena.set_editor_property("minimum_display_seconds", 2.0)
+    elena.set_editor_property("automatic_next_node_id", "CraneWarning")
+
+    crane = unreal.DialogueNode()
+    crane.set_editor_property("node_id", "CraneWarning")
+    crane.set_editor_property("speaker_id", "Crane")
+    crane.set_editor_property("speaker_display_name", "Officer Crane")
+    crane.set_editor_property("line", "Move the crowd back from the cable route. This storm is not a drill.")
+    crane.set_editor_property("voice_audio_path", voice_crane)
+    crane.set_editor_property("minimum_display_seconds", 1.5)
+    crane.set_editor_property("mission_event", "CampaignResolved")
+
+    save_dialogue("DA_Dialogue_M05_LightningFinale", "M05.LightningFinale", "ValeFinale", [vale, elena, crane])
+
+
 def main():
     build_m01_garage_tutorial()
     build_m02_briefing()
     build_m03_archive_briefing()
+    build_m04_workshop_briefing()
+    build_m05_finale()
     unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
     unreal.log("DIALOGUE_ASSETS_SUCCESS")
 

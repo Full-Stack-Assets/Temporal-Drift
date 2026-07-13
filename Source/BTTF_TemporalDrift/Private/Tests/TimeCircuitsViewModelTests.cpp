@@ -39,6 +39,22 @@ bool FBTTFTimeCircuitsViewModelTest::RunTest(const FString& Parameters)
         ViewModel->CycleDestination(ETimelineState::Present1985, 1), ETimelineState::Alternate1985);
     TestEqual(TEXT("Backward era cycle wraps to 1885"),
         ViewModel->CycleDestination(ETimelineState::Past1955, -1), ETimelineState::WildWest1885);
+
+    ViewModel->UpdateDisplay(40.0f, 1.0f, ETimelineState::Present1985,
+        ETimelineState::Past1955, ETimeTravelPhase::Armed, 12.0f, 88.0f, FText::GetEmpty(),
+        FText::GetEmpty(), FText::GetEmpty(), FText::GetEmpty(), 0.82f,
+        FText::FromString(TEXT("NOV 12 1955 10:04 PM")),
+        FText::FromString(TEXT("LIGHTNING IN 1:30")),
+        FText::FromString(TEXT("RIPPLES: Plaque altered")));
+    const FTimeCircuitsDisplayState Elevated = ViewModel->GetDisplayState();
+    TestEqual(TEXT("Destination date surfaces"), Elevated.DestinationDateText.ToString(),
+        FString(TEXT("NOV 12 1955 10:04 PM")));
+    TestEqual(TEXT("Lightning countdown surfaces"), Elevated.LightningCountdownText.ToString(),
+        FString(TEXT("LIGHTNING IN 1:30")));
+    TestEqual(TEXT("Consequence summary surfaces"), Elevated.ConsequenceSummaryText.ToString(),
+        FString(TEXT("RIPPLES: Plaque altered")));
+    TestEqual(TEXT("Photograph opacity clamped"), Elevated.PhotographOpacity, 0.82f);
+
     return !HasAnyErrors();
 }
 

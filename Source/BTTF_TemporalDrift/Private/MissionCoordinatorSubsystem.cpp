@@ -5,6 +5,7 @@
 #include "DialogueSubsystem.h"
 #include "TimeTravelSubsystem.h"
 #include "TimelineFactSubsystem.h"
+#include "EraWeatherSubsystem.h"
 #include "MissionDataAsset.h"
 
 namespace
@@ -127,6 +128,23 @@ bool UMissionCoordinatorSubsystem::StartCampaignMission(FName MissionStableId)
     if (MissionStableId.IsNone())
     {
         return false;
+    }
+
+    if (MissionStableId == FName(TEXT("M05.RaceTheLightning")))
+    {
+        if (UGameInstance* GameInstance = GetGameInstance())
+        {
+            if (UEraWeatherSubsystem* Weather = GameInstance->GetSubsystem<UEraWeatherSubsystem>())
+            {
+                FEraWorldClock Clock;
+                Clock.Era = ETimelineState::Past1955;
+                Clock.Year = 1955;
+                Clock.Month = 11;
+                Clock.Day = 12;
+                Clock.SecondsSinceMidnight = 21.5f * 3600.0f;
+                Weather->SetWorldClock(Clock);
+            }
+        }
     }
 
     const FString Path = UBTTF_GameInstance::BuildMissionAssetPathFromStableId(MissionStableId);

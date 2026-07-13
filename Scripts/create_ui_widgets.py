@@ -27,6 +27,7 @@ def main():
     widget_blueprint("WBP_Dialogue", "/Script/BTTF_TemporalDrift.DialogueWidget")
     widget_blueprint("WBP_PauseMenu", "/Script/BTTF_TemporalDrift.PauseMenuWidget")
     widget_blueprint("WBP_Settings", "/Script/BTTF_TemporalDrift.SettingsWidget")
+    widget_blueprint("WBP_FadingPhotograph", "/Script/BTTF_TemporalDrift.FadingPhotographWidget")
     unreal.EditorLoadingAndSavingUtils.save_dirty_packages(True, True)
     unreal.log("UI_WIDGETS_SUCCESS")
 

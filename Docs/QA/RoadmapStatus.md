@@ -14,7 +14,7 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 | 4 Time travel SM | **Code complete** | Deterministic state machine plus `BTTF.TimeTravel.FiveConsecutivePlayerJumps` automation added. |
 | 5 Era switching | **Partial** | `EraWorldManager` async switching works. `UEraDataAsset` includes data-layer and arrival fields; deeper era tests still thin. |
 | 6 1955 dressing | **Code complete** | Python builders/validators pass; live blind-comparison screenshots still outstanding. |
-| 7 Time-circuit UI | **Partial** | Runtime UMG + view model + mission objective + now-playing row; `WBP_TimeCircuits` fallback; pause/settings C++ widgets added. |
+| 7 Time-circuit UI | **Partial** | Runtime UMG + view model + destination date, lightning countdown, consequence summary, polaroid widget; pause/settings C++ widgets; `WBP_*` fallbacks. |
 | 8 Presentation | **Partial** | Phase contract, vehicle-driven Niagara parameters, audio fade, profile reduced-flash sync, and asset scripts added. |
 
 ## Tasks 9–12 (Mission, population, save, alpha)
@@ -40,13 +40,26 @@ This document records verified completion against `Docs/superpowers/plans/2026-0
 | 15 Dialogue | **Partial** | Subsystem + widget + M01/M02/M03 dialogue scripts; full cast graphs pending. |
 | 16 Campaign M01–M05 | **Partial** | Mission data assets, flow automation tests, M01–M05 volume/dialogue placement scripts; live playthrough pending. |
 | 17 Five-era production | **Scaffolded** | Layer mappings + era music catalog; content for 1885/1985A/2015/2045 pending. |
-| 18 Timeline facts/genealogy | **Partial** | Subsystems + tests + `create_timeline_data.py`; mission coordinator sets `C_*` flags on objective complete. |
+| 18 Timeline facts/genealogy | **Partial** | Subsystems + tests + `create_timeline_data.py`; `UWorldConsequenceSubsystem` maps `C_*` facts to HUD labels and signage material paths. |
 
 ## Tasks 19–27 (Expanded master game)
 
 Combat/stealth components, temporal drive, crafting, hero progression, and era music are scaffolded with automation tests. Marty outfits, skill trees, five-act endings, 40+ side missions, multiplayer, photo mode, mod support, and final AV polish remain design-scaffold or content-only.
 
 ## New in this branch (latest)
+
+- `Docs/Design/GameElevation.md` — priority stack for spectacle, readability, and content density.
+- `UWorldConsequenceSubsystem` — active `C_*` fact labels, HUD ripple summary, signage material paths.
+- `UFadingPhotographWidget` — polaroid panel with opacity bar and paradox pulse (pairs with time-circuits HUD row).
+- Time-circuits HUD: destination date (`InputTargetDate`), M05 lightning countdown, consequence summary.
+- `DeLoreanVehicle` cycles destination era + default film date via `UTemporalDriveSubsystem::GetDefaultDateForEra`.
+- M05 start sets Nov 12 1955 storm clock (~9:30 PM) for lightning countdown.
+- `Scripts/create_world_consequence_signage.py` — placeholder consequence signage materials.
+- Expanded dialogue scaffolding: M04 workshop (Vale), M05 finale (Vale, Elena, Crane).
+- Side A/B mission volumes in `place_mission_volumes.py`; `WBP_FadingPhotograph` in `create_ui_widgets.py`.
+- Automation: `BTTF.Timeline.WorldConsequenceSummary`, destination date formatting, elevated time-circuits fields, `BTTF.UI.FadingPhotographWidgetContract`.
+
+## Prior branch additions
 
 - `UPauseMenuWidget` / `USettingsWidget` — Resume, Continue, New Game, Quit, profile sliders (music, dialogue, UI/subtitle scale, reduced flash).
 - Campaign mission stable IDs (`M01.FirstTestRun` … `M05.RaceTheLightning`) aligned with save/restore via `BuildMissionAssetPathFromStableId`.

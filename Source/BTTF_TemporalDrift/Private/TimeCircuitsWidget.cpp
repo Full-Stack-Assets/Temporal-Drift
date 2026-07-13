@@ -69,9 +69,12 @@ void UTimeCircuitsWidget::BuildWidgetTree()
     FluxSlot->SetPadding(FMargin(0.0f, 4.0f, 0.0f, 10.0f));
     EraText = AddReadout(Stack, FText::FromString(TEXT("CURRENT 1985")), FLinearColor(0.35f, 0.9f, 1.0f));
     DestinationText = AddReadout(Stack, FText::FromString(TEXT("DESTINATION 1955")), FLinearColor(1.0f, 0.3f, 0.18f));
+    DestinationDateText = AddReadout(Stack, FText::GetEmpty(), FLinearColor(0.95f, 0.55f, 0.35f), -2);
+    LightningCountdownText = AddReadout(Stack, FText::GetEmpty(), FLinearColor(0.55f, 0.75f, 1.0f), -2);
     PhaseText = AddReadout(Stack, FText::FromString(TEXT("CIRCUITS OFF")), FLinearColor::White);
     WarningText = AddReadout(Stack, FText::GetEmpty(), FLinearColor(1.0f, 0.65f, 0.1f), 2);
     MissionObjectiveText = AddReadout(Stack, FText::GetEmpty(), FLinearColor(0.55f, 1.0f, 0.65f), 0);
+    ConsequenceSummaryText = AddReadout(Stack, FText::GetEmpty(), FLinearColor(0.9f, 0.75f, 0.45f), -2);
     NowPlayingText = AddReadout(Stack, FText::GetEmpty(), FLinearColor(0.82f, 0.72f, 1.0f), -2);
     PhotographStatusText = AddReadout(Stack, FText::GetEmpty(), FLinearColor(0.95f, 0.55f, 0.75f), -2);
     ControlsText = AddReadout(Stack,
@@ -107,6 +110,19 @@ void UTimeCircuitsWidget::HandleDisplayChanged(FTimeCircuitsDisplayState NewStat
     FluxBar->SetPercent(NewState.FluxPercent);
     EraText->SetText(FText::Format(FText::FromString(TEXT("CURRENT {0}")), NewState.CurrentEraText));
     DestinationText->SetText(FText::Format(FText::FromString(TEXT("DESTINATION {0}")), NewState.DestinationEraText));
+    if (DestinationDateText)
+    {
+        DestinationDateText->SetVisibility(NewState.DestinationDateText.IsEmpty()
+            ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
+        DestinationDateText->SetText(FText::Format(
+            FText::FromString(TEXT("DATE {0}")), NewState.DestinationDateText));
+    }
+    if (LightningCountdownText)
+    {
+        LightningCountdownText->SetVisibility(NewState.LightningCountdownText.IsEmpty()
+            ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
+        LightningCountdownText->SetText(NewState.LightningCountdownText);
+    }
     PhaseText->SetText(NewState.PhaseText);
     PhaseText->SetColorAndOpacity(FSlateColor(NewState.bJumpReady ? FLinearColor::Green : FLinearColor::White));
     WarningText->SetVisibility(bShowWarningText && !NewState.WarningText.IsEmpty()
@@ -131,5 +147,11 @@ void UTimeCircuitsWidget::HandleDisplayChanged(FTimeCircuitsDisplayState NewStat
             ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
         PhotographStatusText->SetText(FText::Format(
             FText::FromString(TEXT("PHOTO: {0}")), NewState.PhotographStatusText));
+    }
+    if (ConsequenceSummaryText)
+    {
+        ConsequenceSummaryText->SetVisibility(NewState.ConsequenceSummaryText.IsEmpty()
+            ? ESlateVisibility::Collapsed : ESlateVisibility::HitTestInvisible);
+        ConsequenceSummaryText->SetText(NewState.ConsequenceSummaryText);
     }
 }

@@ -13,7 +13,10 @@
 #include "DialogueDataAsset.h"
 #include "EraMusicSubsystem.h"
 #include "FadingPhotographViewModel.h"
-#include "BTTF_PlayerController.h"
+#include "FadingPhotographWidget.h"
+#include "WorldConsequenceSubsystem.h"
+#include "EraWeatherSubsystem.h"
+#include "TemporalDriveSubsystem.h"
 #include "Engine/Canvas.h"
 #include "Engine/Font.h"
 #include "UObject/ConstructorHelpers.h"
@@ -28,6 +31,7 @@ void ABTTF_HUD::BeginPlay()
     Super::BeginPlay();
     EnsureRuntimeWidget();
     EnsureDialogueWidget();
+    EnsurePhotographWidget();
 
     if (UGameInstance* GameInstance = GetGameInstance())
     {
@@ -134,6 +138,31 @@ void ABTTF_HUD::EnsureDialogueWidget()
     }
 }
 
+void ABTTF_HUD::EnsurePhotographWidget()
+{
+    if (PhotographWidget)
+    {
+        return;
+    }
+
+    if (APlayerController* Controller = GetOwningPlayerController())
+    {
+        TSubclassOf<UFadingPhotographWidget> WidgetClass = UFadingPhotographWidget::StaticClass();
+        if (UClass* AuthoredClass = LoadClass<UFadingPhotographWidget>(
+                nullptr, TEXT("/Game/UI/WBP_FadingPhotograph.WBP_FadingPhotograph")))
+        {
+            WidgetClass = AuthoredClass;
+        }
+
+        PhotographWidget = CreateWidget<UFadingPhotographWidget>(Controller, WidgetClass);
+        if (PhotographWidget)
+        {
+            PhotographWidget->AddToViewport(95);
+            PhotographWidget->SetVisibility(ESlateVisibility::HitTestInvisible);
+        }
+    }
+}
+
 void ABTTF_HUD::HandleDialogueNodeChanged(FDialogueNode Node)
 {
     if (!DialogueViewModel)
@@ -182,15 +211,22 @@ void ABTTF_HUD::RefreshTimeCircuitsDisplay()
 
     float Speed = 0.0f;
     ETimelineState DestinationEra = ETimelineState::Present1985;
+    FText DestinationDate = FText::GetEmpty();
     if (const ADeLoreanVehicle* Vehicle = Cast<ADeLoreanVehicle>(GetOwningPawn()))
     {
         Speed = Vehicle->GetCurrentSpeedMph();
         DestinationEra = Vehicle->InputTargetEra;
+        DestinationDate = UTemporalDriveSubsystem::FormatDestinationDate(Vehicle->InputTargetDate);
     }
 
     const FText MissionObjective = Mission ? Mission->GetActiveObjectiveDescription() : FText::GetEmpty();
     FText NowPlaying = FText::GetEmpty();
     FText PhotographStatus = FText::GetEmpty();
+    FText LightningCountdown = FText::GetEmpty();
+    FText ConsequenceSummary = FText::GetEmpty();
+    float PhotographOpacity = 1.0f;
+    bool bReducedFlash = false;
+
     if (UGameInstance* GameInstance = GetGameInstance())
     {
         if (UEraMusicSubsystem* Music = GameInstance->GetSubsystem<UEraMusicSubsystem>())
@@ -203,23 +239,51 @@ void ABTTF_HUD::RefreshTimeCircuitsDisplay()
             }
         }
 
+        if (UEraWeatherSubsystem* Weather = GameInstance->GetSubsystem<UEraWeatherSubsystem>())
+        {
+            const float Seconds = Weather->GetClocktowerLightningCountdown();
+            if (Seconds >= 0.0f)
+            {
+                const int32 Minutes = FMath::FloorToInt(Seconds / 60.0f);
+                const int32 Secs = FMath::FloorToInt(Seconds) % 60;
+                LightningCountdown = FText::Format(
+                    FText::FromString(TEXT("LIGHTNING IN {0}:{1}")),
+                    FText::AsNumber(Minutes), FText::FromString(FString::Printf(TEXT("%02d"), Secs)));
+            }
+        }
+
+        if (UWorldConsequenceSubsystem* Consequences = GameInstance->GetSubsystem<UWorldConsequenceSubsystem>())
+        {
+            ConsequenceSummary = Consequences->GetActiveConsequencesSummary();
+        }
+
         if (!PhotographViewModel)
         {
             PhotographViewModel = NewObject<UFadingPhotographViewModel>(this);
         }
         if (UBTTF_GameInstance* BTTFInstance = Cast<UBTTF_GameInstance>(GameInstance))
         {
+            bReducedFlash = BTTFInstance->IsReducedFlashEnabled();
             const float ParadoxPercent = Subsystem ? Subsystem->CurrentParadoxLevel : 0.0f;
-            PhotographViewModel->UpdatePhotograph(ParadoxPercent, true, BTTFInstance->IsReducedFlashEnabled());
+            PhotographViewModel->UpdatePhotograph(ParadoxPercent, true, bReducedFlash);
             PhotographStatus = PhotographViewModel->StatusText;
+            PhotographOpacity = PhotographViewModel->SubjectOpacity;
         }
     }
+
+    if (PhotographWidget)
+    {
+        PhotographWidget->UpdateFromParadox(
+            Subsystem ? Subsystem->CurrentParadoxLevel : 0.0f, true, bReducedFlash);
+    }
+
     if (Subsystem)
     {
         TimeCircuitsViewModel->UpdateDisplay(Speed, Subsystem->GetFluxChargePercent(),
             Subsystem->GetCurrentEra(), DestinationEra, Subsystem->GetTimeTravelPhase(),
             Subsystem->CurrentParadoxLevel, Subsystem->WormholeStability,
-            Subsystem->GetLastJumpFailureReason(), MissionObjective, NowPlaying, PhotographStatus);
+            Subsystem->GetLastJumpFailureReason(), MissionObjective, NowPlaying, PhotographStatus,
+            PhotographOpacity, DestinationDate, LightningCountdown, ConsequenceSummary);
     }
 }
 

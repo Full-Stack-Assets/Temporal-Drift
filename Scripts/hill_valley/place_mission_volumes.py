@@ -34,6 +34,17 @@ DIALOGUE_INTERACTABLES = [
      "/Game/Dialogue/DA_Dialogue_M02_CourthouseBriefing.DA_Dialogue_M02_CourthouseBriefing"),
     ("DI_M03_ArchiveBriefing", (200, 3200, 120),
      "/Game/Dialogue/DA_Dialogue_M03_ArchiveBriefing.DA_Dialogue_M03_ArchiveBriefing"),
+    ("DI_M04_WorkshopBriefing", (5200, -1200, 100),
+     "/Game/Dialogue/DA_Dialogue_M04_WorkshopBriefing.DA_Dialogue_M04_WorkshopBriefing"),
+    ("DI_M05_LightningFinale", (-4000, 6000, 100),
+     "/Game/Dialogue/DA_Dialogue_M05_LightningFinale.DA_Dialogue_M05_LightningFinale"),
+]
+
+SIDE_MISSION_VOLUMES = [
+    ("MV_SideA_JuneArchive", (200, 3200, 120), (1400, 1400, 300), "SideA_Start"),
+    ("MV_SideA_Resolve", (-1800, 2800, 120), (1200, 1200, 300), "SideA_Complete"),
+    ("MV_SideB_Accept", (3600, -800, 120), (1200, 1200, 300), "SideB_Accepted"),
+    ("MV_SideB_1955Handoff", (6200, 4800, 120), (1600, 1600, 300), "SideB_Complete"),
 ]
 
 M04_M05_VOLUMES = [
@@ -154,6 +165,8 @@ def main():
     for spec in MISSION_VOLUMES:
         spawn_volume(*spec, volume_class, volume_class_path)
     for spec in M04_M05_VOLUMES:
+        spawn_volume(*spec, volume_class, volume_class_path)
+    for spec in SIDE_MISSION_VOLUMES:
         spawn_volume(*spec, volume_class, volume_class_path)
     for spec in MISSION_INTERACTABLES:
         spawn_interactable(*spec, interactable_class, interactable_class_path)

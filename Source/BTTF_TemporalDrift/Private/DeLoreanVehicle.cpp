@@ -19,13 +19,14 @@
 #include "GameFramework/PlayerController.h"
 #include "PhysicsEngine/PhysicsAsset.h"
 #include "DeLoreanTuningData.h"
+#include "TemporalDriveSubsystem.h"
 
 ADeLoreanVehicle::ADeLoreanVehicle()
 {
-    // Required for speedometer + flux charging; AActor defaults this to false.
     PrimaryActorTick.bCanEverTick = true;
 
     CurrentSpeedMph = 0.0f;
+    InputTargetDate = UTemporalDriveSubsystem::GetDefaultDateForEra(InputTargetEra);
     // Redundant with the on-screen HUD and causes overlapping/ghosted world-space
     // text at certain camera angles, so keep it off by default. Toggle in the
     // editor per-instance if you need raw debug values while tuning.
@@ -795,6 +796,7 @@ void ADeLoreanVehicle::CycleDestinationEra(int32 Direction)
     const int32 Step = Direction < 0 ? -1 : 1;
     CurrentIndex = (CurrentIndex + Step + UE_ARRAY_COUNT(SupportedEras)) % UE_ARRAY_COUNT(SupportedEras);
     InputTargetEra = SupportedEras[CurrentIndex];
+    InputTargetDate = UTemporalDriveSubsystem::GetDefaultDateForEra(InputTargetEra);
 }
 
 void ADeLoreanVehicle::InitializeTimeTravelSubsystem()

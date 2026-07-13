@@ -4,6 +4,7 @@
 #include "CoreMinimal.h"
 #include "WheeledVehiclePawn.h"
 #include "TimeTravelSubsystem.h"
+#include "TemporalDriveSubsystem.h"
 #include "DeLoreanVehicle.generated.h"
 
 class UNiagaraComponent;
@@ -72,6 +73,9 @@ public:
     // Era targeted when the time travel input is pressed
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time Travel")
     ETimelineState InputTargetEra = ETimelineState::Past1955;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time Travel")
+    FTemporalDestinationDate InputTargetDate;
 
     // Components
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")

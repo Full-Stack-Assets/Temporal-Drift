@@ -42,9 +42,12 @@ private:
     UPROPERTY(Transient) TObjectPtr<UTextBlock> FluxText;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> EraText;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> DestinationText;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> DestinationDateText;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> LightningCountdownText;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> PhaseText;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> WarningText;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> MissionObjectiveText;
+    UPROPERTY(Transient) TObjectPtr<UTextBlock> ConsequenceSummaryText;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> NowPlayingText;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> PhotographStatusText;
     UPROPERTY(Transient) TObjectPtr<UTextBlock> ControlsText;

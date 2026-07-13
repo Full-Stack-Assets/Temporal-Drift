@@ -4,7 +4,9 @@
 void UTimeCircuitsViewModel::UpdateDisplay(float SpeedMph, float FluxPercent,
     ETimelineState CurrentEra, ETimelineState DestinationEra, ETimeTravelPhase Phase,
     float ParadoxPercent, float StabilityPercent, const FText& ExplicitFailureReason,
-    const FText& MissionObjective, const FText& NowPlaying, const FText& PhotographStatus)
+    const FText& MissionObjective, const FText& NowPlaying, const FText& PhotographStatus,
+    float PhotographOpacity, const FText& DestinationDate, const FText& LightningCountdown,
+    const FText& ConsequenceSummary)
 {
     DisplayState.SpeedText = FText::FromString(FString::Printf(TEXT("%.0f MPH"), SpeedMph));
     DisplayState.FluxPercent = FMath::Clamp(FluxPercent, 0.0f, 1.0f);
@@ -42,6 +44,10 @@ void UTimeCircuitsViewModel::UpdateDisplay(float SpeedMph, float FluxPercent,
     DisplayState.MissionObjectiveText = MissionObjective;
     DisplayState.NowPlayingText = NowPlaying;
     DisplayState.PhotographStatusText = PhotographStatus;
+    DisplayState.PhotographOpacity = FMath::Clamp(PhotographOpacity, 0.0f, 1.0f);
+    DisplayState.DestinationDateText = DestinationDate;
+    DisplayState.LightningCountdownText = LightningCountdown;
+    DisplayState.ConsequenceSummaryText = ConsequenceSummary;
     OnDisplayChanged.Broadcast(DisplayState);
 }
 
