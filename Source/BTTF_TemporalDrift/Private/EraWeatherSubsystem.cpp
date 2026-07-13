@@ -19,19 +19,24 @@ void UEraWeatherSubsystem::SetWeather(EWeatherState NewWeather)
     if(Weather==NewWeather)return;const EWeatherState Previous=Weather;Weather=NewWeather;OnWeatherChanged.Broadcast(Previous,Weather);
 }
 
+void UEraWeatherSubsystem::SetLightningSchedule(const FClocktowerLightningSchedule& NewSchedule)
+{
+    LightningSchedule=NewSchedule;bLightningEventBroadcast=false;EvaluateScheduledWeather();
+}
+
 float UEraWeatherSubsystem::GetClocktowerLightningCountdown()const
 {
-    if(Clock.Era!=ETimelineState::Past1955||Clock.Year!=1955||Clock.Month!=11||Clock.Day!=12)return -1.0f;
-    constexpr float StrikeSeconds=22.0f*3600.0f+4.0f*60.0f;
-    return FMath::Max(0.0f,StrikeSeconds-Clock.SecondsSinceMidnight);
+    const FClocktowerLightningSchedule& S=LightningSchedule;
+    if(Clock.Era!=S.Era||Clock.Year!=S.Year||Clock.Month!=S.Month||Clock.Day!=S.Day)return -1.0f;
+    return FMath::Max(0.0f,S.StrikeSecondsSinceMidnight-Clock.SecondsSinceMidnight);
 }
 
 void UEraWeatherSubsystem::EvaluateScheduledWeather()
 {
     const float Countdown=GetClocktowerLightningCountdown();
     const bool bStormDate=Countdown>=0.0f;
-    if(bStormDate&&Countdown<=1800.0f&&Countdown>0.0f)SetWeather(EWeatherState::Thunderstorm);
-    bLightningWindowActive=bStormDate&&Countdown<=2.0f;
+    if(bStormDate&&Countdown<=LightningSchedule.StormLeadSeconds&&Countdown>0.0f)SetWeather(EWeatherState::Thunderstorm);
+    bLightningWindowActive=bStormDate&&Countdown<=LightningSchedule.WindowSeconds;
     if(bLightningWindowActive&&!bLightningEventBroadcast){bLightningEventBroadcast=true;OnClocktowerLightningWindow.Broadcast();}
 }
 
