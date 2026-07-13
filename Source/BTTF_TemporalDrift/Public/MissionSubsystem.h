@@ -31,6 +31,7 @@ public:
     UFUNCTION(BlueprintCallable) bool RestoreProgress(UMissionDataAsset* Mission,const FMissionProgressSnapshot& Snapshot);
     UFUNCTION(BlueprintPure) FMissionProgressSnapshot GetProgressSnapshot()const{return Progress;}
     UFUNCTION(BlueprintPure) FName GetActiveObjectiveId()const;
+    UFUNCTION(BlueprintPure) FText GetActiveObjectiveDescription()const;
     UFUNCTION(BlueprintPure) bool IsMissionActive()const{return ActiveMission!=nullptr&&!Progress.bMissionCompleted;}
     UPROPERTY(BlueprintAssignable) FOnMissionObjectiveChanged OnObjectiveChanged;
     UPROPERTY(BlueprintAssignable) FOnMissionCompleted OnMissionCompleted;

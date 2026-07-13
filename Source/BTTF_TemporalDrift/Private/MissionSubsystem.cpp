@@ -49,3 +49,12 @@ FName UMissionSubsystem::GetActiveObjectiveId()const
 {
     return ActiveMission&&ActiveMission->Objectives.IsValidIndex(Progress.ActiveObjectiveIndex)?ActiveMission->Objectives[Progress.ActiveObjectiveIndex].ObjectiveId:NAME_None;
 }
+
+FText UMissionSubsystem::GetActiveObjectiveDescription()const
+{
+    if (ActiveMission && ActiveMission->Objectives.IsValidIndex(Progress.ActiveObjectiveIndex))
+    {
+        return ActiveMission->Objectives[Progress.ActiveObjectiveIndex].Description;
+    }
+    return FText::GetEmpty();
+}

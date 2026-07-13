@@ -101,7 +101,15 @@ The project is now at a strong mid-prototype stage. The remaining work is mostly
 
 ## VS Code Development Commands
 
-Open `C:\Users\Shadow\Downloads\BTTF_TemporalDrift_v3` as the VS Code workspace, then use a PowerShell terminal:
+Open the repo root as your VS Code workspace, then use a PowerShell terminal.
+
+**First-time Unreal connection:** see `Docs/QA/UnrealEditorConnection.md` and run:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\setup_vertical_slice.ps1
+```
+
+**Daily commands:**
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Scripts\Build\build_editor.ps1
