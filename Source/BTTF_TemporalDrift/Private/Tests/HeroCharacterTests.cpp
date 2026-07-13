@@ -15,6 +15,7 @@ bool FBTTFHeroCharacterContractTest::RunTest(const FString& Parameters)
     TestNotNull(TEXT("Hero has vehicle interaction"), Hero->GetVehicleInteractionComponent());
     TestNotNull(TEXT("Hero has combat component"),Hero->GetCombatComponent());
     TestNotNull(TEXT("Hero has stealth component"),Hero->GetStealthComponent());
+    TestNotNull(TEXT("Hero has visible skeletal presentation"),Hero->GetMesh()->GetSkeletalMeshAsset());
     TestTrue(TEXT("Walk speed is playable"), Hero->GetCharacterMovement()->MaxWalkSpeed >= 350.0f);
     TestTrue(TEXT("Jump is enabled"), Hero->GetCharacterMovement()->JumpZVelocity >= 400.0f);
     TestTrue(TEXT("Interaction range is readable"),

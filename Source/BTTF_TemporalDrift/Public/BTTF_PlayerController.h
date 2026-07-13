@@ -7,6 +7,7 @@
 
 class UInputMappingContext;
 class UInputAction;
+class ABTTFHeroCharacter;
 
 UCLASS()
 class BTTF_TEMPORALDRIFT_API ABTTF_PlayerController : public APlayerController
@@ -15,6 +16,13 @@ class BTTF_TEMPORALDRIFT_API ABTTF_PlayerController : public APlayerController
 
 public:
     ABTTF_PlayerController();
+    virtual void PlayerTick(float DeltaTime) override;
+
+    UFUNCTION(BlueprintCallable, Category="Vehicle")
+    bool ToggleVehicleHeroPossession();
+
+    UFUNCTION(BlueprintPure, Category="Vehicle")
+    ABTTFHeroCharacter* GetCachedHero() const { return CachedHero; }
 
 protected:
     virtual void BeginPlay() override;
@@ -37,4 +45,10 @@ protected:
     void ToggleTimeCircuits();
     void RequestTimeJump();
     void ToggleHoverMode();
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Vehicle")
+    TSubclassOf<ABTTFHeroCharacter> HeroClass;
+
+    UPROPERTY(Transient)
+    TObjectPtr<ABTTFHeroCharacter> CachedHero;
 };

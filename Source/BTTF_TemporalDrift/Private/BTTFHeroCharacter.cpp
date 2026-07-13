@@ -6,6 +6,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/InputComponent.h"
+#include "Engine/SkeletalMesh.h"
 
 ABTTFHeroCharacter::ABTTFHeroCharacter()
 {
@@ -16,6 +17,15 @@ ABTTFHeroCharacter::ABTTFHeroCharacter()
     GetCharacterMovement()->MaxWalkSpeed = 500.0f;
     GetCharacterMovement()->JumpZVelocity = 520.0f;
     GetCharacterMovement()->AirControl = 0.35f;
+
+    static ConstructorHelpers::FObjectFinder<USkeletalMesh> MannyMesh(
+        TEXT("/Game/Characters/Hero/SK_Hero1985.SK_Hero1985"));
+    if (MannyMesh.Succeeded())
+    {
+        GetMesh()->SetSkeletalMesh(MannyMesh.Object);
+        GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -88.0f));
+        GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
+    }
 
     CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
     CameraBoom->SetupAttachment(RootComponent);

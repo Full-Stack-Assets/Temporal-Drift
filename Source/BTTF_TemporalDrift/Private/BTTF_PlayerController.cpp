@@ -3,12 +3,58 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "DeLoreanVehicle.h"
+#include "BTTFHeroCharacter.h"
+#include "VehicleInteractionComponent.h"
+#include "EngineUtils.h"
+#include "InputCoreTypes.h"
 
 ABTTF_PlayerController::ABTTF_PlayerController()
 {
     bShowMouseCursor = true;
     bEnableClickEvents = true;
     bEnableMouseOverEvents = true;
+    HeroClass = ABTTFHeroCharacter::StaticClass();
+}
+
+void ABTTF_PlayerController::PlayerTick(float DeltaTime)
+{
+    Super::PlayerTick(DeltaTime);
+    if (WasInputKeyJustPressed(EKeys::G))
+    {
+        ToggleVehicleHeroPossession();
+    }
+}
+
+bool ABTTF_PlayerController::ToggleVehicleHeroPossession()
+{
+    if (ADeLoreanVehicle* Vehicle = Cast<ADeLoreanVehicle>(GetPawn()))
+    {
+        if (!CachedHero && GetWorld() && HeroClass)
+        {
+            FActorSpawnParameters SpawnParams;
+            SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+            CachedHero = GetWorld()->SpawnActor<ABTTFHeroCharacter>(HeroClass, Vehicle->GetActorLocation(), Vehicle->GetActorRotation(), SpawnParams);
+        }
+        return CachedHero && CachedHero->GetVehicleInteractionComponent()->ExitVehicle(Vehicle);
+    }
+
+    if (ABTTFHeroCharacter* Hero = Cast<ABTTFHeroCharacter>(GetPawn()))
+    {
+        ADeLoreanVehicle* NearestVehicle = nullptr;
+        float NearestDistanceSq = TNumericLimits<float>::Max();
+        for (TActorIterator<ADeLoreanVehicle> It(GetWorld()); It; ++It)
+        {
+            const float DistanceSq = FVector::DistSquared(Hero->GetActorLocation(), It->GetActorLocation());
+            if (DistanceSq < NearestDistanceSq)
+            {
+                NearestDistanceSq = DistanceSq;
+                NearestVehicle = *It;
+            }
+        }
+        return NearestVehicle && Hero->GetVehicleInteractionComponent()->EnterVehicle(NearestVehicle);
+    }
+
+    return false;
 }
 
 void ABTTF_PlayerController::BeginPlay()
