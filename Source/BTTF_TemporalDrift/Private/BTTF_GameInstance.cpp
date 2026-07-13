@@ -5,6 +5,11 @@
 #include "BTTF_GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimeTravelSubsystem.h"
+#include "MissionSubsystem.h"
+#include "HeroProgressionSubsystem.h"
+#include "TemporalDriveSubsystem.h"
+#include "EraWeatherSubsystem.h"
+#include "CraftingSubsystem.h"
 
 UBTTF_GameInstance::UBTTF_GameInstance()
 {
@@ -36,7 +41,8 @@ void UBTTF_GameInstance::InitializeNewGame()
 
 void UBTTF_GameInstance::SaveTimelineState()
 {
-    UTimeTravelSubsystem* Subsystem = GetWorld()->GetSubsystem<UTimeTravelSubsystem>();
+    UWorld* World=GetWorld();
+    UTimeTravelSubsystem* Subsystem = World?World->GetSubsystem<UTimeTravelSubsystem>():nullptr;
     if (!Subsystem) return;
 
     CurrentSavedTimelineState = Subsystem->GetCurrentEra();
@@ -50,7 +56,8 @@ void UBTTF_GameInstance::SaveTimelineState()
 
 void UBTTF_GameInstance::LoadTimelineState()
 {
-    UTimeTravelSubsystem* Subsystem = GetWorld()->GetSubsystem<UTimeTravelSubsystem>();
+    UWorld* World=GetWorld();
+    UTimeTravelSubsystem* Subsystem = World?World->GetSubsystem<UTimeTravelSubsystem>():nullptr;
     if (!Subsystem) return;
 
     Subsystem->CurrentTimelineState = CurrentSavedTimelineState;
@@ -76,8 +83,20 @@ bool UBTTF_GameInstance::SaveGameToSlot(const FString& SlotName)
         CurrentSaveGame->UnlockedEras = UnlockedEras;
         CurrentSaveGame->TotalTimeJumps = TotalTimeJumpsMade;
         CurrentSaveGame->LastSaveDate = FDateTime::Now().ToString();
+        if(UMissionSubsystem* Mission=GetSubsystem<UMissionSubsystem>())CurrentSaveGame->MissionProgress=Mission->GetProgressSnapshot();
+        if(UHeroProgressionSubsystem* Hero=GetSubsystem<UHeroProgressionSubsystem>())CurrentSaveGame->HeroProgression=Hero->GetSnapshot();
+        if(UTemporalDriveSubsystem* Drive=GetSubsystem<UTemporalDriveSubsystem>())CurrentSaveGame->TemporalDrive=Drive->GetSnapshot();
+        if(UEraWeatherSubsystem* Weather=GetSubsystem<UEraWeatherSubsystem>())CurrentSaveGame->WorldClock=Weather->GetWorldClock();
+        if(UCraftingSubsystem* Crafting=GetSubsystem<UCraftingSubsystem>())CurrentSaveGame->Crafting=Crafting->GetSnapshot();
 
-        return UGameplayStatics::SaveGameToSlot(CurrentSaveGame, SlotName, 0);
+        const FString TempSlot=SlotName+TEXT("__tmp");
+        UGameplayStatics::DeleteGameInSlot(TempSlot,0);
+        if(!UGameplayStatics::SaveGameToSlot(CurrentSaveGame,TempSlot,0))return false;
+        UBTTF_SaveGame* Verified=Cast<UBTTF_SaveGame>(UGameplayStatics::LoadGameFromSlot(TempSlot,0));
+        if(!Verified||!Verified->MigrateToLatestSchema()){UGameplayStatics::DeleteGameInSlot(TempSlot,0);return false;}
+        const bool bSaved=UGameplayStatics::SaveGameToSlot(Verified,SlotName,0);
+        UGameplayStatics::DeleteGameInSlot(TempSlot,0);
+        return bSaved;
     }
 
     return false;
@@ -91,10 +110,24 @@ bool UBTTF_GameInstance::LoadGameFromSlot(const FString& SlotName)
 
         if (CurrentSaveGame)
         {
+            if(!CurrentSaveGame->MigrateToLatestSchema())return false;
             CurrentSavedTimelineState = CurrentSaveGame->SavedTimelineState;
             CurrentSavedParadoxLevel = CurrentSaveGame->SavedParadoxLevel;
             UnlockedEras = CurrentSaveGame->UnlockedEras;
             TotalTimeJumpsMade = CurrentSaveGame->TotalTimeJumps;
+
+            if(UMissionSubsystem* Mission=GetSubsystem<UMissionSubsystem>())
+            {
+                if(!CurrentSaveGame->MissionProgress.MissionId.IsNone())
+                {
+                    const FString AssetName=TEXT("DA_Mission_")+CurrentSaveGame->MissionProgress.MissionId.ToString().Replace(TEXT("."),TEXT("_"));
+                    const FString Path=FString::Printf(TEXT("/Game/Data/Missions/Campaign/%s.%s"),*AssetName,*AssetName);
+                    if(UMissionDataAsset* Data=LoadObject<UMissionDataAsset>(nullptr,*Path))Mission->RestoreProgress(Data,CurrentSaveGame->MissionProgress);
+                }
+            }
+            if(UHeroProgressionSubsystem* Hero=GetSubsystem<UHeroProgressionSubsystem>())Hero->RestoreSnapshot(CurrentSaveGame->HeroProgression);
+            if(UTemporalDriveSubsystem* Drive=GetSubsystem<UTemporalDriveSubsystem>())Drive->RestoreSnapshot(CurrentSaveGame->TemporalDrive);
+            if(UEraWeatherSubsystem* Weather=GetSubsystem<UEraWeatherSubsystem>())Weather->SetWorldClock(CurrentSaveGame->WorldClock);
 
             LoadTimelineState();
             return true;

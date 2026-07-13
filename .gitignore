@@ -32,6 +32,8 @@ Thumbs.db
 Desktop.ini
 *.tmp
 *.log
+.superpowers/
+Backups/
 
 # Keep source FBX files only when intentionally stored under Content/Assets.
 # Unreal binary assets (.uasset/.umap) are versioned for this prototype.

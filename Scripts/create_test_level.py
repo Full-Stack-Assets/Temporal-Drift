@@ -10,7 +10,7 @@ eas = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
 if not les.new_level(LEVEL_PATH):
     raise RuntimeError("Failed to create level")
 
-# 2. Floor: huge scaled cube so there's room to reach 88 mph
+# 2. Floor: scaled cube with enough room to reach the 40 MPH jump threshold
 floor_mesh = unreal.load_object(None, "/Engine/BasicShapes/Cube.Cube")
 floor = eas.spawn_actor_from_class(unreal.StaticMeshActor, unreal.Vector(0, 0, -50), unreal.Rotator(0, 0, 0))
 floor.set_actor_label("Floor")

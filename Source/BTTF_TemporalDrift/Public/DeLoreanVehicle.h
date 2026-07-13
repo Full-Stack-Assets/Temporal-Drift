@@ -7,11 +7,14 @@
 #include "DeLoreanVehicle.generated.h"
 
 class UNiagaraComponent;
+class UTimeTravelPresentationComponent;
 class UInputMappingContext;
 class UInputAction;
 class USpringArmComponent;
 class UCameraComponent;
 class UStaticMeshComponent;
+class USceneComponent;
+class UDeLoreanTuningData;
 struct FInputActionValue;
 
 UCLASS()
@@ -26,6 +29,7 @@ protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaTime) override;
     virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
+    virtual void PawnClientRestart() override;
 
 public:
     // Enhanced Input
@@ -41,6 +45,30 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
     UInputAction* BrakeAction;
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* HandbrakeAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* ReverseAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* HoverModeAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* ResetVehicleAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* TimeCircuitsAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* TimeJumpAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* CycleDestinationAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+    UInputAction* ToggleCameraAction;
+
     // Era targeted when the time travel input is pressed
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Time Travel")
     ETimelineState InputTargetEra = ETimelineState::Past1955;
@@ -55,10 +83,40 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Time Travel")
     UNiagaraComponent* TimeTravelNiagaraComponent;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Time Travel|Presentation", meta=(AllowPrivateAccess="true"))
+    TObjectPtr<UTimeTravelPresentationComponent> TimeTravelPresentationComponent;
+
     // High-detail visible body. The lightweight skeletal import is retained as
     // the Chaos physics root, while this component supplies the actual car art.
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vehicle")
     UStaticMeshComponent* VisualCarBody;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vehicle|Hero")
+    USceneComponent* HeroVisualRoot;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Vehicle|Hero")
+    TArray<TObjectPtr<UStaticMeshComponent>> HeroVisualMeshes;
+
+    UFUNCTION(BlueprintPure, Category = "Vehicle|Hero")
+    USceneComponent* GetHeroVisualRoot() const { return HeroVisualRoot; }
+
+    UFUNCTION(BlueprintPure, Category = "Vehicle|Hero")
+    int32 GetHeroVisualMeshCount() const { return HeroVisualMeshes.Num(); }
+
+    UFUNCTION(BlueprintPure, Category = "Vehicle|Hero")
+    bool HasPrototypeVisuals() const { return bPrototypeVisualsEnabled; }
+
+    UFUNCTION(BlueprintPure, Category = "Camera")
+    int32 GetCameraModeCount() const { return 4; }
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Vehicle|Tuning")
+    UDeLoreanTuningData* TuningDataAsset;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vehicle|Tuning", meta=(ClampMin="100.0"))
+    float ReverseAssistAcceleration = 650.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Vehicle|Tuning", meta=(ClampMin="1.0"))
+    float ReverseAssistMaxSpeedMph = 15.0f;
 
     UPROPERTY(BlueprintReadOnly, Category = "Time Travel")
     UTimeTravelSubsystem* TimeTravelSubsystem;
@@ -69,6 +127,12 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
     bool bShowDebugInfo = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Debug")
+    bool bEnableDiagnosticKeyboardFallback = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Debug")
+    bool bPrototypeVisualsEnabled = false;
 
     UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Time Travel")
     bool bIsTimeTraveling = false;
@@ -88,6 +152,21 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
     float HoverDamping = 3.0f;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
+    float HoverStabilizationStrength = 8.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
+    float HoverAngularDamping = 5.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
+    float HoverMaxVerticalAcceleration = 1600.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
+    float HoverForwardAcceleration = 500.0f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Hover Mode")
+    float HoverYawAcceleration = 1.5f;
+
     // Functions
     UFUNCTION(BlueprintCallable, Category = "Time Travel")
     void ToggleTimeCircuits();
@@ -103,6 +182,34 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Vehicle")
     void UpdateSpeedometer();
+
+    UFUNCTION(BlueprintCallable, Category = "Vehicle|Input")
+    void ApplyVehicleInput(float Throttle, float Steering, float Brake, bool bHandbrake);
+
+    UFUNCTION(BlueprintCallable, Category = "Vehicle|Input")
+    void ApplyReverseInput(bool bPressed);
+
+    UFUNCTION(BlueprintCallable, Category = "Vehicle|Input")
+    void ApplyDigitalDriveInput(bool bForward, bool bReverse, bool bLeft, bool bRight);
+
+    UFUNCTION(BlueprintPure, Category = "Hover Mode")
+    FVector CalculateHoverStabilizationTorque(const FVector& CurrentUp,
+        const FVector& AngularVelocityRadians, float BodyMass) const;
+
+    UFUNCTION(BlueprintCallable, Category = "Vehicle|Recovery")
+    void ResetVehicle();
+
+    UFUNCTION(BlueprintCallable, Category = "Vehicle|Recovery")
+    void SetLastSafeTransform(const FTransform& SafeTransform);
+
+    UFUNCTION(BlueprintCallable, Category = "Camera")
+    void ToggleCamera();
+
+    UFUNCTION(BlueprintPure, Category = "Camera")
+    int32 GetActiveCameraIndex() const { return ActiveCameraIndex; }
+
+    UFUNCTION(BlueprintCallable, Category = "Time Travel")
+    void CycleDestinationEra(int32 Direction);
 
     UFUNCTION(BlueprintCallable, Category = "Flux Capacitor")
     void UpdateFluxCapacitor(float DeltaTime);
@@ -121,15 +228,43 @@ public:
 
 protected:
     void InitializeTimeTravelSubsystem();
+    void ApplyTuningData(const UDeLoreanTuningData* TuningData);
     void UpdateHoverMode(float DeltaTime);
     void ApplyKeyboardFallback();
+    void InstallVehicleInputMapping();
 
     float LastKeyboardThrottle = 0.0f;
     float LastKeyboardSteering = 0.0f;
     float LastKeyboardBrake = 0.0f;
+    bool bLastKeyboardReverse = false;
+
+    UPROPERTY(VisibleInstanceOnly, Category = "Vehicle|Recovery")
+    FTransform LastSafeTransform;
+
+    UPROPERTY(VisibleInstanceOnly, Category = "Camera")
+    int32 ActiveCameraIndex = 0;
 
     // Input handlers
     void HandleThrottle(const FInputActionValue& Value);
     void HandleSteering(const FInputActionValue& Value);
     void HandleBrake(const FInputActionValue& Value);
+    void HandleHandbrake(const FInputActionValue& Value);
+    void HandleReverse(const FInputActionValue& Value);
+    void HandleCycleDestination(const FInputActionValue& Value);
+    void BeginReverse();
+    void EndReverse();
+    void SelectPreviousDestination();
+    void SelectNextDestination();
+    void BeginForward();
+    void EndForward();
+    void BeginSteerLeft();
+    void EndSteerLeft();
+    void BeginSteerRight();
+    void EndSteerRight();
+
+    bool bForwardKeyPressed = false;
+    bool bReverseKeyPressed = false;
+    bool bLeftKeyPressed = false;
+    bool bRightKeyPressed = false;
+    bool bDigitalReverseApplied = false;
 };

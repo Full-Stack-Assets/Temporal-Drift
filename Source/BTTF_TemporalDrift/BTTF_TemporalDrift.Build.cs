@@ -12,11 +12,15 @@ public class BTTF_TemporalDrift : ModuleRules
 			"Core",
 			"CoreUObject",
 			"Engine",
+			"DeveloperSettings",
 			"InputCore",
 			"EnhancedInput",
 			"ChaosVehicles",
 			"PhysicsCore",
 			"Niagara"
+			,"UMG"
+			,"Slate"
+			,"SlateCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] { });

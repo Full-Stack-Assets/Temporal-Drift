@@ -1,5 +1,6 @@
 // DeLoreanVehicle.cpp - Updated Implementation
 #include "DeLoreanVehicle.h"
+#include "TemporalDriftSettings.h"
 #include "DeLoreanWheel.h"
 #include "TimeTravelSubsystem.h"
 #include "ChaosVehicleMovementComponent.h"
@@ -7,13 +8,16 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SceneComponent.h"
 #include "NiagaraComponent.h"
+#include "TimeTravelPresentationComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include "InputCoreTypes.h"
 #include "GameFramework/PlayerController.h"
 #include "PhysicsEngine/PhysicsAsset.h"
+#include "DeLoreanTuningData.h"
 
 ADeLoreanVehicle::ADeLoreanVehicle()
 {
@@ -30,6 +34,8 @@ ADeLoreanVehicle::ADeLoreanVehicle()
     TimeTravelNiagaraComponent->SetupAttachment(RootComponent);
     TimeTravelNiagaraComponent->SetAutoActivate(false);
 
+    TimeTravelPresentationComponent = CreateDefaultSubobject<UTimeTravelPresentationComponent>(TEXT("TimeTravelPresentation"));
+
     VisualCarBody = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualCarBody"));
     VisualCarBody->SetupAttachment(GetMesh());
     VisualCarBody->SetRelativeRotation(FRotator::ZeroRotator);
@@ -41,19 +47,37 @@ ADeLoreanVehicle::ADeLoreanVehicle()
     {
         VisualCarBody->SetStaticMesh(CarBodyAsset.Object);
     }
+    VisualCarBody->SetVisibility(false, true);
+    VisualCarBody->SetHiddenInGame(true, true);
+
+    HeroVisualRoot = CreateDefaultSubobject<USceneComponent>(TEXT("HeroVisualRoot"));
+    HeroVisualRoot->SetupAttachment(GetMesh());
+
+    UStaticMeshComponent* HeroPresentation = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("HeroPresentation"));
+    HeroPresentation->SetupAttachment(HeroVisualRoot);
+    HeroPresentation->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    HeroPresentation->SetGenerateOverlapEvents(false);
+    static ConstructorHelpers::FObjectFinder<UStaticMesh> HeroMeshAsset(
+        TEXT("/Game/Vehicles/DeLorean/Hero/SM_HeroTimeMachine.SM_HeroTimeMachine"));
+    if (HeroMeshAsset.Succeeded())
+    {
+        HeroPresentation->SetStaticMesh(HeroMeshAsset.Object);
+        HeroVisualMeshes.Add(HeroPresentation);
+    }
 
     // Chase camera
     CameraSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraSpringArm"));
     CameraSpringArm->SetupAttachment(RootComponent);
-    CameraSpringArm->TargetArmLength = 800.0f;
-    CameraSpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 175.0f));
-    CameraSpringArm->SetRelativeRotation(FRotator(-12.0f, 0.0f, 0.0f));
-    CameraSpringArm->SocketOffset = FVector(0.0f, 0.0f, 100.0f);
+    CameraSpringArm->TargetArmLength = 525.0f;
+    CameraSpringArm->SetRelativeLocation(FVector(0.0f, 0.0f, 105.0f));
+    CameraSpringArm->SetRelativeRotation(FRotator(-7.0f, 0.0f, 0.0f));
+    CameraSpringArm->SocketOffset = FVector(0.0f, 0.0f, 45.0f);
     // The prototype's giant cube floor can collapse a spring arm to the pawn
     // origin, hiding the vehicle. Keep a stable chase view in the test level.
     CameraSpringArm->bDoCollisionTest = false;
     CameraSpringArm->bEnableCameraLag = true;
     CameraSpringArm->CameraLagSpeed = 8.0f;
+    CameraSpringArm->bInheritRoll = false;
 
     ChaseCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("ChaseCamera"));
     ChaseCamera->SetupAttachment(CameraSpringArm);
@@ -71,28 +95,42 @@ ADeLoreanVehicle::ADeLoreanVehicle()
         Movement->WheelSetups[3].WheelClass = UDeLoreanWheelRear::StaticClass();
         Movement->WheelSetups[3].BoneName = FName("Phys_Wheel_BR");
 
-        Movement->EngineSetup.MaxRPM = 6500.0f;
-        Movement->EngineSetup.MaxTorque = 500.0f;
-        // Chaos disables mechanical simulation when the normalized torque curve
-        // is empty. Supply a broad street-engine curve so throttle can drive the
-        // vehicle across the full RPM range.
-        if (FRichCurve* TorqueCurve = Movement->EngineSetup.TorqueCurve.GetRichCurve())
-        {
-            TorqueCurve->Reset();
-            TorqueCurve->AddKey(0.0f, 0.70f);
-            TorqueCurve->AddKey(1500.0f, 0.90f);
-            TorqueCurve->AddKey(3500.0f, 1.00f);
-            TorqueCurve->AddKey(5500.0f, 0.85f);
-            TorqueCurve->AddKey(6500.0f, 0.60f);
-        }
-        Movement->Mass = 1300.0f;
         Movement->bLegacyWheelFrictionPosition = true;
     }
+
+    ApplyTuningData(GetDefault<UDeLoreanTuningData>());
+}
+
+void ADeLoreanVehicle::ApplyTuningData(const UDeLoreanTuningData* TuningData)
+{
+    if (!TuningData)
+    {
+        return;
+    }
+
+    UChaosWheeledVehicleMovementComponent* Movement =
+        Cast<UChaosWheeledVehicleMovementComponent>(GetVehicleMovementComponent());
+    if (!Movement)
+    {
+        return;
+    }
+
+    Movement->Mass = TuningData->MassKg;
+    Movement->EngineSetup.MaxRPM = TuningData->MaxRPM;
+    Movement->EngineSetup.MaxTorque = TuningData->MaxTorqueNm;
+    Movement->EngineSetup.TorqueCurve = TuningData->TorqueCurve;
+    Movement->TransmissionSetup.ForwardGearRatios = TuningData->ForwardGearRatios;
+    Movement->TransmissionSetup.ReverseGearRatios = {
+        FMath::Abs(TuningData->ReverseGearRatio)};
+    Movement->TransmissionSetup.FinalRatio = TuningData->FinalDriveRatio;
 }
 
 void ADeLoreanVehicle::BeginPlay()
 {
     Super::BeginPlay();
+
+    LastSafeTransform = GetActorTransform();
+    ApplyTuningData(TuningDataAsset ? TuningDataAsset : GetDefault<UDeLoreanTuningData>());
 
     if (USkeletalMeshComponent* VehicleMesh = GetMesh())
     {
@@ -103,8 +141,8 @@ void ADeLoreanVehicle::BeginPlay()
         VehicleMesh->SetSimulatePhysics(true);
         VehicleMesh->WakeAllRigidBodies();
 
-        VehicleMesh->SetVisibility(true, true);
-        VehicleMesh->SetHiddenInGame(false, true);
+        VehicleMesh->SetVisibility(false, false);
+        VehicleMesh->SetHiddenInGame(true, false);
         VehicleMesh->SetOwnerNoSee(false);
         VehicleMesh->SetOnlyOwnerSee(false);
         VehicleMesh->SetRenderInMainPass(true);
@@ -138,14 +176,26 @@ void ADeLoreanVehicle::BeginPlay()
         TimeTravelSubsystem->OnTimeTravelCompleted.AddDynamic(this, &ADeLoreanVehicle::EndTimeTravelEffects);
     }
 
-    // Add input mapping context
+    InstallVehicleInputMapping();
+}
+
+void ADeLoreanVehicle::PawnClientRestart()
+{
+    Super::PawnClientRestart();
+    InstallVehicleInputMapping();
+}
+
+void ADeLoreanVehicle::InstallVehicleInputMapping()
+{
     if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
     {
         if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
         {
             if (VehicleMappingContext)
             {
-                Subsystem->AddMappingContext(VehicleMappingContext, 0);
+                Subsystem->RemoveMappingContext(VehicleMappingContext);
+                Subsystem->AddMappingContext(VehicleMappingContext, 1);
+                UE_LOG(LogTemp, Log, TEXT("DeLorean Enhanced Input context installed after possession"));
             }
         }
     }
@@ -172,7 +222,53 @@ void ADeLoreanVehicle::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
             EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleBrake);
             EnhancedInputComponent->BindAction(BrakeAction, ETriggerEvent::Completed, this, &ADeLoreanVehicle::HandleBrake);
         }
+        if (HandbrakeAction)
+        {
+            EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleHandbrake);
+            EnhancedInputComponent->BindAction(HandbrakeAction, ETriggerEvent::Completed, this, &ADeLoreanVehicle::HandleHandbrake);
+        }
+        if (ResetVehicleAction)
+            EnhancedInputComponent->BindAction(ResetVehicleAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::ResetVehicle);
+        if (TimeCircuitsAction)
+            EnhancedInputComponent->BindAction(TimeCircuitsAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::ToggleTimeCircuits);
+        if (TimeJumpAction)
+            EnhancedInputComponent->BindAction(TimeJumpAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::TryTimeTravelFromInput);
+        if (ToggleCameraAction)
+            EnhancedInputComponent->BindAction(ToggleCameraAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::ToggleCamera);
+        if (CycleDestinationAction)
+            EnhancedInputComponent->BindAction(CycleDestinationAction, ETriggerEvent::Triggered, this, &ADeLoreanVehicle::HandleCycleDestination);
     }
+
+    PlayerInputComponent->BindKey(EKeys::Up, IE_Pressed, this, &ADeLoreanVehicle::BeginForward);
+    PlayerInputComponent->BindKey(EKeys::Up, IE_Released, this, &ADeLoreanVehicle::EndForward);
+    PlayerInputComponent->BindKey(EKeys::Left, IE_Pressed, this, &ADeLoreanVehicle::BeginSteerLeft);
+    PlayerInputComponent->BindKey(EKeys::Left, IE_Released, this, &ADeLoreanVehicle::EndSteerLeft);
+    PlayerInputComponent->BindKey(EKeys::Right, IE_Pressed, this, &ADeLoreanVehicle::BeginSteerRight);
+    PlayerInputComponent->BindKey(EKeys::Right, IE_Released, this, &ADeLoreanVehicle::EndSteerRight);
+    PlayerInputComponent->BindKey(EKeys::Down, IE_Pressed, this, &ADeLoreanVehicle::BeginReverse);
+    PlayerInputComponent->BindKey(EKeys::Down, IE_Released, this, &ADeLoreanVehicle::EndReverse);
+    PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Right, IE_Pressed, this, &ADeLoreanVehicle::BeginReverse);
+    PlayerInputComponent->BindKey(EKeys::Gamepad_FaceButton_Right, IE_Released, this, &ADeLoreanVehicle::EndReverse);
+    PlayerInputComponent->BindKey(EKeys::H, IE_Pressed, this, &ADeLoreanVehicle::ToggleHoverMode);
+    PlayerInputComponent->BindKey(EKeys::Gamepad_DPad_Up, IE_Pressed, this, &ADeLoreanVehicle::ToggleHoverMode);
+    // Keep the core time-circuit loop independent of an optional Enhanced
+    // Input asset or diagnostic polling fallback.
+    PlayerInputComponent->BindKey(EKeys::Q, IE_Pressed, this, &ADeLoreanVehicle::SelectPreviousDestination);
+    PlayerInputComponent->BindKey(EKeys::E, IE_Pressed, this, &ADeLoreanVehicle::SelectNextDestination);
+    PlayerInputComponent->BindKey(EKeys::T, IE_Pressed, this, &ADeLoreanVehicle::ToggleTimeCircuits);
+    PlayerInputComponent->BindKey(EKeys::F, IE_Pressed, this, &ADeLoreanVehicle::TryTimeTravelFromInput);
+    PlayerInputComponent->BindKey(EKeys::C, IE_Pressed, this, &ADeLoreanVehicle::ToggleCamera);
+    PlayerInputComponent->BindKey(EKeys::R, IE_Pressed, this, &ADeLoreanVehicle::ResetVehicle);
+}
+
+void ADeLoreanVehicle::SelectPreviousDestination()
+{
+    CycleDestinationEra(-1);
+}
+
+void ADeLoreanVehicle::SelectNextDestination()
+{
+    CycleDestinationEra(1);
 }
 
 void ADeLoreanVehicle::HandleThrottle(const FInputActionValue& Value)
@@ -199,9 +295,84 @@ void ADeLoreanVehicle::HandleBrake(const FInputActionValue& Value)
     }
 }
 
+void ADeLoreanVehicle::HandleHandbrake(const FInputActionValue& Value)
+{
+    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+    {
+        Movement->SetHandbrakeInput(Value.Get<bool>());
+    }
+}
+
+void ADeLoreanVehicle::HandleReverse(const FInputActionValue& Value)
+{
+    bReverseKeyPressed = Value.Get<bool>();
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::BeginReverse()
+{
+    bReverseKeyPressed = true;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::EndReverse()
+{
+    bReverseKeyPressed = false;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::BeginForward()
+{
+    bForwardKeyPressed = true;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::EndForward()
+{
+    bForwardKeyPressed = false;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::BeginSteerLeft()
+{
+    bLeftKeyPressed = true;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::EndSteerLeft()
+{
+    bLeftKeyPressed = false;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::BeginSteerRight()
+{
+    bRightKeyPressed = true;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::EndSteerRight()
+{
+    bRightKeyPressed = false;
+    ApplyDigitalDriveInput(bForwardKeyPressed, bReverseKeyPressed, bLeftKeyPressed, bRightKeyPressed);
+}
+
+void ADeLoreanVehicle::HandleCycleDestination(const FInputActionValue& Value)
+{
+    const float Direction = Value.Get<float>();
+    if (!FMath::IsNearlyZero(Direction))
+    {
+        CycleDestinationEra(Direction < 0.0f ? -1 : 1);
+    }
+}
+
 void ADeLoreanVehicle::ToggleTimeCircuits()
 {
     bTimeCircuitsOn = !bTimeCircuitsOn;
+    if (TimeTravelSubsystem)
+    {
+        TimeTravelSubsystem->SetTimeCircuitsArmed(bTimeCircuitsOn);
+    }
     UE_LOG(LogTemp, Log, TEXT("Time circuits %s"), bTimeCircuitsOn ? TEXT("ON") : TEXT("OFF"));
 }
 
@@ -223,7 +394,7 @@ void ADeLoreanVehicle::ToggleHoverMode()
 
 void ADeLoreanVehicle::UpdateHoverMode(float DeltaTime)
 {
-    UPrimitiveComponent* Body = Cast<UPrimitiveComponent>(GetRootComponent());
+    UPrimitiveComponent* Body = GetMesh();
     if (!Body || !Body->IsSimulatingPhysics())
     {
         return;
@@ -250,19 +421,86 @@ void ADeLoreanVehicle::UpdateHoverMode(float DeltaTime)
         // Spring force counteracts gravity plus corrects height; damping prevents oscillation.
         const float Gravity = -GetWorld()->GetGravityZ();
         const float SpringForce = HeightError * HoverSpringStrength - VerticalVelocity * HoverDamping;
-        const FVector Force = FVector(0, 0, Gravity + SpringForce) * Body->GetMass();
+        const float VerticalAcceleration = FMath::Clamp(
+            Gravity + SpringForce, -HoverMaxVerticalAcceleration, HoverMaxVerticalAcceleration);
+        const FVector Force = FVector(0, 0, VerticalAcceleration) * Body->GetMass();
         Body->AddForce(Force);
     }
+
+    const FVector StabilizationTorque = CalculateHoverStabilizationTorque(
+        GetActorUpVector(), Body->GetPhysicsAngularVelocityInRadians(), Body->GetMass());
+    Body->AddTorqueInRadians(StabilizationTorque);
+
+    const APlayerController* PlayerController = Cast<APlayerController>(GetController());
+    const bool bLiveForward = bForwardKeyPressed ||
+        (PlayerController && PlayerController->IsInputKeyDown(EKeys::Up));
+    const bool bLiveReverse = bReverseKeyPressed ||
+        (PlayerController && PlayerController->IsInputKeyDown(EKeys::Down));
+    const bool bLiveLeft = bLeftKeyPressed ||
+        (PlayerController && PlayerController->IsInputKeyDown(EKeys::Left));
+    const bool bLiveRight = bRightKeyPressed ||
+        (PlayerController && PlayerController->IsInputKeyDown(EKeys::Right));
+
+    const float ForwardCommand = (bLiveForward ? 1.0f : 0.0f) - (bLiveReverse ? 1.0f : 0.0f);
+    Body->AddForce(GetActorForwardVector() * ForwardCommand * HoverForwardAcceleration * Body->GetMass());
+
+    const float DigitalYaw = (bLiveRight ? 1.0f : 0.0f) - (bLiveLeft ? 1.0f : 0.0f);
+    const float AnalogYaw = GetVehicleMovementComponent()
+        ? GetVehicleMovementComponent()->GetSteeringInput() : 0.0f;
+    const float YawCommand = FMath::Clamp(
+        FMath::Abs(DigitalYaw) > KINDA_SMALL_NUMBER ? DigitalYaw : AnalogYaw, -1.0f, 1.0f);
+    Body->AddTorqueInRadians(
+        FVector::UpVector * YawCommand * HoverYawAcceleration, NAME_None, true);
+}
+
+FVector ADeLoreanVehicle::CalculateHoverStabilizationTorque(const FVector& CurrentUp,
+    const FVector& AngularVelocityRadians, float BodyMass) const
+{
+    const FVector NormalizedUp = CurrentUp.GetSafeNormal(SMALL_NUMBER, FVector::UpVector);
+    const FVector TiltAxis = FVector::CrossProduct(NormalizedUp, FVector::UpVector);
+    const float YawRate = FVector::DotProduct(AngularVelocityRadians, FVector::UpVector);
+    const FVector TiltAngularVelocity = AngularVelocityRadians - FVector::UpVector * YawRate;
+    return (TiltAxis * HoverStabilizationStrength - TiltAngularVelocity * HoverAngularDamping) *
+        FMath::Max(BodyMass, 1.0f);
 }
 
 void ADeLoreanVehicle::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 
-    ApplyKeyboardFallback();
+    if (bEnableDiagnosticKeyboardFallback)
+    {
+        ApplyKeyboardFallback();
+    }
     UpdateSpeedometer();
     UpdateFluxCapacitor(DeltaTime);
     UpdateHoverMode(DeltaTime);
+
+    if (bReverseKeyPressed && !bHoverModeActive)
+    {
+        if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+        {
+            Movement->SetUseAutomaticGears(false);
+            Movement->SetTargetGear(-1, true);
+            Movement->SetBrakeInput(0.0f);
+            Movement->SetThrottleInput(1.0f);
+        }
+
+        // The prototype Chaos rig can select reverse without producing usable
+        // wheel torque on every machine. Apply a bounded physical assist so the
+        // reverse control always results in visible backward motion while still
+        // retaining steering, collision, suspension, and the configured gearbox.
+        if (USkeletalMeshComponent* Body = GetMesh(); Body && Body->IsSimulatingPhysics())
+        {
+            const float BackwardSpeedCmPerSecond =
+                -FVector::DotProduct(Body->GetPhysicsLinearVelocity(), GetActorForwardVector());
+            const float MaxReverseSpeedCmPerSecond = ReverseAssistMaxSpeedMph * 44.704f;
+            if (BackwardSpeedCmPerSecond < MaxReverseSpeedCmPerSecond)
+            {
+                Body->AddForce(-GetActorForwardVector() * ReverseAssistAcceleration * Body->GetMass());
+            }
+        }
+    }
 
     if (bShowDebugInfo && TimeTravelSubsystem)
     {
@@ -283,17 +521,48 @@ void ADeLoreanVehicle::ApplyKeyboardFallback()
     // Poll the physical keys every frame. This remains dependable even if an
     // Enhanced Input mapping asset is missing, not applied, or initialized
     // before possession completes.
-    const float Throttle =
-        (PlayerController->IsInputKeyDown(EKeys::W) ? 1.0f : 0.0f) -
-        (PlayerController->IsInputKeyDown(EKeys::S) ? 1.0f : 0.0f);
+    const bool bReversePressed = PlayerController->IsInputKeyDown(EKeys::Down);
+    const float Throttle = PlayerController->IsInputKeyDown(EKeys::Up) ? 1.0f : 0.0f;
     const float Steering =
-        (PlayerController->IsInputKeyDown(EKeys::D) ? 1.0f : 0.0f) -
-        (PlayerController->IsInputKeyDown(EKeys::A) ? 1.0f : 0.0f);
+        (PlayerController->IsInputKeyDown(EKeys::Right) ? 1.0f : 0.0f) -
+        (PlayerController->IsInputKeyDown(EKeys::Left) ? 1.0f : 0.0f);
     const float Brake = PlayerController->IsInputKeyDown(EKeys::SpaceBar) ? 1.0f : 0.0f;
 
-    Movement->SetThrottleInput(Throttle);
-    Movement->SetSteeringInput(Steering);
-    Movement->SetBrakeInput(Brake);
+    if (bReversePressed != bLastKeyboardReverse)
+    {
+        ApplyReverseInput(bReversePressed);
+        bLastKeyboardReverse = bReversePressed;
+    }
+    ApplyVehicleInput(bReversePressed ? 1.0f : Throttle, Steering, Brake, PlayerController->IsInputKeyDown(EKeys::SpaceBar));
+
+    if (PlayerController->WasInputKeyJustPressed(EKeys::R))
+    {
+        ResetVehicle();
+    }
+    if (PlayerController->WasInputKeyJustPressed(EKeys::C))
+    {
+        ToggleCamera();
+    }
+    if (PlayerController->WasInputKeyJustPressed(EKeys::Q))
+    {
+        CycleDestinationEra(-1);
+    }
+    if (PlayerController->WasInputKeyJustPressed(EKeys::E))
+    {
+        CycleDestinationEra(1);
+    }
+    if (PlayerController->WasInputKeyJustPressed(EKeys::T))
+    {
+        ToggleTimeCircuits();
+    }
+    if (PlayerController->WasInputKeyJustPressed(EKeys::F))
+    {
+        TryTimeTravelFromInput();
+    }
+    if (PlayerController->WasInputKeyJustPressed(EKeys::H))
+    {
+        ToggleHoverMode();
+    }
 
     if (!FMath::IsNearlyEqual(Throttle, LastKeyboardThrottle) ||
         !FMath::IsNearlyEqual(Steering, LastKeyboardSteering) ||
@@ -318,6 +587,145 @@ void ADeLoreanVehicle::ApplyKeyboardFallback()
         LastKeyboardSteering = Steering;
         LastKeyboardBrake = Brake;
     }
+}
+
+void ADeLoreanVehicle::ApplyVehicleInput(
+    float Throttle,
+    float Steering,
+    float Brake,
+    bool bHandbrake)
+{
+    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+    {
+        Movement->SetThrottleInput(FMath::Clamp(Throttle, -1.0f, 1.0f));
+        Movement->SetSteeringInput(FMath::Clamp(Steering, -1.0f, 1.0f));
+        Movement->SetBrakeInput(FMath::Clamp(Brake, 0.0f, 1.0f));
+        Movement->SetHandbrakeInput(bHandbrake);
+    }
+}
+
+void ADeLoreanVehicle::ApplyDigitalDriveInput(bool bForward, bool bReverse, bool bLeft, bool bRight)
+{
+    bForwardKeyPressed = bForward;
+    bReverseKeyPressed = bReverse;
+    bLeftKeyPressed = bLeft;
+    bRightKeyPressed = bRight;
+
+    if (bReverse)
+    {
+        ApplyReverseInput(true);
+        bDigitalReverseApplied = true;
+    }
+    else
+    {
+        if (bDigitalReverseApplied)
+        {
+            ApplyReverseInput(false);
+            bDigitalReverseApplied = false;
+        }
+        if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+        {
+            Movement->SetThrottleInput(bForward ? 1.0f : 0.0f);
+        }
+    }
+
+    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+    {
+        Movement->SetSteeringInput((bRight ? 1.0f : 0.0f) - (bLeft ? 1.0f : 0.0f));
+    }
+}
+
+void ADeLoreanVehicle::ApplyReverseInput(bool bPressed)
+{
+    if (UChaosVehicleMovementComponent* Movement = GetVehicleMovementComponent())
+    {
+        Movement->SetUseAutomaticGears(false);
+        Movement->SetTargetGear(bPressed ? -1 : 1, true);
+        Movement->SetBrakeInput(0.0f);
+        Movement->SetThrottleInput(bPressed ? 1.0f : 0.0f);
+        if (!bPressed)
+        {
+            Movement->SetUseAutomaticGears(true);
+        }
+        UE_LOG(
+            LogTemp,
+            Log,
+            TEXT("Reverse input %s: targetGear=%d throttle=%.1f"),
+            bPressed ? TEXT("PRESSED") : TEXT("RELEASED"),
+            Movement->GetTargetGear(),
+            Movement->GetThrottleInput());
+    }
+}
+
+void ADeLoreanVehicle::SetLastSafeTransform(const FTransform& SafeTransform)
+{
+    LastSafeTransform = SafeTransform;
+}
+
+void ADeLoreanVehicle::ResetVehicle()
+{
+    if (USkeletalMeshComponent* VehicleMesh = GetMesh())
+    {
+        VehicleMesh->SetPhysicsLinearVelocity(FVector::ZeroVector);
+        VehicleMesh->SetPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+    }
+
+    SetActorTransform(LastSafeTransform, false, nullptr, ETeleportType::TeleportPhysics);
+
+    if (USkeletalMeshComponent* VehicleMesh = GetMesh())
+    {
+        VehicleMesh->WakeAllRigidBodies();
+    }
+}
+
+void ADeLoreanVehicle::ToggleCamera()
+{
+    ActiveCameraIndex = (ActiveCameraIndex + 1) % 4;
+    if (!CameraSpringArm)
+    {
+        return;
+    }
+
+    static const float ArmLengths[] = {525.0f, 220.0f, 55.0f, 0.0f};
+    static const FVector ArmLocations[] = {
+        FVector(0.0f, 0.0f, 105.0f),
+        FVector(205.0f, 0.0f, 155.0f),
+        FVector(275.0f, 0.0f, 85.0f),
+        FVector(35.0f, -35.0f, 125.0f)};
+    static const FRotator ArmRotations[] = {
+        FRotator(-7.0f, 0.0f, 0.0f),
+        FRotator(-8.0f, 0.0f, 0.0f),
+        FRotator(-3.0f, 0.0f, 0.0f),
+        FRotator(0.0f, 0.0f, 0.0f)};
+
+    CameraSpringArm->TargetArmLength = ArmLengths[ActiveCameraIndex];
+    CameraSpringArm->SetRelativeLocation(ArmLocations[ActiveCameraIndex]);
+    CameraSpringArm->SetRelativeRotation(ArmRotations[ActiveCameraIndex]);
+}
+
+void ADeLoreanVehicle::CycleDestinationEra(int32 Direction)
+{
+    static const ETimelineState SupportedEras[] = {
+        ETimelineState::Past1955,
+        ETimelineState::Present1985,
+        ETimelineState::Alternate1985,
+        ETimelineState::Future2015,
+        ETimelineState::DeepFuture2045,
+        ETimelineState::WildWest1885};
+
+    int32 CurrentIndex = 0;
+    for (int32 Index = 0; Index < UE_ARRAY_COUNT(SupportedEras); ++Index)
+    {
+        if (SupportedEras[Index] == InputTargetEra)
+        {
+            CurrentIndex = Index;
+            break;
+        }
+    }
+
+    const int32 Step = Direction < 0 ? -1 : 1;
+    CurrentIndex = (CurrentIndex + Step + UE_ARRAY_COUNT(SupportedEras)) % UE_ARRAY_COUNT(SupportedEras);
+    InputTargetEra = SupportedEras[CurrentIndex];
 }
 
 void ADeLoreanVehicle::InitializeTimeTravelSubsystem()
@@ -347,12 +755,15 @@ void ADeLoreanVehicle::UpdateFluxCapacitor(float DeltaTime)
 {
     if (!TimeTravelSubsystem || bIsTimeTraveling) return;
 
-    if (CurrentSpeedMph >= 80.0f)
+    const UTemporalDriftSettings* TravelSettings = GetDefault<UTemporalDriftSettings>();
+    const bool bAboveChargeSpeed = CurrentSpeedMph >= TravelSettings->FluxChargeStartSpeedMph;
+    TimeTravelSubsystem->SetFluxCharging(bAboveChargeSpeed);
+    if (bAboveChargeSpeed)
     {
-        float ChargeRate = TimeTravelSubsystem->EnergyPerSecondAt88mph * DeltaTime;
+        float ChargeRate = TravelSettings->EnergyPerSecondAtThreshold * DeltaTime;
 
-        if (CurrentSpeedMph >= 87.0f)
-            ChargeRate *= 1.4f; // Bonus near 88 mph
+        if (CurrentSpeedMph >= TravelSettings->JumpSpeedThresholdMph)
+            ChargeRate *= 1.4f;
 
         TimeTravelSubsystem->AddFluxEnergy(ChargeRate);
     }
@@ -360,10 +771,16 @@ void ADeLoreanVehicle::UpdateFluxCapacitor(float DeltaTime)
 
 void ADeLoreanVehicle::TryTimeTravel(ETimelineState TargetEra)
 {
-    if (TimeTravelSubsystem && TimeTravelSubsystem->CanPerformTimeTravel(this))
+    if (TimeTravelSubsystem)
     {
-        TimeTravelSubsystem->PerformTimeTravel(this, TargetEra);
-        StartTimeTravelEffects();
+        FTimeTravelRequest Request;
+        Request.Destination = TargetEra;
+        Request.Origin = GetActorLocation();
+        Request.EntrySpeedMph = CurrentSpeedMph;
+        if (TimeTravelSubsystem->RequestTimeTravel(Request))
+        {
+            StartTimeTravelEffects();
+        }
     }
 }
 

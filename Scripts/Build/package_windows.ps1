@@ -18,7 +18,7 @@ if (-not (Test-Path -LiteralPath $RunUAT)) {
     throw "Unreal Engine 5.8 automation tool was not found: $RunUAT"
 }
 
-& $RunUAT BuildCookRun "-project=$ProjectFile" -noP4 -platform=Win64 -clientconfig=$Configuration -build -cook -stage -pak -archive "-archivedirectory=$OutputDirectory"
+& $RunUAT BuildCookRun "-project=$ProjectFile" -noP4 -platform=Win64 "-clientconfig=$Configuration" -build -cook -stage -pak -archive "-archivedirectory=$OutputDirectory"
 if ($LASTEXITCODE -ne 0) {
     throw "Windows package failed with exit code $LASTEXITCODE"
 }

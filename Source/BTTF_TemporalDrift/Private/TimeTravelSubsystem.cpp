@@ -1,7 +1,9 @@
 // TimeTravelSubsystem.cpp - Fully Expanded Implementation
 #include "TimeTravelSubsystem.h"
+#include "TemporalDriftSettings.h"
 #include "DeLoreanVehicle.h"
 #include "EraDataAsset.h"
+#include "EraWorldManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
@@ -35,6 +37,15 @@ void UTimeTravelSubsystem::Deinitialize()
 void UTimeTravelSubsystem::Tick(float DeltaTime)
 {
     UpdateParadoxOverTime(DeltaTime);
+    if (bIsTimeTraveling)
+    {
+        PhaseElapsedSeconds += DeltaTime;
+        const float PhaseDuration = TimeTravelPhase == ETimeTravelPhase::Cooldown ? 1.0f : 0.25f;
+        if (PhaseElapsedSeconds >= PhaseDuration)
+        {
+            AdvanceTimeTravelPhase();
+        }
+    }
 }
 
 TStatId UTimeTravelSubsystem::GetStatId() const
@@ -56,12 +67,146 @@ bool UTimeTravelSubsystem::HasEnoughEnergyForJump() const
 
 void UTimeTravelSubsystem::AddFluxEnergy(float Amount)
 {
-    CurrentFluxEnergy = FMath::Min(CurrentFluxEnergy + Amount, FluxCapacitorMaxEnergy);
+    CurrentFluxEnergy = FMath::Clamp(CurrentFluxEnergy + Amount, 0.0f, FluxCapacitorMaxEnergy);
 }
 
 void UTimeTravelSubsystem::ConsumeEnergyForTimeTravel()
 {
     CurrentFluxEnergy = FMath::Max(0.0f, CurrentFluxEnergy - EnergyDrainOnJump);
+}
+
+void UTimeTravelSubsystem::SetTimeCircuitsArmed(bool bArmed)
+{
+    bTimeCircuitsArmed = bArmed;
+    if (!bIsTimeTraveling)
+    {
+        LastJumpFailureReason = FText::GetEmpty();
+        SetTimeTravelPhase(bArmed ? ETimeTravelPhase::Armed : ETimeTravelPhase::Idle);
+    }
+}
+
+void UTimeTravelSubsystem::SetFluxCharging(bool bCharging)
+{
+    if (bIsTimeTraveling || !bTimeCircuitsArmed)
+    {
+        return;
+    }
+
+    SetTimeTravelPhase(bCharging ? ETimeTravelPhase::Charging : ETimeTravelPhase::Armed);
+}
+
+bool UTimeTravelSubsystem::FailTimeTravelRequest(const FTimeTravelRequest& Request, const FText& Reason)
+{
+    LastJumpFailureReason = Reason;
+    SetTimeTravelPhase(ETimeTravelPhase::Failed);
+    OnJumpFailed.Broadcast(Request, Reason);
+    return false;
+}
+
+bool UTimeTravelSubsystem::RequestTimeTravel(const FTimeTravelRequest& Request)
+{
+    if (bIsTimeTraveling || TimeTravelPhase == ETimeTravelPhase::Cooldown)
+    {
+        return false;
+    }
+    if (!bTimeCircuitsArmed)
+    {
+        return FailTimeTravelRequest(Request, FText::FromString(TEXT("Arm the time circuits first.")));
+    }
+    if (Request.Destination == CurrentTimelineState)
+    {
+        return FailTimeTravelRequest(Request, FText::FromString(TEXT("Select a different destination era.")));
+    }
+    if (Request.EntrySpeedMph < GetJumpSpeedThresholdMph())
+    {
+        return FailTimeTravelRequest(Request, FText::FromString(
+            FString::Printf(TEXT("Reach %.0f MPH to initiate time travel."), GetJumpSpeedThresholdMph())));
+    }
+    if (!HasEnoughEnergyForJump())
+    {
+        return FailTimeTravelRequest(Request, FText::FromString(TEXT("Flux energy is below the jump requirement.")));
+    }
+
+    ActiveTravelRequest = Request;
+    LastJumpFailureReason = FText::GetEmpty();
+    bEraSwitchRequested = false;
+    bIsTimeTraveling = true;
+    SetTimeTravelPhase(ETimeTravelPhase::ThresholdReached);
+    ConsumeEnergyForTimeTravel();
+    return true;
+}
+
+bool UTimeTravelSubsystem::AdvanceTimeTravelPhase()
+{
+    switch (TimeTravelPhase)
+    {
+    case ETimeTravelPhase::ThresholdReached:
+        SetTimeTravelPhase(ETimeTravelPhase::Departing); OnJumpDeparted.Broadcast(ActiveTravelRequest); return true;
+    case ETimeTravelPhase::Departing:
+        SetTimeTravelPhase(ETimeTravelPhase::SwitchingEra); OnEraSwitchRequested.Broadcast(ActiveTravelRequest); return true;
+    case ETimeTravelPhase::SwitchingEra:
+        if (UWorld* World = GetWorld())
+        {
+            if (UEraWorldManager* EraManager = World->GetSubsystem<UEraWorldManager>())
+            {
+                if (!bEraSwitchRequested)
+                {
+                    bEraSwitchRequested = EraManager->RequestEra(ActiveTravelRequest.Destination);
+                    if (!bEraSwitchRequested)
+                    {
+                        bIsTimeTraveling = false;
+                        return FailTimeTravelRequest(ActiveTravelRequest,
+                            FText::FromString(TEXT("The destination era could not be loaded.")));
+                    }
+                }
+                if (!EraManager->IsEraReady())
+                {
+                    return false;
+                }
+            }
+        }
+        PreviousTimelineState = CurrentTimelineState;
+        CurrentTimelineState = ActiveTravelRequest.Destination;
+        ++TotalJumpsMade;
+        UpdateTimelineFlagsInternal(CurrentTimelineState);
+        SetTimeTravelPhase(ETimeTravelPhase::Arriving);
+        OnJumpArrived.Broadcast(ActiveTravelRequest);
+        return true;
+    case ETimeTravelPhase::Arriving: SetTimeTravelPhase(ETimeTravelPhase::Cooldown); return true;
+    case ETimeTravelPhase::Cooldown:
+        bIsTimeTraveling = false;
+        bTimeCircuitsArmed = false;
+        bEraSwitchRequested = false;
+        SetTimeTravelPhase(ETimeTravelPhase::Idle);
+        OnTimeTravelCompleted.Broadcast();
+        return true;
+    default: return false;
+    }
+}
+
+void UTimeTravelSubsystem::ResetTimeTravelState()
+{
+    bIsTimeTraveling = false;
+    bTimeCircuitsArmed = false;
+    bEraSwitchRequested = false;
+    SetTimeTravelPhase(ETimeTravelPhase::Idle);
+    CurrentTimelineState = ETimelineState::Present1985;
+    PreviousTimelineState = ETimelineState::Present1985;
+    CurrentFluxEnergy = 0.0f;
+    TotalJumpsMade = 0;
+    LastJumpFailureReason = FText::GetEmpty();
+}
+
+void UTimeTravelSubsystem::SetTimeTravelPhase(ETimeTravelPhase NewPhase)
+{
+    if (TimeTravelPhase == NewPhase)
+    {
+        return;
+    }
+    const ETimeTravelPhase PreviousPhase = TimeTravelPhase;
+    TimeTravelPhase = NewPhase;
+    PhaseElapsedSeconds = 0.0f;
+    OnPhaseChanged.Broadcast(PreviousPhase, NewPhase);
 }
 
 #pragma endregion
@@ -235,3 +380,7 @@ void UTimeTravelSubsystem::DebugDrawFluxStatus(const ADeLoreanVehicle* DeLorean)
 }
 
 #pragma endregion
+float UTimeTravelSubsystem::GetJumpSpeedThresholdMph() const
+{
+    return GetDefault<UTemporalDriftSettings>()->JumpSpeedThresholdMph;
+}

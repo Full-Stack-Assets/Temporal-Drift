@@ -121,6 +121,25 @@ def spawn_block(name, location, size, material, tags=(), rotation=(0.0, 0.0, 0.0
     )
 
 
+def spawn_text_sign(name, text, location, rotation=(0.0, 0.0, 0.0), color=(1.0, 0.82, 0.22, 1.0), scale=5.0, tags=()):
+    world_location = (location[0], location[1] + TOWN_OFFSET_Y, location[2])
+    actor = actor_subsystem.spawn_actor_from_class(
+        unreal.TextRenderActor, unreal.Vector(*world_location), make_rotator(*rotation)
+    )
+    if actor is None:
+        raise RuntimeError(f"Unable to spawn sign: {name}")
+    actor.set_actor_label(name)
+    actor.set_editor_property("tags", [GENERATED_TAG, unreal.Name("HV_Signage")] + [unreal.Name(tag) for tag in tags])
+    actor.set_editor_property("is_spatially_loaded", False)
+    component = actor.get_component_by_class(unreal.TextRenderComponent)
+    component.set_editor_property("text", unreal.Text(text))
+    component.set_editor_property("text_render_color", unreal.Color(int(color[0]*255), int(color[1]*255), int(color[2]*255), int(color[3]*255)))
+    component.set_editor_property("horizontal_alignment", unreal.HorizTextAligment.EHTA_CENTER)
+    component.set_editor_property("world_size", 34.0)
+    actor.set_actor_scale3d(unreal.Vector(scale, scale, scale))
+    return actor
+
+
 def create_block_series(prefix, entries, material, tags):
     for name, location, size in entries:
         spawn_block(name, location, size, material, tags=tags)
@@ -311,8 +330,34 @@ def build_storefronts(materials):
 
 def spawn_tree(name, location, materials, scale=1.0):
     x, y, z = location
-    spawn_static_mesh(name + "_Trunk", CYLINDER, (x, y, z + 220 * scale), (0.6 * scale, 0.6 * scale, 4.5 * scale), material=materials["trunk"], tags=("HV_Landscape", "HV_Prop"))
-    spawn_static_mesh(name + "_Crown", SPHERE, (x, y, z + 520 * scale), (2.8 * scale, 2.8 * scale, 3.2 * scale), material=materials["leaves"], tags=("HV_Landscape", "HV_Prop"))
+    spawn_static_mesh(name + "_Trunk", CYLINDER, (x, y, z + 220 * scale), (0.6 * scale, 0.6 * scale, 4.5 * scale), material=materials["trunk"], tags=("HV_Landscape", "HV_Foliage", "HV_Prop"))
+    spawn_static_mesh(name + "_Crown", SPHERE, (x, y, z + 520 * scale), (2.8 * scale, 2.8 * scale, 3.2 * scale), material=materials["leaves"], tags=("HV_Landscape", "HV_Foliage", "HV_Prop"))
+
+
+def spawn_marker(name, location, tags):
+    world_location = (location[0], location[1] + TOWN_OFFSET_Y, location[2])
+    actor = actor_subsystem.spawn_actor_from_class(unreal.TargetPoint, unreal.Vector(*world_location))
+    actor.set_actor_label(name)
+    actor.set_editor_property("tags", [GENERATED_TAG] + [unreal.Name(tag) for tag in tags])
+    actor.set_editor_property("is_spatially_loaded", False)
+    return actor
+
+
+def build_destination_facade(name, x, y, size, materials, district):
+    width, depth, height = size
+    front_y = y - depth / 2.0 - 18.0
+    # Large, readable street-facing bays keep each destination identifiable at driving distance.
+    for index in range(max(2, int(width // 900))):
+        window_x = x - width * 0.5 + 480.0 + index * 900.0
+        spawn_block(f"{name}_Window_{index:02d}", (window_x, front_y, height * 0.60),
+                    (560, 36, 420), materials["glass"], tags=("HV_Architecture", district))
+        spawn_block(f"{name}_WindowTrim_{index:02d}", (window_x, front_y - 24.0, height * 0.60),
+                    (620, 26, 480), materials["trim"], tags=("HV_Architecture", district))
+    spawn_block(f"{name}_Door", (x, front_y - 4.0, 300), (520, 60, 720),
+                materials["dark"], tags=("HV_Interior", "HV_MissionAccess", district))
+    spawn_block(f"{name}_Awning", (x, front_y - 70.0, height * 0.43),
+                (min(width * 0.82, 3400), 160, 70), materials["trim"],
+                tags=("HV_Architecture", "HV_Streetscape", district))
 
 
 def build_streetscape(materials):
@@ -389,12 +434,112 @@ def set_default_era_data_layer():
             continue
 
         should_enable = name == "DL_1985_Present"
-        if hasattr(subsystem, "set_data_layer_visibility"):
-            subsystem.set_data_layer_visibility(data_layer_asset, should_enable)
-        if hasattr(subsystem, "set_data_layer_is_loaded_in_editor"):
-            subsystem.set_data_layer_is_loaded_in_editor(data_layer_asset, should_enable)
+        try:
+            if hasattr(subsystem, "set_data_layer_visibility"):
+                subsystem.set_data_layer_visibility(data_layer_asset, should_enable)
+            if hasattr(subsystem, "set_data_layer_is_loaded_in_editor"):
+                subsystem.set_data_layer_is_loaded_in_editor(data_layer_asset, should_enable)
+        except TypeError:
+            log(f"UE 5.8 requires a DataLayerInstance for editor visibility; runtime manager will activate {name}")
 
     log("applied default era data layer state (DL_1985_Present active)")
+
+
+def build_complete_region(materials):
+    # Connected district roads surrounding the courthouse-square core.
+    road_specs = (
+        ("HV_RegionalRoad_North", (0, 10500, 15), (1800, 12000, 30)),
+        ("HV_RegionalRoad_South", (0, -10500, 15), (1800, 12000, 30)),
+        ("HV_RegionalRoad_West", (-11500, 0, 15), (12000, 1800, 30)),
+        ("HV_RegionalRoad_East", (11500, 0, 15), (12000, 1800, 30)),
+        ("HV_RuralApproach", (0, -19500, 10), (1500, 9000, 25)),
+    )
+    for name, location, size in road_specs:
+        spawn_block(name, location, size, materials["asphalt"], tags=("HV_Road", "HV_Regional"))
+
+    for index, (x, y, sx, sy) in enumerate((
+        (-11500, 0, 900, 1800), (11500, 0, 900, 1800),
+        (0, 10500, 1800, 900), (0, -10500, 1800, 900))):
+        spawn_block(f"HV_RegionalCrossing_{index}", (x, y, 38),
+                    (sx, sy, 6), materials["concrete"], tags=("HV_Crossing", "HV_RoadMarking"))
+
+    # Terrain basin and surrounding hills establish a readable town boundary.
+    spawn_block("HV_RegionalGround", (0, 0, -135), (36000, 43000, 250), materials["grass"], tags=("HV_Landscape", "HV_Regional"))
+    hill_specs = ((-17000,-15000,2.2),(17000,-15000,2.0),(-17000,14500,2.5),(17000,14500,2.3),(0,20500,2.8))
+    for index,(x,y,scale) in enumerate(hill_specs):
+        spawn_static_mesh(f"HV_RegionalHill_{index}", SPHERE, (x,y,250), (28*scale,20*scale,7*scale), material=materials["grass"], tags=("HV_Landscape","HV_Regional"))
+
+    destinations = (
+        ("HV_HighSchool", "HILL VALLEY HIGH SCHOOL", (-11200, 7600), (4200, 3000, 1500), materials["brick_red"], "HV_District_School"),
+        ("HV_ValeGarage", "VALE SCIENTIFIC GARAGE", (10800, -8200), (3200, 2800, 1050), materials["brick_dark"], "HV_District_Industrial"),
+        ("HV_ServiceStation", "TWIN PINES SERVICE", (9800, 7800), (3000, 2300, 850), materials["plaster"], "HV_District_Commercial"),
+        ("HV_HillValleyDiner", "HILL VALLEY DINER", (-9400, -7600), (3200, 2200, 900), materials["brick"], "HV_District_Commercial"),
+        ("HV_Archive", "HILL VALLEY ARCHIVES", (8200, 11600), (3000, 2400, 1100), materials["stone"], "HV_District_Civic"),
+    )
+    for name, sign, (x,y), size, material, district in destinations:
+        spawn_block(name, (x,y,size[2]/2), size, material, tags=("HV_Building", district, "HV_Destination"))
+        spawn_block(name+"_Roof", (x,y,size[2]+110), (size[0]+180,size[1]+180,220), materials["roof"], tags=("HV_Building",district))
+        sign_y = y - size[1]/2 - 30
+        spawn_text_sign(name+"_Sign", sign, (x,sign_y,size[2]*0.72), rotation=(0,0,90), tags=(district,"HV_DestinationSign"), scale=3.0)
+        build_destination_facade(name, x, y, size, materials, district)
+
+        # Mission-critical buildings receive a collision-safe readable lobby.
+        interior_y = y - size[1] * 0.2
+        spawn_block(name+"_InteriorFloor", (x, interior_y, 35),
+                    (size[0]*0.62, size[1]*0.45, 35), materials["concrete"],
+                    tags=("HV_Interior", "HV_MissionAccess", district))
+        spawn_block(name+"_InteriorBackWall", (x, interior_y+size[1]*0.225, 360),
+                    (size[0]*0.62, 35, 650), material,
+                    tags=("HV_InteriorCollision", "HV_MissionAccess", district))
+
+    # Residential blocks with varied houses, porches, garages, yards, and unique street signs.
+    for side in (-1, 1):
+        for index in range(8):
+            x = side * (7000 + (index % 2) * 1700)
+            y = -2500 + index * 1900
+            house = f"HV_Residence_{'W' if side < 0 else 'E'}_{index:02d}"
+            body_mat = materials["plaster"] if index % 2 == 0 else materials["brick"]
+            spawn_block(house, (x,y,420), (2100,1450,840), body_mat, tags=("HV_Building","HV_District_Residential"))
+            spawn_block(house+"_Roof", (x,y,930), (2300,1650,260), materials["roof"], tags=("HV_Building","HV_District_Residential"))
+            spawn_block(house+"_Porch", (x-side*1170,y,140), (320,900,180), materials["concrete"], tags=("HV_Prop","HV_District_Residential"))
+            spawn_block(house+"_Garage", (x,y+1050,280), (1450,650,560), body_mat, tags=("HV_Building","HV_District_Residential"))
+            spawn_block(house+"_FrontDoor", (x-side*1060,y-730,300), (360,45,620), materials["dark"], tags=("HV_Architecture","HV_District_Residential"))
+            for window_index in (-1, 1):
+                spawn_block(f"{house}_Window_{window_index:+d}", (x + window_index*560, y-730, 560), (420,45,300), materials["glass"], tags=("HV_Architecture","HV_District_Residential"))
+
+    street_signs = (("MAPLE STREET",-7200,-5200),("LYON ESTATES",7200,-5200),("RIVER ROAD",0,-15000),("SCHOOL AVENUE",-10500,4800))
+    for index,(text,x,y) in enumerate(street_signs):
+        spawn_block(f"HV_StreetSignPost_{index}",(x,y,190),(16,16,380),materials["dark"],tags=("HV_Prop","HV_Signage"))
+        spawn_text_sign(f"HV_StreetSign_{index}",text,(x,y,410),rotation=(0,0,90),tags=("HV_StreetSign",),scale=1.8)
+
+    # Industrial/service edge and rural farm structures.
+    for index in range(5):
+        x = 9300 + (index%2)*3300; y = -13500 - (index//2)*2800
+        spawn_block(f"HV_Industrial_{index}",(x,y,600),(2800,2100,1200),materials["brick_dark"],tags=("HV_Building","HV_District_Industrial"))
+    spawn_block("HV_TwinPinesBarn",(-10500,-17800,700),(4200,2800,1400),materials["brick_red"],tags=("HV_Building","HV_District_Rural","HV_Destination"))
+    spawn_text_sign("HV_TwinPinesBarn_Sign","TWIN PINES RANCH",(-10500,-19220,900),rotation=(0,0,90),tags=("HV_District_Rural","HV_DestinationSign"),scale=2.6)
+
+    # Authoritative route/reset markers consumed by later population and mission systems.
+    navigation_points = (
+        (0,-19000),(0,-15000),(0,-10500),(0,-6000),(0,-1500),(0,2500),
+        (0,8000),(0,12000),(-11500,0),(11500,0),(-11200,7600),(9800,7800))
+    for index, (x, y) in enumerate(navigation_points):
+        spawn_marker(f"HV_Navigation_{index:02d}", (x,y,120), ("HV_Navigation", "HV_PedestrianNode"))
+
+    for index, (x, y) in enumerate(((0,-18000),(0,-9000),(0,0),(0,9000),(-11000,0),(11000,0))):
+        spawn_marker(f"HV_TrafficRoute_{index:02d}", (x,y,90), ("HV_TrafficRoute", "HV_ParkingNode"))
+
+    for index, (x, y) in enumerate(((0,-20500),(0,13500),(-14500,0),(14500,0))):
+        spawn_marker(f"HV_ResetVolume_{index:02d}", (x,y,100), ("HV_ResetVolume", "HV_EmergencyRecovery"))
+
+    # Regional vegetation and street furniture.
+    for index in range(44):
+        side = -1 if index % 2 == 0 else 1
+        x = side * (4500 + (index % 5) * 2500)
+        y = -18500 + (index // 2) * 1800
+        spawn_tree(f"HV_RegionalTree_{index}", (x, y, 0), materials, 0.75 + (index % 4) * 0.12)
+
+    log("complete Hill Valley regional districts generated")
 
 
 def main():
@@ -424,6 +569,7 @@ def main():
     build_courthouse(materials_global)
     build_storefronts(materials_global)
     build_streetscape(materials_global)
+    build_complete_region(materials_global)
     set_default_era_data_layer()
     if not level_subsystem.save_current_level():
         raise RuntimeError("Unable to save the current Hill Valley level")
