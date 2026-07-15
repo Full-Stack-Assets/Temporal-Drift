@@ -1,0 +1,132 @@
+{
+  "cast": [
+    {
+      "id": "Vale",
+      "display_name": "Dr. Emmett Vale",
+      "role": "eccentric inventor and time-science mentor",
+      "voice_direction": "fast, urgent, brilliant, warm, slightly chaotic",
+      "lines": [
+        {
+          "id": "VO_Vale_001",
+          "text": "Temporal field is stable enough for testing. Keep your speed under control, watch the circuits, and do not tear history in half."
+        },
+        {
+          "id": "VO_Vale_002",
+          "text": "The courthouse clock is our anchor. If the square changes, check the plaque, the diner sign, and the archive wall."
+        }
+      ]
+    },
+    {
+      "id": "June",
+      "display_name": "June Parker",
+      "role": "player ally, field mechanic, mission navigator",
+      "voice_direction": "grounded, smart, brave, dry humor under pressure",
+      "lines": [
+        {
+          "id": "VO_June_001",
+          "text": "I marked the safe route around the square. Drive clean, calibrate the sensor, and come back in one piece."
+        },
+        {
+          "id": "VO_June_002",
+          "text": "If you exit the car, stay close to the objective markers. This town gets weird fast."
+        }
+      ]
+    },
+    {
+      "id": "Crane",
+      "display_name": "Officer Crane",
+      "role": "law officer and crowd-control contact",
+      "voice_direction": "firm, skeptical, protective, small-town authority",
+      "lines": [
+        {
+          "id": "VO_Crane_001",
+          "text": "No speeding through courthouse square. I do not care what year you say you are from."
+        },
+        {
+          "id": "VO_Crane_002",
+          "text": "Storm is rolling in. Keep civilians away from the cable route and move."
+        }
+      ]
+    },
+    {
+      "id": "Elena",
+      "display_name": "Elena Cruz",
+      "role": "historian, archive witness, timeline continuity expert",
+      "voice_direction": "clear, observant, calm under impossible evidence",
+      "lines": [
+        {
+          "id": "VO_Elena_001",
+          "text": "The archive records changed again. The founder portrait, school dedication, and diner menu no longer agree."
+        },
+        {
+          "id": "VO_Elena_002",
+          "text": "Photograph everything before you jump. Memory is unreliable after a paradox wave."
+        }
+      ]
+    },
+    {
+      "id": "Rex",
+      "display_name": "Rex Strickland",
+      "role": "rival driver and timeline bully",
+      "voice_direction": "cocky, taunting, dangerous but not cartoonish",
+      "lines": [
+        {
+          "id": "VO_Rex_001",
+          "text": "Nice wheels. Shame you drive like you are afraid of the future."
+        },
+        {
+          "id": "VO_Rex_002",
+          "text": "This square belongs to whoever controls the clock. Try to keep up."
+        }
+      ]
+    },
+    {
+      "id": "Mabel",
+      "display_name": "Mabel Finch",
+      "role": "diner owner and era-specific rumor hub",
+      "voice_direction": "warm, sharp, observant, classic small-town gossip energy",
+      "lines": [
+        {
+          "id": "VO_Mabel_001",
+          "text": "You look like trouble with a steering wheel. Sit down, order coffee, and tell me which year is missing."
+        },
+        {
+          "id": "VO_Mabel_002",
+          "text": "The clocktower crowd has been jumpy all morning. Something about lightning and a car that hums."
+        }
+      ]
+    },
+    {
+      "id": "Silas",
+      "display_name": "Marshal Silas Reed",
+      "role": "1885 lawman and frontier quest-giver",
+      "voice_direction": "steady western drawl, laconic, honorable",
+      "lines": [
+        {
+          "id": "VO_Silas_001",
+          "text": "That machine of yours spooked every horse from here to the rail yard."
+        },
+        {
+          "id": "VO_Silas_002",
+          "text": "If you need the clock repaired, start with the blacksmith and keep clear of the noon train."
+        }
+      ]
+    },
+    {
+      "id": "Nova",
+      "display_name": "Nova Vale",
+      "role": "2045 systems engineer and future-era contact",
+      "voice_direction": "precise, futuristic, quietly emotional",
+      "lines": [
+        {
+          "id": "VO_Nova_001",
+          "text": "Welcome to 2045. The city remembers every timeline you broke to get here."
+        },
+        {
+          "id": "VO_Nova_002",
+          "text": "Your vehicle is analog, unstable, and somehow beautiful. Do not let the grid scan it."
+        }
+      ]
+    }
+  ]
+}

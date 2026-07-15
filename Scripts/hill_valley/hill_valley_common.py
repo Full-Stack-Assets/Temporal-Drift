@@ -16,6 +16,7 @@ CYLINDER = "/Engine/BasicShapes/Cylinder.Cylinder"
 SPHERE = "/Engine/BasicShapes/Sphere.Sphere"
 BASIC_MATERIAL = "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
 MATERIAL_PATH = "/Game/Materials/HillValley"
+PBR_MATERIAL_PATH = "/Game/Materials/HillValley/PBR"
 
 actor_subsystem = unreal.get_editor_subsystem(unreal.EditorActorSubsystem)
 level_subsystem = unreal.get_editor_subsystem(unreal.LevelEditorSubsystem)
@@ -225,7 +226,7 @@ def spawn_named_citizen_node(citizen_id, display_name, location):
 
 
 def create_default_materials():
-    return {
+    materials = {
         "asphalt": create_color_material("M_HV_Asphalt", (0.035, 0.04, 0.045), 0.92),
         "concrete": create_color_material("M_HV_Concrete", (0.42, 0.43, 0.40), 0.82),
         "grass": create_color_material("M_HV_Grass", (0.08, 0.24, 0.07), 0.95),
@@ -244,3 +245,22 @@ def create_default_materials():
         "sand": create_color_material("M_HV_Sand", (0.62, 0.54, 0.38), 0.9),
         "yellow_line": create_color_material("M_HV_YellowLine", (0.82, 0.72, 0.08), 0.7),
     }
+    pbr_overrides = {
+        "asphalt": "M_PH_asphalt_02",
+        "concrete": "M_PH_concrete_floor_worn_001",
+        "grass": "M_PH_grass_path_3",
+        "stone": "M_PH_concrete_pavement_03",
+        "brick": "M_PH_brick_wall_001",
+        "brick_red": "M_PH_brick_wall_001",
+        "brick_dark": "M_PH_brick_wall_09",
+        "plaster": "M_PH_painted_plaster_wall",
+        "roof": "M_PH_grey_roof_tiles_02",
+        "dark": "M_PH_rusty_metal_04",
+        "trunk": "M_PH_wooden_planks",
+        "sand": "M_PH_brown_mud_dry",
+    }
+    for material_key, asset_name in pbr_overrides.items():
+        pbr_path = f"{PBR_MATERIAL_PATH}/{asset_name}"
+        if unreal.EditorAssetLibrary.does_asset_exist(pbr_path):
+            materials[material_key] = load_asset_checked(pbr_path)
+    return materials

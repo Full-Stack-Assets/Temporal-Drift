@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "instructions": "Place owned/licensed WAV files in SourceArt/Audio/Music/Intake using these filenames, then run Scripts/Assets/import_music_intake_assets.py through UnrealEditor-Cmd.",
+  "required_format": {
+    "container": "wav",
+    "sample_rate": "44100 or 48000 Hz",
+    "channels": "stereo preferred, mono accepted",
+    "licensing": "owned, commissioned, royalty-free, CC0/CC-BY compatible with attribution notes, or otherwise legally cleared"
+  },
+  "tracks": [
+    {
+      "id": "MUS_1885_Main",
+      "file": "MUS_1885_Main.wav",
+      "era": "WildWest1885",
+      "type": "music",
+      "destination": "/Game/Audio/Music/Eras/MUS_1885_Main",
+      "style_target": "frontier acoustic/western town theme; dusty, adventurous, not a copyrighted film cue"
+    },
+    {
+      "id": "AMB_1885_Town",
+      "file": "AMB_1885_Town.wav",
+      "era": "WildWest1885",
+      "type": "ambience",
+      "destination": "/Game/Audio/Ambience/Eras/AMB_1885_Town",
+      "style_target": "wind, sparse street life, horses/rail ambience if licensed"
+    },
+    {
+      "id": "MUS_1955_Main",
+      "file": "MUS_1955_Main.wav",
+      "era": "Past1955",
+      "type": "music",
+      "destination": "/Game/Audio/Music/Eras/MUS_1955_Main",
+      "style_target": "licensed doo-wop / diner / school dance inspired track; no unlicensed famous songs"
+    },
+    {
+      "id": "AMB_1955_Diner",
+      "file": "AMB_1955_Diner.wav",
+      "era": "Past1955",
+      "type": "ambience",
+      "destination": "/Game/Audio/Ambience/Eras/AMB_1955_Diner",
+      "style_target": "diner room tone, light chatter, jukebox bleed if licensed"
+    },
+    {
+      "id": "MUS_1985_Main",
+      "file": "MUS_1985_Main.wav",
+      "era": "Present1985",
+      "type": "music",
+      "destination": "/Game/Audio/Music/Eras/MUS_1985_Main",
+      "style_target": "bright synth-rock adventure cue; original or licensed"
+    },
+    {
+      "id": "AMB_1985_Town",
+      "file": "AMB_1985_Town.wav",
+      "era": "Present1985",
+      "type": "ambience",
+      "destination": "/Game/Audio/Ambience/Eras/AMB_1985_Town",
+      "style_target": "suburban traffic, mall/store hum, small-town afternoon"
+    },
+    {
+      "id": "MUS_1985A_Main",
+      "file": "MUS_1985A_Main.wav",
+      "era": "Alternate1985",
+      "type": "music",
+      "destination": "/Game/Audio/Music/Eras/MUS_1985A_Main",
+      "style_target": "dark synth/industrial alternate timeline cue"
+    },
+    {
+      "id": "AMB_1985A_Street",
+      "file": "AMB_1985A_Street.wav",
+      "era": "Alternate1985",
+      "type": "ambience",
+      "destination": "/Game/Audio/Ambience/Eras/AMB_1985A_Street",
+      "style_target": "neon hum, distant sirens, wind, industrial rattle"
+    },
+    {
+      "id": "MUS_2015_Main",
+      "file": "MUS_2015_Main.wav",
+      "era": "Future2015",
+      "type": "music",
+      "destination": "/Game/Audio/Music/Eras/MUS_2015_Main",
+      "style_target": "optimistic retro-future synth/orchestral hybrid"
+    },
+    {
+      "id": "AMB_2015_Future",
+      "file": "AMB_2015_Future.wav",
+      "era": "Future2015",
+      "type": "ambience",
+      "destination": "/Game/Audio/Ambience/Eras/AMB_2015_Future",
+      "style_target": "clean electric traffic, soft drones, UI beeps"
+    },
+    {
+      "id": "MUS_2045_Main",
+      "file": "MUS_2045_Main.wav",
+      "era": "DeepFuture2045",
+      "type": "music",
+      "destination": "/Game/Audio/Music/Eras/MUS_2045_Main",
+      "style_target": "vertical-city future score, sleek but uneasy"
+    },
+    {
+      "id": "AMB_2045_City",
+      "file": "AMB_2045_City.wav",
+      "era": "DeepFuture2045",
+      "type": "ambience",
+      "destination": "/Game/Audio/Ambience/Eras/AMB_2045_City",
+      "style_target": "high-altitude city bed, drones, distant transit"
+    }
+  ]
+}

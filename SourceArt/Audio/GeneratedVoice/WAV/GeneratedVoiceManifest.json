@@ -1,0 +1,114 @@
+﻿[
+    {
+        "id":  "VO_Vale_001",
+        "character":  "Vale",
+        "display_name":  "Dr. Emmett Vale",
+        "voice":  "Microsoft David Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Vale_001.wav"
+    },
+    {
+        "id":  "VO_Vale_002",
+        "character":  "Vale",
+        "display_name":  "Dr. Emmett Vale",
+        "voice":  "Microsoft David Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Vale_002.wav"
+    },
+    {
+        "id":  "VO_June_001",
+        "character":  "June",
+        "display_name":  "June Parker",
+        "voice":  "Microsoft Zira Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_June_001.wav"
+    },
+    {
+        "id":  "VO_June_002",
+        "character":  "June",
+        "display_name":  "June Parker",
+        "voice":  "Microsoft Zira Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_June_002.wav"
+    },
+    {
+        "id":  "VO_Crane_001",
+        "character":  "Crane",
+        "display_name":  "Officer Crane",
+        "voice":  "Microsoft David Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Crane_001.wav"
+    },
+    {
+        "id":  "VO_Crane_002",
+        "character":  "Crane",
+        "display_name":  "Officer Crane",
+        "voice":  "Microsoft David Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Crane_002.wav"
+    },
+    {
+        "id":  "VO_Elena_001",
+        "character":  "Elena",
+        "display_name":  "Elena Cruz",
+        "voice":  "Microsoft Zira Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Elena_001.wav"
+    },
+    {
+        "id":  "VO_Elena_002",
+        "character":  "Elena",
+        "display_name":  "Elena Cruz",
+        "voice":  "Microsoft Zira Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Elena_002.wav"
+    },
+    {
+        "id":  "VO_Rex_001",
+        "character":  "Rex",
+        "display_name":  "Rex Strickland",
+        "voice":  "Microsoft David Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Rex_001.wav"
+    },
+    {
+        "id":  "VO_Rex_002",
+        "character":  "Rex",
+        "display_name":  "Rex Strickland",
+        "voice":  "Microsoft David Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Rex_002.wav"
+    },
+    {
+        "id":  "VO_Mabel_001",
+        "character":  "Mabel",
+        "display_name":  "Mabel Finch",
+        "voice":  "Microsoft Zira Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Mabel_001.wav"
+    },
+    {
+        "id":  "VO_Mabel_002",
+        "character":  "Mabel",
+        "display_name":  "Mabel Finch",
+        "voice":  "Microsoft Zira Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Mabel_002.wav"
+    },
+    {
+        "id":  "VO_Silas_001",
+        "character":  "Silas",
+        "display_name":  "Marshal Silas Reed",
+        "voice":  "Microsoft David Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Silas_001.wav"
+    },
+    {
+        "id":  "VO_Silas_002",
+        "character":  "Silas",
+        "display_name":  "Marshal Silas Reed",
+        "voice":  "Microsoft David Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Silas_002.wav"
+    },
+    {
+        "id":  "VO_Nova_001",
+        "character":  "Nova",
+        "display_name":  "Nova Vale",
+        "voice":  "Microsoft Zira Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Nova_001.wav"
+    },
+    {
+        "id":  "VO_Nova_002",
+        "character":  "Nova",
+        "display_name":  "Nova Vale",
+        "voice":  "Microsoft Zira Desktop",
+        "path":  "SourceArt\\Audio\\GeneratedVoice\\WAV\\VO_Nova_002.wav"
+    }
+]
