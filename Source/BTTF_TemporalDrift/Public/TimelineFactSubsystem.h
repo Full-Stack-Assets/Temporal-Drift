@@ -25,6 +25,7 @@ public:
 
 private:
     bool VisitFact(FName FactId, TSet<FName>& Visiting, TSet<FName>& Visited, TArray<FName>& Order);
+    void MirrorComputedFactsToKernel(FName SourceId);
 
     UPROPERTY() TMap<FName, FTimelineFactDefinition> Definitions;
     UPROPERTY() TMap<FName, bool> BaseOverrides;
