@@ -304,8 +304,8 @@ struct BTTF_TEMPORALDRIFT_API FTemporalTransactionTrace
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly) TArray<FGuid> GeneratedCommandIds;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly) TArray<FGuid> GeneratedNewsIds;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly) FTemporalStabilityBreakdown Stability;
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly) uint64 SimulationTruthHash = 0;
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly) uint64 FullPersistenceHash = 0;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly) int64 SimulationTruthHash = 0;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly) int64 FullPersistenceHash = 0;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly) bool bCycleDetected = false;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly) FString FailureReason;
 };
@@ -335,8 +335,8 @@ struct BTTF_TEMPORALDRIFT_API FTemporalKernelSaveData
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly) TMap<FName, int32> EventOccurrenceCounts;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly) TMap<FName, int64> EventLastStartTicks;
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly) FTemporalStabilityBreakdown Stability;
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly) uint64 SimulationTruthHash = 0;
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly) uint64 FullPersistenceHash = 0;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly) int64 SimulationTruthHash = 0;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly) int64 FullPersistenceHash = 0;
 
     bool HasKernelState() const { return KernelSchemaVersion > 0; }
 };
