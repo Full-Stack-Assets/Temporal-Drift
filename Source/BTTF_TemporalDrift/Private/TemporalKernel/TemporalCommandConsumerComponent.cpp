@@ -36,7 +36,12 @@ void UTemporalCommandConsumerComponent::EndPlay(const EEndPlayReason::Type EndPl
 
 bool UTemporalCommandConsumerComponent::CanHandleCommand(const FSimulationCommandRecord& Command) const
 {
-    return !ConsumerId.IsNone() && SupportedCommandTypes.Contains(Command.CommandType);
+    if (ConsumerId.IsNone() || !SupportedCommandTypes.Contains(Command.CommandType))
+    {
+        return false;
+    }
+
+    return SupportedTargets.IsEmpty() || SupportedTargets.Contains(Command.Target);
 }
 
 bool UTemporalCommandConsumerComponent::ReceiveTemporalCommand(const FSimulationCommandRecord& Command)
