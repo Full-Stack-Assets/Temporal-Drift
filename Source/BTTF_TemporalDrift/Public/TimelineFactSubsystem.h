@@ -32,4 +32,5 @@ private:
     UPROPERTY() TMap<FName, bool> ComputedValues;
     UPROPERTY() TArray<FName> ChangedFacts;
     bool bDependencyCycle = false;
+    bool bSuppressNextKernelMirror = false;
 };
