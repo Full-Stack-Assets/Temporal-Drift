@@ -13,6 +13,7 @@
 #include "EraWeatherSubsystem.h"
 #include "CraftingSubsystem.h"
 #include "DialogueSubsystem.h"
+#include "TemporalKernel/TemporalKernelTypes.h"
 #include "BTTF_SaveGame.generated.h"
 
 UCLASS()
@@ -21,7 +22,7 @@ class BTTF_TEMPORALDRIFT_API UBTTF_SaveGame : public USaveGame
     GENERATED_BODY()
 
 public:
-    static constexpr int32 LatestSchemaVersion = 3;
+    static constexpr int32 LatestSchemaVersion = 4;
     UBTTF_SaveGame();
 
     UFUNCTION(BlueprintCallable) bool MigrateToLatestSchema();
@@ -56,6 +57,7 @@ public:
     UPROPERTY(VisibleAnywhere, Category="Vehicle") FTemporalDriveSnapshot TemporalDrive;
     UPROPERTY(VisibleAnywhere, Category="World") FEraWorldClock WorldClock;
     UPROPERTY(VisibleAnywhere, Category="Timeline") TMap<FName,bool> TimelineFactOverrides;
+    UPROPERTY(VisibleAnywhere, Category="Timeline") FTemporalKernelSaveData TemporalKernel;
     UPROPERTY(VisibleAnywhere, Category="Crafting") FCraftingSnapshot Crafting;
     UPROPERTY(VisibleAnywhere, Category="Dialogue") FDialogueProgressSnapshot DialogueProgress;
 };
