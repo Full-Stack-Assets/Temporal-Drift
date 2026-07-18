@@ -76,10 +76,10 @@ public:
     bool ImportSaveData(const FTemporalKernelSaveData& SaveData, FString& OutError);
 
     UFUNCTION(BlueprintPure, Category = "Temporal Kernel")
-    uint64 GetSimulationTruthHash() const { return SimulationTruthHash; }
+    int64 GetSimulationTruthHash() const { return SimulationTruthHash; }
 
     UFUNCTION(BlueprintPure, Category = "Temporal Kernel")
-    uint64 GetFullPersistenceHash() const { return FullPersistenceHash; }
+    int64 GetFullPersistenceHash() const { return FullPersistenceHash; }
 
     UFUNCTION(BlueprintPure, Category = "Temporal Kernel")
     int64 GetSimulationTick() const { return SimulationTick; }
@@ -118,6 +118,6 @@ private:
 
     int64 SimulationTick = 0;
     int64 TimelineSeed = 19851112;
-    uint64 SimulationTruthHash = 0;
-    uint64 FullPersistenceHash = 0;
+    int64 SimulationTruthHash = 0;
+    int64 FullPersistenceHash = 0;
 };
