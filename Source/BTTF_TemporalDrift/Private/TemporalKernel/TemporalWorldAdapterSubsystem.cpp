@@ -81,7 +81,7 @@ bool UTemporalWorldAdapterSubsystem::RegisterConsumer(UTemporalCommandConsumerCo
         return false;
     }
 
-    RegisteredConsumers.AddUnique(Consumer);
+    RegisteredConsumers.AddUnique(TWeakObjectPtr<UTemporalCommandConsumerComponent>(Consumer));
     return true;
 }
 
