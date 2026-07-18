@@ -4,6 +4,14 @@
 
 bool UTimelineFactSubsystem::LoadDefinitions(UTimelineFactDataAsset* Data)
 {
+    if (UGameInstance* GameInstance = GetGameInstance())
+    {
+        if (UTemporalKernelSubsystem* Kernel = GameInstance->GetSubsystem<UTemporalKernelSubsystem>())
+        {
+            bSuppressNextKernelMirror = Kernel->GetSimulationTick() > 0;
+        }
+    }
+
     Definitions.Reset(); BaseOverrides.Reset(); ComputedValues.Reset(); ChangedFacts.Reset(); bDependencyCycle=false;
     if (!Data) return false;
     for (const FTimelineFactDefinition& Fact : Data->Facts)
@@ -110,6 +118,12 @@ bool UTimelineFactSubsystem::RestoreOverrideSnapshot(const TMap<FName, bool>& Sn
 
 void UTimelineFactSubsystem::MirrorComputedFactsToKernel(FName SourceId)
 {
+    if (bSuppressNextKernelMirror)
+    {
+        bSuppressNextKernelMirror = false;
+        return;
+    }
+
     UGameInstance* GameInstance = GetGameInstance();
     UTemporalKernelSubsystem* Kernel = GameInstance ? GameInstance->GetSubsystem<UTemporalKernelSubsystem>() : nullptr;
     if (!Kernel)
