@@ -39,6 +39,9 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Temporal Adapter")
     TArray<FName> SupportedCommandTypes;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Temporal Adapter")
+    TArray<FName> SupportedTargets;
+
     UPROPERTY(BlueprintAssignable, Category="Temporal Adapter")
     FOnTemporalCommandReceived OnCommandReceived;
 
