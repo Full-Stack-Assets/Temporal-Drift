@@ -125,15 +125,22 @@ void UTimelineFactSubsystem::MirrorComputedFactsToKernel(FName SourceId)
     Request.SourceId = SourceId;
     for (const FName FactId : FactIds)
     {
-        const bool Value = ComputedValues.FindRef(FactId);
+        const bool ComputedValue = ComputedValues.FindRef(FactId);
         FTemporalFactRecord KernelFact;
         if (!Kernel->TryGetFact(FactId, KernelFact))
         {
-            if (!Kernel->RegisterFact(FactId, FTemporalValue::MakeBool(Value)))
+            const FTimelineFactDefinition* Definition = Definitions.Find(FactId);
+            const bool DefaultValue = Definition ? Definition->DefaultValue : false;
+            if (!Kernel->RegisterFact(FactId, FTemporalValue::MakeBool(DefaultValue)))
             {
                 UE_LOG(LogTemp, Warning, TEXT("Timeline fact '%s' could not be registered in the Living Timeline kernel."), *FactId.ToString());
+                continue;
             }
-            continue;
+
+            if (!Kernel->TryGetFact(FactId, KernelFact))
+            {
+                continue;
+            }
         }
 
         if (KernelFact.Value.Type != ETemporalValueType::Boolean)
@@ -141,7 +148,7 @@ void UTimelineFactSubsystem::MirrorComputedFactsToKernel(FName SourceId)
             UE_LOG(LogTemp, Warning, TEXT("Timeline fact '%s' conflicts with a non-Boolean kernel fact."), *FactId.ToString());
             continue;
         }
-        if (KernelFact.Value.BoolValue == Value)
+        if (KernelFact.Value.BoolValue == ComputedValue)
         {
             continue;
         }
@@ -150,7 +157,7 @@ void UTimelineFactSubsystem::MirrorComputedFactsToKernel(FName SourceId)
         Mutation.MutationId = FName(*(TEXT("Compatibility.Mirror.") + FactId.ToString()));
         Mutation.FactId = FactId;
         Mutation.Operation = ETemporalMutationOperation::Set;
-        Mutation.Value = FTemporalValue::MakeBool(Value);
+        Mutation.Value = FTemporalValue::MakeBool(ComputedValue);
         Request.PrimaryMutations.Add(Mutation);
     }
 
