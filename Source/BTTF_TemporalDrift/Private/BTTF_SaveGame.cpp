@@ -3,6 +3,7 @@
 // Unreal Engine 5.8
 
 #include "BTTF_SaveGame.h"
+#include "TemporalKernel/TemporalKernelSubsystem.h"
 
 UBTTF_SaveGame::UBTTF_SaveGame()
 {
@@ -31,10 +32,28 @@ bool UBTTF_SaveGame::MigrateToLatestSchema()
         WorldClock.Era=SavedTimelineState;
         SchemaVersion=3;
     }
+    if(SchemaVersion<4)
+    {
+        // Schema v4 adds the deterministic Living Timeline payload. Legacy saves keep
+        // the payload empty and continue through TimelineFactOverrides on first load.
+        TemporalKernel=FTemporalKernelSaveData();
+        SchemaVersion=4;
+    }
     return IsSaveDataValid();
 }
 
 bool UBTTF_SaveGame::IsSaveDataValid()const
 {
-    return SchemaVersion==LatestSchemaVersion&&FMath::IsFinite(SavedParadoxLevel)&&SavedParadoxLevel>=0.0f&&SavedParadoxLevel<=100.0f&&TotalTimeJumps>=0&&HeroProgression.AvailableSkillPoints>=0&&TemporalDrive.PlutoniumCells>=0&&TemporalDrive.FusionFuel>=0.0f&&TemporalDrive.FusionFuel<=100.0f;
+    const bool bKernelVersionValid = !TemporalKernel.HasKernelState()
+        || TemporalKernel.KernelSchemaVersion == UTemporalKernelSubsystem::CurrentKernelSchemaVersion;
+    return SchemaVersion==LatestSchemaVersion
+        && bKernelVersionValid
+        && FMath::IsFinite(SavedParadoxLevel)
+        && SavedParadoxLevel>=0.0f
+        && SavedParadoxLevel<=100.0f
+        && TotalTimeJumps>=0
+        && HeroProgression.AvailableSkillPoints>=0
+        && TemporalDrive.PlutoniumCells>=0
+        && TemporalDrive.FusionFuel>=0.0f
+        && TemporalDrive.FusionFuel<=100.0f;
 }
