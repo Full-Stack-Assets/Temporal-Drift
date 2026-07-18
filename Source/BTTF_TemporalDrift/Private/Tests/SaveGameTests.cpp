@@ -8,6 +8,8 @@
 #include "CraftingSubsystem.h"
 #include "TimelineFactSubsystem.h"
 #include "TimelineFactDataAsset.h"
+#include "TemporalKernel/ClockTowerScenario.h"
+#include "TemporalKernel/TemporalKernelSubsystem.h"
 #include "Engine/GameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -17,7 +19,10 @@ bool FBTTFSaveSchemaTest::RunTest(const FString& Parameters)
     UBTTF_SaveGame* Save=NewObject<UBTTF_SaveGame>();
     TestEqual(TEXT("New save uses latest schema"),Save->SchemaVersion,UBTTF_SaveGame::LatestSchemaVersion);TestTrue(TEXT("New save valid"),Save->IsSaveDataValid());
     Save->SchemaVersion=1;Save->UnlockedEras.Reset();TestTrue(TEXT("Legacy save migrates"),Save->MigrateToLatestSchema());TestTrue(TEXT("Present era restored"),Save->UnlockedEras.Contains(ETimelineState::Present1985));
+    TestEqual(TEXT("Legacy save reaches schema v4"), Save->SchemaVersion, 4);
+    TestFalse(TEXT("Legacy save keeps empty kernel payload"), Save->TemporalKernel.HasKernelState());
     Save->SavedParadoxLevel=101.0f;TestFalse(TEXT("Corrupt paradox rejected"),Save->IsSaveDataValid());Save->SavedParadoxLevel=25.0f;
+    Save->TemporalKernel.KernelSchemaVersion=99;TestFalse(TEXT("Unknown kernel schema rejected"),Save->IsSaveDataValid());Save->TemporalKernel=FTemporalKernelSaveData();
     Save->SavedHeroTransform=FTransform(FRotator(0,90,0),FVector(100,200,300));
     Save->LastSafeVehicleTransform=FTransform(FRotator(0,45,0),FVector(400,500,600));
     Save->bPlayerInVehicle=false;
@@ -32,6 +37,34 @@ bool FBTTFSaveSchemaTest::RunTest(const FString& Parameters)
     TestTrue(TEXT("Profile reduced flash stored"),Profile->bReducedFlash);
     TestEqual(TEXT("Profile UI scale stored"),Profile->UIScale,1.25f);
     TestEqual(TEXT("Profile dialogue volume stored"),Profile->DialogueVolume,0.85f);
+    return !HasAnyErrors();
+}
+
+IMPLEMENT_SIMPLE_AUTOMATION_TEST(FBTTFTemporalKernelSavePayloadTest,
+    "BTTF.Save.TemporalKernelSnapshot",
+    EAutomationTestFlags::EditorContext | EAutomationTestFlags::EngineFilter)
+
+bool FBTTFTemporalKernelSavePayloadTest::RunTest(const FString& Parameters)
+{
+    UGameInstance* SourceGameInstance = NewObject<UGameInstance>();
+    UTemporalKernelSubsystem* SourceKernel = NewObject<UTemporalKernelSubsystem>(SourceGameInstance);
+    SourceKernel->ResetKernel();
+    FString Error;
+    TestTrue(TEXT("Clock Tower definitions install"), FClockTowerScenario::Install(SourceKernel, Error));
+    TestTrue(TEXT("Clock Tower transaction commits"), FClockTowerScenario::SubmitDisturbance(SourceKernel).bCommitted);
+
+    UBTTF_SaveGame* Save = NewObject<UBTTF_SaveGame>();
+    Save->TemporalKernel = SourceKernel->ExportSaveData();
+    TestTrue(TEXT("Kernel payload is present"), Save->TemporalKernel.HasKernelState());
+    TestTrue(TEXT("Save with kernel payload is valid"), Save->IsSaveDataValid());
+
+    UGameInstance* RestoredGameInstance = NewObject<UGameInstance>();
+    UTemporalKernelSubsystem* RestoredKernel = NewObject<UTemporalKernelSubsystem>(RestoredGameInstance);
+    RestoredKernel->ResetKernel();
+    TestTrue(TEXT("Clock Tower definitions reinstall before import"), FClockTowerScenario::Install(RestoredKernel, Error));
+    TestTrue(TEXT("Kernel payload imports"), RestoredKernel->ImportSaveData(Save->TemporalKernel, Error));
+    TestEqual(TEXT("Truth hash is restored"), RestoredKernel->GetSimulationTruthHash(), SourceKernel->GetSimulationTruthHash());
+    TestEqual(TEXT("Persistence hash is restored"), RestoredKernel->GetFullPersistenceHash(), SourceKernel->GetFullPersistenceHash());
     return !HasAnyErrors();
 }
 
@@ -121,6 +154,11 @@ bool FBTTFSubsystemSnapshotRoundTripTest::RunTest(const FString& Parameters)
     Facts->LoadDefinitions(FactData);
     Facts->SetBaseFact(TEXT("C_PlaqueChanged"), true);
     const TMap<FName, bool> FactSnapshot = Facts->GetOverrideSnapshot();
+
+    UTemporalKernelSubsystem* MirroredKernel = GameInstance->GetSubsystem<UTemporalKernelSubsystem>();
+    FTemporalFactRecord MirroredPlaque;
+    TestTrue(TEXT("Boolean timeline fact mirrored into kernel"), MirroredKernel->TryGetFact(TEXT("C_PlaqueChanged"), MirroredPlaque));
+    TestEqual(TEXT("Mirrored Boolean fact value"), MirroredPlaque.Value.BoolValue, true);
 
     UTimelineFactSubsystem* Facts2 = GameInstance2->GetSubsystem<UTimelineFactSubsystem>();
     Facts2->LoadDefinitions(FactData);
