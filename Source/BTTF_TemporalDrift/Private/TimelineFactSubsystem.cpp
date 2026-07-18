@@ -1,5 +1,7 @@
 #include "TimelineFactSubsystem.h"
 
+#include "TemporalKernel/TemporalKernelSubsystem.h"
+
 bool UTimelineFactSubsystem::LoadDefinitions(UTimelineFactDataAsset* Data)
 {
     Definitions.Reset(); BaseOverrides.Reset(); ComputedValues.Reset(); ChangedFacts.Reset(); bDependencyCycle=false;
@@ -77,6 +79,8 @@ bool UTimelineFactSubsystem::RecomputeFacts()
         ComputedValues.Add(FactId,NewValue);
         if (Previous!=NewValue) { ChangedFacts.Add(FactId); OnFactChanged.Broadcast(FactId,Previous,NewValue); }
     }
+
+    MirrorComputedFactsToKernel(TEXT("Compatibility.TimelineFactSubsystem"));
     return true;
 }
 
@@ -102,4 +106,60 @@ bool UTimelineFactSubsystem::RestoreOverrideSnapshot(const TMap<FName, bool>& Sn
 
     BaseOverrides = Snapshot;
     return RecomputeFacts();
+}
+
+void UTimelineFactSubsystem::MirrorComputedFactsToKernel(FName SourceId)
+{
+    UGameInstance* GameInstance = GetGameInstance();
+    UTemporalKernelSubsystem* Kernel = GameInstance ? GameInstance->GetSubsystem<UTemporalKernelSubsystem>() : nullptr;
+    if (!Kernel)
+    {
+        return;
+    }
+
+    TArray<FName> FactIds;
+    ComputedValues.GetKeys(FactIds);
+    FactIds.Sort(FNameLexicalLess());
+
+    FTemporalTransactionRequest Request;
+    Request.SourceId = SourceId;
+    for (const FName FactId : FactIds)
+    {
+        const bool Value = ComputedValues.FindRef(FactId);
+        FTemporalFactRecord KernelFact;
+        if (!Kernel->TryGetFact(FactId, KernelFact))
+        {
+            if (!Kernel->RegisterFact(FactId, FTemporalValue::MakeBool(Value)))
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Timeline fact '%s' could not be registered in the Living Timeline kernel."), *FactId.ToString());
+            }
+            continue;
+        }
+
+        if (KernelFact.Value.Type != ETemporalValueType::Boolean)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Timeline fact '%s' conflicts with a non-Boolean kernel fact."), *FactId.ToString());
+            continue;
+        }
+        if (KernelFact.Value.BoolValue == Value)
+        {
+            continue;
+        }
+
+        FTemporalMutation Mutation;
+        Mutation.MutationId = FName(*(TEXT("Compatibility.Mirror.") + FactId.ToString()));
+        Mutation.FactId = FactId;
+        Mutation.Operation = ETemporalMutationOperation::Set;
+        Mutation.Value = FTemporalValue::MakeBool(Value);
+        Request.PrimaryMutations.Add(Mutation);
+    }
+
+    if (!Request.PrimaryMutations.IsEmpty())
+    {
+        const FTemporalTransactionResult Result = Kernel->SubmitTransaction(Request);
+        if (!Result.bCommitted)
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Timeline fact mirror transaction failed: %s"), *Result.Error);
+        }
+    }
 }
