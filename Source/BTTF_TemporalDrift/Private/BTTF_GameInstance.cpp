@@ -15,6 +15,8 @@
 #include "CraftingSubsystem.h"
 #include "TimelineFactSubsystem.h"
 #include "TimelineFactDataAsset.h"
+#include "TemporalKernel/ClockTowerScenario.h"
+#include "TemporalKernel/TemporalKernelSubsystem.h"
 #include "GenealogySubsystem.h"
 #include "GenealogyDataAsset.h"
 #include "BTTFHeroCharacter.h"
@@ -97,6 +99,16 @@ void UBTTF_GameInstance::InitializeNewGame()
         CurrentSaveGame->SavedHeroTransform = FTransform::Identity;
         CurrentSaveGame->LastSafeVehicleTransform = FTransform::Identity;
         CurrentSaveGame->bPlayerInVehicle = true;
+        CurrentSaveGame->TemporalKernel = FTemporalKernelSaveData();
+    }
+
+    if (UTemporalKernelSubsystem* Kernel = GetSubsystem<UTemporalKernelSubsystem>())
+    {
+        FString KernelError;
+        if (!FClockTowerScenario::Install(Kernel, KernelError))
+        {
+            UE_LOG(LogTemp, Error, TEXT("Failed to reset Living Timeline kernel: %s"), *KernelError);
+        }
     }
 }
 
@@ -225,6 +237,7 @@ bool UBTTF_GameInstance::SaveGameToSlot(const FString& SlotName)
         if(UEraWeatherSubsystem* Weather=GetSubsystem<UEraWeatherSubsystem>())CurrentSaveGame->WorldClock=Weather->GetWorldClock();
         if(UCraftingSubsystem* Crafting=GetSubsystem<UCraftingSubsystem>())CurrentSaveGame->Crafting=Crafting->GetSnapshot();
         if(UTimelineFactSubsystem* Facts=GetSubsystem<UTimelineFactSubsystem>())CurrentSaveGame->TimelineFactOverrides=Facts->GetOverrideSnapshot();
+        if(UTemporalKernelSubsystem* Kernel=GetSubsystem<UTemporalKernelSubsystem>())CurrentSaveGame->TemporalKernel=Kernel->ExportSaveData();
         if(UDialogueSubsystem* Dialogue=GetSubsystem<UDialogueSubsystem>())CurrentSaveGame->DialogueProgress=Dialogue->GetProgressSnapshot();
 
         const FString TempSlot=SlotName+TEXT("__tmp");
@@ -253,6 +266,19 @@ bool UBTTF_GameInstance::LoadGameFromSlot(const FString& SlotName)
             CurrentSavedParadoxLevel = CurrentSaveGame->SavedParadoxLevel;
             UnlockedEras = CurrentSaveGame->UnlockedEras;
             TotalTimeJumpsMade = CurrentSaveGame->TotalTimeJumps;
+
+            if (CurrentSaveGame->TemporalKernel.HasKernelState())
+            {
+                if (UTemporalKernelSubsystem* Kernel = GetSubsystem<UTemporalKernelSubsystem>())
+                {
+                    FString KernelError;
+                    if (!Kernel->ImportSaveData(CurrentSaveGame->TemporalKernel, KernelError))
+                    {
+                        UE_LOG(LogTemp, Error, TEXT("Living Timeline restore failed: %s"), *KernelError);
+                        return false;
+                    }
+                }
+            }
 
             if(UMissionSubsystem* Mission=GetSubsystem<UMissionSubsystem>())
             {
@@ -464,6 +490,15 @@ float UBTTF_GameInstance::GetEffectsVolume() const
 
 void UBTTF_GameInstance::BootstrapCampaignSystems()
 {
+    if (UTemporalKernelSubsystem* Kernel = GetSubsystem<UTemporalKernelSubsystem>())
+    {
+        FString KernelError;
+        if (!FClockTowerScenario::Install(Kernel, KernelError))
+        {
+            UE_LOG(LogTemp, Error, TEXT("Failed to install Living Timeline kernel: %s"), *KernelError);
+        }
+    }
+
     if (UTimelineFactSubsystem* Facts = GetSubsystem<UTimelineFactSubsystem>())
     {
         if (UTimelineFactDataAsset* Data = LoadObject<UTimelineFactDataAsset>(nullptr,
