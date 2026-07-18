@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081319">
+  <meta name="description" content="Ripple City is an interactive causal city simulation. Change one condition, compare timelines, and inspect why outcomes occurred.">
+  <title>Ripple City — Change one thing. Watch everything move.</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to simulation</a>
+
+  <header class="app-header">
+    <div class="brand-lockup">
+      <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+      <div>
+        <p class="eyebrow">Causal Worlds / Prototype 01</p>
+        <h1>Ripple City</h1>
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <label class="compact-control" for="branch-select">
+        <span>Timeline</span>
+        <select id="branch-select" aria-label="Select timeline">
+          <option value="baseline">Steady Course</option>
+          <option value="shutdown">The Shutdown</option>
+          <option value="reinvention">The Reinvention</option>
+        </select>
+      </label>
+      <button id="reset-button" class="button button-quiet" type="button">Reset city</button>
+    </div>
+  </header>
+
+  <main id="main-content" class="app-grid">
+    <aside class="scenario-panel panel" aria-labelledby="scenario-heading">
+      <div>
+        <p class="eyebrow">Bellwether, Franklin</p>
+        <h2 id="scenario-heading">A city built on making things.</h2>
+        <p id="scenario-description" class="scenario-description">Atlas Works employs 4,800 people directly and anchors thousands of supplier jobs. For generations, its paychecks have moved through every neighborhood.</p>
+      </div>
+
+      <div class="atlas-card">
+        <div class="atlas-card__icon" aria-hidden="true">AW</div>
+        <div><strong>Atlas Works</strong><span>Largest employer · 4,800 jobs</span></div>
+        <span id="atlas-status" class="status-pill status-stable">Operating</span>
+      </div>
+
+      <button id="intervention-button" class="button button-danger button-large" type="button">
+        <span>Close Atlas Works</span><small>Simulate the next 20 years</small>
+      </button>
+
+      <section class="timeline-controls" aria-labelledby="timeline-heading">
+        <div class="section-heading-row">
+          <div><p class="eyebrow">Time controls</p><h3 id="timeline-heading">Year <span id="year-label">2026</span></h3></div>
+          <button id="play-button" class="icon-button" type="button" aria-label="Play timeline" title="Play timeline"><span id="play-icon" aria-hidden="true">▶</span></button>
+        </div>
+        <input id="year-slider" type="range" min="2026" max="2046" value="2026" step="1" aria-label="Simulation year">
+        <div class="timeline-bounds" aria-hidden="true"><span>2026</span><span>2046</span></div>
+      </section>
+
+      <section aria-labelledby="events-heading" class="events-section">
+        <div class="section-heading-row">
+          <div><p class="eyebrow">City chronicle</p><h3 id="events-heading">What changed</h3></div>
+          <span id="event-count" class="count-badge">1 event</span>
+        </div>
+        <div id="event-feed" class="event-feed" aria-live="polite"></div>
+      </section>
+
+      <p class="model-note"><strong>Scenario model:</strong> These are deterministic, internally consistent outcomes based on visible assumptions—not predictions of a real city.</p>
+    </aside>
+
+    <section class="map-panel panel" aria-labelledby="map-heading">
+      <div class="map-heading-row">
+        <div><p class="eyebrow">Live city map</p><h2 id="map-heading">Bellwether <span id="map-year">2026</span></h2></div>
+        <div class="map-legend" aria-label="District health legend">
+          <span><i class="legend-dot legend-strong"></i>Strong</span>
+          <span><i class="legend-dot legend-strained"></i>Strained</span>
+          <span><i class="legend-dot legend-critical"></i>Critical</span>
+        </div>
+      </div>
+
+      <div id="city-map" class="city-map" aria-label="Interactive map of Bellwether districts"></div>
+
+      <div class="map-footer">
+        <div id="district-summary" class="district-summary">
+          <span class="district-summary__label">Selected district</span><strong>Citywide view</strong><span>Select a district to inspect its local conditions.</span>
+        </div>
+        <div class="map-pulse" aria-hidden="true"><span></span> Simulation synchronized</div>
+      </div>
+    </section>
+
+    <aside class="insight-panel panel" aria-labelledby="insights-heading">
+      <div class="section-heading-row">
+        <div><p class="eyebrow">City pulse</p><h2 id="insights-heading">How Bellwether is doing</h2></div>
+        <span id="city-health-badge" class="health-badge">72 / 100</span>
+      </div>
+
+      <div id="metrics-grid" class="metrics-grid"></div>
+
+      <section class="compare-card" aria-labelledby="compare-heading">
+        <div class="section-heading-row compact">
+          <div><p class="eyebrow">Branch comparison</p><h3 id="compare-heading">Against</h3></div>
+          <select id="compare-select" aria-label="Compare against timeline">
+            <option value="baseline">Steady Course</option>
+            <option value="shutdown">The Shutdown</option>
+            <option value="reinvention">The Reinvention</option>
+          </select>
+        </div>
+        <div id="comparison-list" class="comparison-list"></div>
+      </section>
+
+      <section aria-labelledby="stories-heading">
+        <div class="section-heading-row compact"><div><p class="eyebrow">Lives in motion</p><h3 id="stories-heading">Citizen stories</h3></div></div>
+        <div id="stories-list" class="stories-list"></div>
+      </section>
+
+      <section id="explanation-panel" class="explanation-card" aria-labelledby="why-heading">
+        <p class="eyebrow">Explainable history</p><h3 id="why-heading">Why did this happen?</h3>
+        <p id="explanation-summary" class="explanation-summary">Select a metric or event to trace its causes.</p>
+        <ol id="causal-chain" class="causal-chain"></ol>
+      </section>
+    </aside>
+  </main>
+
+  <noscript>This prototype requires JavaScript to run the deterministic simulation.</noscript>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
