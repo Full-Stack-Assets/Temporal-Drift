@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "anchor-receipt-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["receiptVersion", "requestHash", "providerId", "providerReceiptId", "anchoredHash", "externalLocator", "observedAt", "providerEvidenceHash", "evidenceClass", "finalityClaim", "timestampAuthorityClaim", "executionAuthority", "receiptHash"],
+  "properties": {
+    "receiptVersion": { "const": "anchor-receipt-v1" },
+    "requestHash": { "$ref": "#/$defs/hash" },
+    "providerId": { "type": "string", "minLength": 1 },
+    "providerReceiptId": { "type": "string", "minLength": 1 },
+    "anchoredHash": { "$ref": "#/$defs/hash" },
+    "externalLocator": { "type": "string", "minLength": 1 },
+    "observedAt": { "type": "string", "minLength": 1 },
+    "providerEvidenceHash": { "$ref": "#/$defs/hash" },
+    "evidenceClass": { "const": "external-anchor-linkage-evidence" },
+    "finalityClaim": { "const": "none" },
+    "timestampAuthorityClaim": { "const": "none" },
+    "executionAuthority": { "const": "none" },
+    "receiptHash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": { "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" } }
+}
