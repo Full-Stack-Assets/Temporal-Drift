@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { canonicalString } from '../../src/kernel/canonicalize.js';
 import { forkRun } from '../../src/kernel/branch.js';
 import { advanceRun, createRun } from '../../src/kernel/replay.js';
 import { counterAdapter, counterManifest } from './helpers/counter-fixture.js';
@@ -35,4 +34,24 @@ test('missing, invalid, and duplicate branches fail closed', () => {
   assert.throws(() => forkRun(tampered, 's1', 'child'), { code: 'E_UNVERIFIED_FORK' });
   const manifestTampered = { ...parent, manifest: { ...parent.manifest, initialState: { count: 99 } } };
   assert.throws(() => forkRun(manifestTampered, 's1', 'child'), { code: 'E_UNVERIFIED_FORK' });
+});
+
+test('fork verification rejects inconsistent snapstate identity and terminal metadata', () => {
+  const parent = parentAtTwoSteps(7);
+
+  const wrongBranch = { ...parent, snapstates: [...parent.snapstates] };
+  wrongBranch.snapstates[1] = { ...wrongBranch.snapstates[1], branchId: 'other-branch' };
+  assert.throws(() => forkRun(wrongBranch, 's1', 'child-branch-check'), { code: 'E_UNVERIFIED_FORK' });
+
+  const wrongRun = { ...parent, snapstates: [...parent.snapstates] };
+  wrongRun.snapstates[1] = { ...wrongRun.snapstates[1], runId: 'other-run' };
+  assert.throws(() => forkRun(wrongRun, 's1', 'child-run-check'), { code: 'E_UNVERIFIED_FORK' });
+
+  const wrongStateHash = { ...parent, snapstates: [...parent.snapstates] };
+  wrongStateHash.snapstates[2] = { ...wrongStateHash.snapstates[2], stateHash: 'f'.repeat(64) };
+  assert.throws(() => forkRun(wrongStateHash, 's2', 'child-state-check'), { code: 'E_UNVERIFIED_FORK' });
+
+  const wrongPreviousReceipt = { ...parent, snapstates: [...parent.snapstates] };
+  wrongPreviousReceipt.snapstates[2] = { ...wrongPreviousReceipt.snapstates[2], previousReceiptHash: 'f'.repeat(64) };
+  assert.throws(() => forkRun(wrongPreviousReceipt, 's2', 'child-link-check'), { code: 'E_UNVERIFIED_FORK' });
 });
