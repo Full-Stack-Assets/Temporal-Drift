@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://full-stack-assets.example/schemas/verification-key-registry-v1.schema.json",
+  "title": "Verification Key Registry v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "networkId",
+    "cryptoProfileId",
+    "registryVersion",
+    "registryId",
+    "identityBasis",
+    "identityVerified",
+    "registryAuthority",
+    "events",
+    "registryHash"
+  ],
+  "properties": {
+    "format": { "const": "verification-key-registry" },
+    "schemaVersion": { "const": "1.0.0" },
+    "networkId": { "type": "string", "minLength": 1 },
+    "cryptoProfileId": { "$ref": "#/$defs/profileId" },
+    "registryVersion": { "type": "string", "minLength": 1 },
+    "registryId": { "type": "string", "pattern": "^key-registry-[a-f0-9]{64}$" },
+    "identityBasis": { "const": "declared-node-and-operator" },
+    "identityVerified": { "const": false },
+    "registryAuthority": { "const": "none" },
+    "events": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/event" }
+    },
+    "registryHash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "nullableHash": {
+      "anyOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/hash" }
+      ]
+    },
+    "profileId": { "type": "string", "pattern": "^crypto-profile-[a-f0-9]{64}$" },
+    "base64url": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9_-]+$" },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "format",
+        "schemaVersion",
+        "registryId",
+        "eventType",
+        "sequence",
+        "logicalTime",
+        "verifierNodeId",
+        "operatorId",
+        "subjectPublicKey",
+        "subjectKeyFingerprint",
+        "predecessorKeyFingerprint",
+        "reasonCode",
+        "previousEventHash",
+        "eventHash"
+      ],
+      "properties": {
+        "format": { "const": "verification-key-event" },
+        "schemaVersion": { "const": "1.0.0" },
+        "registryId": { "type": "string", "pattern": "^key-registry-[a-f0-9]{64}$" },
+        "eventType": { "enum": ["register", "rotate", "revoke"] },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "logicalTime": { "type": "integer", "minimum": 0 },
+        "verifierNodeId": { "type": "string", "minLength": 1 },
+        "operatorId": { "type": "string", "minLength": 1 },
+        "subjectPublicKey": { "$ref": "#/$defs/base64url" },
+        "subjectKeyFingerprint": { "$ref": "#/$defs/hash" },
+        "predecessorKeyFingerprint": { "$ref": "#/$defs/nullableHash" },
+        "reasonCode": { "type": "string", "pattern": "^KEY_[A-Z0-9_]+$" },
+        "previousEventHash": { "$ref": "#/$defs/nullableHash" },
+        "eventHash": { "$ref": "#/$defs/hash" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "eventType": { "const": "rotate" } }, "required": ["eventType"] },
+          "then": { "properties": { "predecessorKeyFingerprint": { "$ref": "#/$defs/hash" } } },
+          "else": { "properties": { "predecessorKeyFingerprint": { "type": "null" } } }
+        }
+      ]
+    }
+  }
+}

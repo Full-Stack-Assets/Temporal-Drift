@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://full-stack-assets.example/schemas/proof-statement-v1.schema.json",
+  "title": "Future Zero-Knowledge Public Statement v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "statementType",
+    "artifactType",
+    "artifactHash",
+    "cryptoProfileId",
+    "statementVersion",
+    "publicInputs",
+    "privateWitnessCommitmentHash",
+    "publicInputsHash",
+    "proofSystem",
+    "proofGenerated",
+    "proofVerified",
+    "statementOnly",
+    "executionAuthority",
+    "statementId"
+  ],
+  "properties": {
+    "format": { "const": "future-zk-public-statement" },
+    "schemaVersion": { "const": "1.0.0" },
+    "statementType": {
+      "enum": [
+        "receipt-chain-validity",
+        "terminal-commitment-membership",
+        "manifest-conformance"
+      ]
+    },
+    "artifactType": { "type": "string", "minLength": 1 },
+    "artifactHash": { "$ref": "#/$defs/hash" },
+    "cryptoProfileId": { "$ref": "#/$defs/profileId" },
+    "statementVersion": { "type": "string", "minLength": 1 },
+    "publicInputs": { "type": "object" },
+    "privateWitnessCommitmentHash": { "$ref": "#/$defs/hash" },
+    "publicInputsHash": { "$ref": "#/$defs/hash" },
+    "proofSystem": { "const": "none" },
+    "proofGenerated": { "const": false },
+    "proofVerified": { "const": false },
+    "statementOnly": { "const": true },
+    "executionAuthority": { "const": "none" },
+    "statementId": { "type": "string", "pattern": "^proof-statement-[a-f0-9]{64}$" }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "profileId": { "type": "string", "pattern": "^crypto-profile-[a-f0-9]{64}$" }
+  }
+}

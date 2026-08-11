@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://full-stack-assets.example/schemas/verification-mesh-policy-v1.schema.json",
+  "title": "Verification Mesh Policy v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "networkId",
+    "artifactType",
+    "artifactHash",
+    "cryptoProfileId",
+    "minimumPassingAttestations",
+    "minimumDistinctOperators",
+    "allowedVerifierNodeIds",
+    "allowedOperatorIds",
+    "requireDistinctKeyFingerprints",
+    "policyId"
+  ],
+  "properties": {
+    "format": { "const": "verification-mesh-policy" },
+    "schemaVersion": { "const": "1.0.0" },
+    "networkId": { "type": "string", "minLength": 1 },
+    "artifactType": { "type": "string", "minLength": 1 },
+    "artifactHash": { "$ref": "#/$defs/hash" },
+    "cryptoProfileId": { "$ref": "#/$defs/profileId" },
+    "minimumPassingAttestations": { "type": "integer", "minimum": 1 },
+    "minimumDistinctOperators": { "type": "integer", "minimum": 1 },
+    "allowedVerifierNodeIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "allowedOperatorIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "requireDistinctKeyFingerprints": { "type": "boolean" },
+    "policyId": { "type": "string", "pattern": "^mesh-policy-[a-f0-9]{64}$" }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "profileId": { "type": "string", "pattern": "^crypto-profile-[a-f0-9]{64}$" }
+  }
+}

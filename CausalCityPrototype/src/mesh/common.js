@@ -25,7 +25,7 @@ export function assertExactPlainObject(value, keys, code, path = 'value') {
   }
 }
 
-function readExactDataArray(value, code, path, allowEmpty) {
+export function readExactDataArray(value, code, path, allowEmpty) {
   if (!Array.isArray(value) || Object.getPrototypeOf(value) !== Array.prototype || (!allowEmpty && value.length === 0)) {
     meshFail(code, `${path} must be ${allowEmpty ? 'an' : 'a non-empty'} ordinary array`, path);
   }

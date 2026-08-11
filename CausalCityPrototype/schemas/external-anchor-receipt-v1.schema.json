@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://full-stack-assets.example/schemas/external-anchor-receipt-v1.schema.json",
+  "title": "External Anchor Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "requestId",
+    "anchorCommitmentHash",
+    "artifactHash",
+    "cryptoProfileId",
+    "externalNetworkId",
+    "providerId",
+    "externalRecordId",
+    "providerEvidenceHash",
+    "anchoredAtLogical",
+    "confirmationCount",
+    "externalPublicationPerformed",
+    "externalVerificationRequired",
+    "externalVerificationStatus",
+    "externalNetworkAuthority",
+    "receiptId"
+  ],
+  "properties": {
+    "format": { "const": "external-anchor-receipt" },
+    "schemaVersion": { "const": "1.0.0" },
+    "requestId": { "type": "string", "pattern": "^anchor-request-[a-f0-9]{64}$" },
+    "anchorCommitmentHash": { "$ref": "#/$defs/hash" },
+    "artifactHash": { "$ref": "#/$defs/hash" },
+    "cryptoProfileId": { "$ref": "#/$defs/profileId" },
+    "externalNetworkId": { "type": "string", "minLength": 1 },
+    "providerId": { "type": "string", "minLength": 1 },
+    "externalRecordId": { "type": "string", "minLength": 1 },
+    "providerEvidenceHash": { "$ref": "#/$defs/hash" },
+    "anchoredAtLogical": { "type": "integer", "minimum": 0 },
+    "confirmationCount": { "type": "integer", "minimum": 0 },
+    "externalPublicationPerformed": { "type": "boolean" },
+    "externalVerificationRequired": { "const": true },
+    "externalVerificationStatus": { "const": "not-verified-by-local-envelope" },
+    "externalNetworkAuthority": { "const": "none" },
+    "receiptId": { "type": "string", "pattern": "^anchor-receipt-[a-f0-9]{64}$" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "externalPublicationPerformed": { "const": false } }, "required": ["externalPublicationPerformed"] },
+      "then": { "properties": { "confirmationCount": { "const": 0 } } }
+    }
+  ],
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "profileId": { "type": "string", "pattern": "^crypto-profile-[a-f0-9]{64}$" }
+  }
+}
