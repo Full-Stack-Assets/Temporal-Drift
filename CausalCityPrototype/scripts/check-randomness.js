@@ -5,6 +5,7 @@ const roots = [
   new URL('../src/adapters/', import.meta.url),
   new URL('../src/projection/', import.meta.url),
   new URL('../src/trustscape/', import.meta.url),
+  new URL('../src/approximation/', import.meta.url),
 ];
 const violations = [];
 let filesChecked = 0;
