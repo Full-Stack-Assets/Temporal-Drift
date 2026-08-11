@@ -112,12 +112,17 @@ export function aggregateVerificationMeshWithRegistry(policy, attestations, cryp
     meshFail('E_KEY_ADMISSION', 'profile binding mismatch', 'cryptoProfile');
   }
   const entries = readExactDataArray(attestations, 'E_KEY_ADMISSION', 'attestations', false);
+  const allowedNodes = new Set(policy.allowedVerifierNodeIds);
+  const allowedOperators = new Set(policy.allowedOperatorIds);
   const seen = new Set();
   const pairs = [];
   for (let index = 0; index < entries.length; index += 1) {
     const attestation = entries[index];
     const admission = evaluateAttestationKeyAdmission(registry, attestation, cryptoProfile);
     if (!admission.cryptographicSignatureValid) meshFail('E_KEY_ADMISSION', 'mesh input contains an invalid signature', `attestations.${index}`);
+    if (!allowedNodes.has(attestation.verifierNodeId) || !allowedOperators.has(attestation.operatorId)) {
+      meshFail('E_KEY_ADMISSION', 'attestation identity is not allowed by mesh policy', `attestations.${index}`);
+    }
     if (attestation.artifactType !== policy.artifactType || attestation.artifactHash !== policy.artifactHash || attestation.cryptoProfileId !== policy.cryptoProfileId) {
       meshFail('E_KEY_ADMISSION', 'attestation does not bind to mesh policy artifact/profile', `attestations.${index}`);
     }
