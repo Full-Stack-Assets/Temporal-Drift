@@ -96,13 +96,15 @@ The source root is first verified with its pinned adapter. The graph ID is deriv
 - source manifest branch ID;
 - source manifest-core hash;
 - source terminal receipt hash;
-- raw UTF-8 hash of the canonical exported source run.
+- raw UTF-8 hash of an evidence-normalized canonical source export.
+
+Evidence normalization changes only the non-authoritative `manifest.evidenceRuntime` field to the fixed value `run-graph-v1` before hashing. That field is excluded from the manifest core and receipt hashes. This prevents semantically identical Node 22 and Node 24 runs from receiving different graph identities solely because their evidence-runtime labels differ.
 
 The graph root branch ID is then derived from a root construction template containing the graph ID and those source-root commitments.
 
 To ensure `run.manifest.branchId === graph branchId` for every member, the source root is replayed using the same model, initial state, PRNG state, ordered inputs, normalization contract, and run ID, but with the derived root `branchId`. The replayed state and event batches must remain canonically identical to the source root. Only identity-bearing receipts are expected to change.
 
-The source root’s original identity is retained as provenance metadata and is never represented as the graph-level branch ID.
+The source root’s original identity is retained as provenance metadata and is never represented as the graph-level branch ID. The original source-run artifact remains external evidence and must be archived if its provenance is to be inspected later.
 
 ## 7. Canonical RunGraph Shape
 
@@ -115,6 +117,7 @@ The source root’s original identity is retained as provenance metadata and is 
   previousGraphHash: null,
   sourceRootRunId: '...',
   sourceRootBranchId: '...',
+  sourceRootManifestCoreHash: '<64 lowercase hex>',
   sourceRootExportHash: '<64 lowercase hex>',
   sourceRootTerminalReceiptHash: '<64 lowercase hex>',
   rootBranchId: 'branch-<64 lowercase hex>',
@@ -187,7 +190,7 @@ listChildren(graph, branchId) -> frozen branchId[]
 listAncestors(graph, branchId) -> frozen branchId[]
 ```
 
-Ancestors are returned root-first and exclude the requested branch.
+Ancestors are returned root-first and exclude the requested branch. Read APIs require a graph created by `createRunGraph` or fully hydrated by `parseRunGraph`; arbitrary look-alike objects are rejected.
 
 ### 9.4 Export and Parse
 
@@ -254,7 +257,7 @@ RunGraph adds stable codes:
 
 - `E_GRAPH_SCHEMA` — malformed graph or fork request;
 - `E_GRAPH_HASH` — graph or export commitment mismatch;
-- `E_GRAPH_BRANCH` — missing, orphaned, or inconsistent branch;
+- `E_GRAPH_BRANCH` — missing, orphaned, unhydrated, or inconsistent branch;
 - `E_GRAPH_CYCLE` — cyclic topology;
 - `E_GRAPH_ADAPTER` — adapter resolution failure;
 - `E_BRANCH_LABEL` — invalid or duplicate normalized sibling label.
@@ -314,7 +317,13 @@ Existing kernel codes remain authoritative for run, receipt, replay, fork, PRNG,
 - any topology, label, export, descriptor, or graph-hash tampering fails;
 - reordered ordinary object keys do not alter canonical export.
 
-### 14.6 Cross-runtime conformance
+### 14.6 Boundary hardening
+
+- graph fork requests reject hidden, accessor, symbol, inherited, and non-plain object state;
+- graph-owned low-level fork options reject the same ambiguous shapes;
+- topology reads reject plain objects that have not been parsed and verified.
+
+### 14.7 Cross-runtime conformance
 
 A fixed RunGraph fixture is emitted in fresh processes and checked on Node 22 and Node 24. Both runtimes must produce identical:
 
