@@ -2,7 +2,7 @@ import { sha256Hex } from './canonicalize.js';
 import { TrustKernelError } from './errors.js';
 import { cloneAndFreeze } from './immutable.js';
 import { createGenesisReceipt, verifyReceiptHash } from './ledger.js';
-import { createManifest } from './manifest.js';
+import { createInputEnvelope, createManifest } from './manifest.js';
 import { createRun } from './replay.js';
 
 function parentPrefixIsVerified(parentRun) {
@@ -54,7 +54,31 @@ function parentPrefixIsVerified(parentRun) {
   return true;
 }
 
-export function forkRun(parentRun, forkStepId, childBranchId) {
+function normalizeOptions(options) {
+  if (options === undefined) return Object.freeze({ inputs: null, parentBranchId: null });
+  if (!options || typeof options !== 'object' || Array.isArray(options)) {
+    throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork options must be a plain object');
+  }
+  const allowed = new Set(['inputs', 'parentBranchId']);
+  if (Object.keys(options).some((key) => !allowed.has(key))) {
+    throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork options contain unknown fields');
+  }
+  let inputs = null;
+  if (Object.prototype.hasOwnProperty.call(options, 'inputs')) {
+    if (!Array.isArray(options.inputs)) throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork inputs must be an array');
+    inputs = Object.freeze(options.inputs.map((input) => createInputEnvelope(input)));
+  }
+  let parentBranchId = null;
+  if (Object.prototype.hasOwnProperty.call(options, 'parentBranchId')) {
+    if (typeof options.parentBranchId !== 'string' || options.parentBranchId.length === 0) {
+      throw new TrustKernelError('E_UNVERIFIED_FORK', 'Graph parent branch ID must be a non-empty string');
+    }
+    parentBranchId = cloneAndFreeze(options.parentBranchId);
+  }
+  return Object.freeze({ inputs, parentBranchId });
+}
+
+export function forkRun(parentRun, forkStepId, childBranchId, options) {
   if (typeof childBranchId !== 'string' || childBranchId.length === 0) {
     throw new TrustKernelError('E_BRANCH_EXISTS', 'Child branch ID must be a non-empty string');
   }
@@ -62,10 +86,13 @@ export function forkRun(parentRun, forkStepId, childBranchId) {
     throw new TrustKernelError('E_UNVERIFIED_FORK', 'Parent run did not pass receipt verification');
   }
 
+  const normalizedOptions = normalizeOptions(options);
   const normalizedChildBranchId = cloneAndFreeze(childBranchId);
+  const ancestryParentBranchId = normalizedOptions.parentBranchId ?? parentRun.manifest.branchId;
   const knownBranches = new Set([
     parentRun.manifest.branchId,
     parentRun.manifest.ancestry?.parentBranchId,
+    ancestryParentBranchId,
   ].filter(Boolean));
   if (knownBranches.has(normalizedChildBranchId)) {
     throw new TrustKernelError('E_BRANCH_EXISTS', `Branch already exists: ${normalizedChildBranchId}`);
@@ -81,10 +108,10 @@ export function forkRun(parentRun, forkStepId, childBranchId) {
     branchId: normalizedChildBranchId,
     initialState: snapstate.modelState,
     initialPrngState: snapstate.prngState,
-    inputs: parentRun.manifest.inputs.slice(snapstate.sequence),
+    inputs: normalizedOptions.inputs ?? parentRun.manifest.inputs.slice(snapstate.sequence),
     ancestry: {
       parentRunId: parentRun.manifest.runId,
-      parentBranchId: parentRun.manifest.branchId,
+      parentBranchId: ancestryParentBranchId,
       forkStepId,
       forkReceiptHash: receipt.receiptHash,
     },
