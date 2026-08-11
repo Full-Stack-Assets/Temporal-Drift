@@ -1,0 +1,33 @@
+{
+  "fixtureVersion": "federation-ed25519-test-key-v1",
+  "warning": "TEST ONLY - deterministic non-production keys for cross-runtime conformance",
+  "keys": [
+    {
+      "verifierId": "reviewer-a",
+      "keyId": "reviewer-a-ed25519-v1",
+      "role": "security-review",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIO7pd+Dzto93gAju8WX3xgcBSo5IG11AI/wXEnbSEiRy\n-----END PRIVATE KEY-----\n",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAmXtKwJSuI5VeGN9+oLSVsQAw1mQfa0Mc4ChqDRvqf58=\n-----END PUBLIC KEY-----\n",
+      "publicKeySpkiBase64": "MCowBQYDK2VwAyEAmXtKwJSuI5VeGN9+oLSVsQAw1mQfa0Mc4ChqDRvqf58=",
+      "publicKeySha256": "7edb278ca181f8e46782ac101160bd240d6144da7f3711f52bdfe022949ae8ce"
+    },
+    {
+      "verifierId": "reviewer-b",
+      "keyId": "reviewer-b-ed25519-v1",
+      "role": "reproducibility-review",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIGOf7tFiRaCmBa3BWEUh89qT32raxR8Zhwt9n7v9418Q\n-----END PRIVATE KEY-----\n",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAFNlv6MbMjqy/yPxHYhvFtbj8jCwtq1yIiBvEgEldDMo=\n-----END PUBLIC KEY-----\n",
+      "publicKeySpkiBase64": "MCowBQYDK2VwAyEAFNlv6MbMjqy/yPxHYhvFtbj8jCwtq1yIiBvEgEldDMo=",
+      "publicKeySha256": "a02033ba828c20c795af994de2f589600d9e6d2f9278d74d4ba2f5e2e80ada93"
+    },
+    {
+      "verifierId": "reviewer-c",
+      "keyId": "reviewer-c-ed25519-v1",
+      "role": "model-risk-review",
+      "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIImC5+pv7Hn5Empay7QXwzvDL55z/rL8EW+0tEtUaSZm\n-----END PRIVATE KEY-----\n",
+      "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAQTtvbKVg7wDY4fTKdJDsGgyT6ViRdF4qbAT0z+8GLrU=\n-----END PUBLIC KEY-----\n",
+      "publicKeySpkiBase64": "MCowBQYDK2VwAyEAQTtvbKVg7wDY4fTKdJDsGgyT6ViRdF4qbAT0z+8GLrU=",
+      "publicKeySha256": "a11d29839f51ea97a2cc4c21f66343cdded16cc44ca7379457ff5b5d8d938105"
+    }
+  ]
+}
