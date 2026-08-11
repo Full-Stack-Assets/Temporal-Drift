@@ -12,7 +12,7 @@
 
 ## Verdict
 
-The local Node 24 Phase-0 command set passed with no failed, skipped, or cancelled tests. Node 22 and the second Node 24 execution remain CI evidence gates until the draft pull request workflow completes; this report does not infer cross-runtime success from the local run.
+The local Node 24 Phase-0 command set passed with no failed, skipped, or cancelled tests. GitHub Actions run `31488543847` then completed successfully for source/test commit `0f56180aee2cd51e0d27a606e31982c699d63875`: both the Node 22 and Node 24 verification jobs passed the combined legacy, kernel, acceptance, syntax, and randomness gate.
 
 The browser has not been cut over. The visible runtime continues to use the legacy simulation exports. The new Bellwether adapter is a shadow instrumentation path: it executes the same legacy model from branch/seed/year inputs, independently normalizes the returned state and event batch, and passes those values through Trust Kernel receipts. Shadow equivalence proves wrapper, canonicalization, receipt, and replay parity; it does not prove that Bellwether is an independently implemented second causal model.
 
@@ -30,6 +30,14 @@ The browser has not been cut over. The visible runtime continues to use the lega
 | Static HTTP smoke on `127.0.0.1` | HTTP 200 for `/`, `/src/app.js`, and `/src/simulation.js`; expected legacy entry symbols present |
 
 Total observed automated tests: **59 passed** (13 legacy + 42 kernel + 4 acceptance).
+
+## Observed GitHub Actions matrix
+
+| Workflow evidence | Observed result |
+|---|---|
+| `Ripple Trust Kernel v1`, run `31488543847` | Completed with conclusion `success` |
+| `Node 22 verification`, job `93769413859` | Completed with conclusion `success`; combined verification step passed |
+| `Node 24 verification`, job `93769413735` | Completed with conclusion `success`; combined verification step passed |
 
 ## Acceptance evidence
 
@@ -73,9 +81,9 @@ Canonical fixture SHA-256 values:
 
 ## Open gates and deferred claims
 
-- Node 22/24 matrix results must come from the draft PR workflow; only Node 24 was executed locally.
+- The Node 22/24 draft-PR matrix passed for the recorded source/test commit; later commits must repeat the workflow before their checks can be treated as closed.
 - Independent technical review is not complete.
 - No merge, deployment, browser cutover, real-data adapter, calibration, automatic anomaly fork, Trustscape, or broader conceptual expansion is included.
 - The Bellwether model remains a fictional scenario model, not a forecast or causal proof.
 
-Phase-0 remains review-frozen until the draft PR checks pass and an independent reviewer closes the outstanding gates.
+Phase-0 remains review-frozen until the final draft PR head passes its checks and an independent reviewer closes the outstanding gates.
