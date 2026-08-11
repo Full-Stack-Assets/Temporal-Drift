@@ -75,6 +75,20 @@ function attestation(privateKey, logicalTime, evidenceDigit = '1') {
   }, privateKey, profile);
 }
 
+function oneNodePolicy() {
+  return createVerificationMeshPolicy({
+    networkId: 'ripple-registry-aware-mesh-v1',
+    artifactType: 'run-export',
+    artifactHash: 'a'.repeat(64),
+    cryptoProfileId: profile.profileId,
+    minimumPassingAttestations: 1,
+    minimumDistinctOperators: 1,
+    allowedVerifierNodeIds: ['node-alpha'],
+    allowedOperatorIds: ['operator-alpha'],
+    requireDistinctKeyFingerprints: true,
+  });
+}
+
 test('registry-aware admission follows historical key intervals while preserving valid signatures', () => {
   const registry = lifecycle();
   const alpha15 = evaluateAttestationKeyAdmission(registry, attestation(TEST_PRIVATE_KEYS.alpha, 15, '1'), profile);
@@ -115,17 +129,7 @@ test('registry-aware quorum retains rejected evidence and passes only historical
   const registry = lifecycle();
   const alpha15 = attestation(TEST_PRIVATE_KEYS.alpha, 15, '1');
   const alpha20 = attestation(TEST_PRIVATE_KEYS.alpha, 20, '2');
-  const policy = createVerificationMeshPolicy({
-    networkId: 'ripple-registry-aware-mesh-v1',
-    artifactType: 'run-export',
-    artifactHash: 'a'.repeat(64),
-    cryptoProfileId: profile.profileId,
-    minimumPassingAttestations: 1,
-    minimumDistinctOperators: 1,
-    allowedVerifierNodeIds: ['node-alpha'],
-    allowedOperatorIds: ['operator-alpha'],
-    requireDistinctKeyFingerprints: true,
-  });
+  const policy = oneNodePolicy();
 
   const bundle = aggregateVerificationMeshWithRegistry(policy, [alpha20, alpha15], profile, registry);
   assert.ok(Object.isFrozen(bundle));
@@ -149,18 +153,7 @@ test('registry-aware quorum retains rejected evidence and passes only historical
 test('registry-aware quorum remains quorum-not-met when no attestation is admitted', () => {
   const registry = lifecycle();
   const alpha20 = attestation(TEST_PRIVATE_KEYS.alpha, 20, '2');
-  const policy = createVerificationMeshPolicy({
-    networkId: 'ripple-registry-aware-mesh-v1',
-    artifactType: 'run-export',
-    artifactHash: 'a'.repeat(64),
-    cryptoProfileId: profile.profileId,
-    minimumPassingAttestations: 1,
-    minimumDistinctOperators: 1,
-    allowedVerifierNodeIds: ['node-alpha'],
-    allowedOperatorIds: ['operator-alpha'],
-    requireDistinctKeyFingerprints: true,
-  });
-  const bundle = aggregateVerificationMeshWithRegistry(policy, [alpha20], profile, registry);
+  const bundle = aggregateVerificationMeshWithRegistry(oneNodePolicy(), [alpha20], profile, registry);
   assert.equal(bundle.status, 'quorum-not-met');
   assert.equal(bundle.mesh, null);
   assert.equal(bundle.admittedCount, 0);
@@ -170,17 +163,7 @@ test('registry-aware quorum remains quorum-not-met when no attestation is admitt
 test('registry-aware verification rejects stale nested admission and bundle identities', () => {
   const registry = lifecycle();
   const alpha15 = attestation(TEST_PRIVATE_KEYS.alpha, 15, '1');
-  const policy = createVerificationMeshPolicy({
-    networkId: 'ripple-registry-aware-mesh-v1',
-    artifactType: 'run-export',
-    artifactHash: 'a'.repeat(64),
-    cryptoProfileId: profile.profileId,
-    minimumPassingAttestations: 1,
-    minimumDistinctOperators: 1,
-    allowedVerifierNodeIds: ['node-alpha'],
-    allowedOperatorIds: ['operator-alpha'],
-    requireDistinctKeyFingerprints: true,
-  });
+  const policy = oneNodePolicy();
   const bundle = aggregateVerificationMeshWithRegistry(policy, [alpha15], profile, registry);
 
   const staleAdmission = structuredClone(bundle);
@@ -189,4 +172,27 @@ test('registry-aware verification rejects stale nested admission and bundle iden
 
   const staleBundle = { ...bundle, bundleHash: '1'.repeat(64) };
   assert.equal(verifyRegistryAwareMeshAdmission(staleBundle, policy, [alpha15], profile, registry).ok, false);
+});
+
+test('registry-aware bundle rejects out-of-policy node and operator evidence even when registry admission would reject it', () => {
+  const registry = lifecycle();
+  const foreign = createVerificationAttestation({
+    artifactType: 'run-export',
+    artifactId: 'run-bellwether-baseline',
+    artifactHash: 'a'.repeat(64),
+    verifierNodeId: 'node-gamma',
+    operatorId: 'operator-gamma',
+    verificationMethod: 'trust-kernel-replay',
+    verificationVersion: '1.0.0',
+    verifiedAtLogical: 15,
+    runtime: 'node-test',
+    evidenceHash: '9'.repeat(64),
+    result: 'pass',
+    failureCodes: [],
+  }, TEST_PRIVATE_KEYS.gamma, profile);
+
+  assert.throws(
+    () => aggregateVerificationMeshWithRegistry(oneNodePolicy(), [foreign], profile, registry),
+    { code: 'E_KEY_ADMISSION' },
+  );
 });
