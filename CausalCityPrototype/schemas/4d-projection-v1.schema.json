@@ -1,0 +1,390 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ripple-city.invalid/schemas/4d-projection-v1.schema.json",
+  "title": "Ripple 4D Projection v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "projectionVersion",
+    "coordinateScale",
+    "projectionId",
+    "source",
+    "dimensions",
+    "projectionHash"
+  ],
+  "properties": {
+    "format": { "const": "ripple-4d-projection" },
+    "schemaVersion": { "const": "1.0.0" },
+    "projectionVersion": { "const": "4d-projector-v1" },
+    "coordinateScale": { "const": 1000 },
+    "projectionId": { "$ref": "#/$defs/projectionId" },
+    "source": { "$ref": "#/$defs/source" },
+    "dimensions": { "$ref": "#/$defs/dimensions" },
+    "projectionHash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "graphId": {
+      "type": "string",
+      "pattern": "^graph-[a-f0-9]{64}$"
+    },
+    "branchId": {
+      "type": "string",
+      "pattern": "^branch-[a-f0-9]{64}$"
+    },
+    "projectionId": {
+      "type": "string",
+      "pattern": "^projection-[a-f0-9]{64}$"
+    },
+    "nodeId": {
+      "type": "string",
+      "pattern": "^(receipt-node|event-node|branch-node)-[a-f0-9]{64}$"
+    },
+    "edgeId": {
+      "type": "string",
+      "pattern": "^edge-[a-f0-9]{64}$"
+    },
+    "safeInteger": {
+      "type": "integer",
+      "minimum": -9007199254740991,
+      "maximum": 9007199254740991
+    },
+    "nonNegativeInteger": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "positiveInteger": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "nullableHash": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/hash" }
+      ]
+    },
+    "nullableBranchId": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/branchId" }
+      ]
+    },
+    "nullableString": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "string", "minLength": 1 }
+      ]
+    },
+    "coordinates": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["t", "c", "b", "s"],
+      "properties": {
+        "t": { "$ref": "#/$defs/safeInteger" },
+        "c": { "$ref": "#/$defs/safeInteger" },
+        "b": { "$ref": "#/$defs/safeInteger" },
+        "s": { "$ref": "#/$defs/safeInteger" }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["graphId", "graphHash", "rootBranchId", "branchCount", "runGraphExportHash"],
+      "properties": {
+        "graphId": { "$ref": "#/$defs/graphId" },
+        "graphHash": { "$ref": "#/$defs/hash" },
+        "rootBranchId": { "$ref": "#/$defs/branchId" },
+        "branchCount": { "$ref": "#/$defs/positiveInteger" },
+        "runGraphExportHash": { "$ref": "#/$defs/hash" }
+      }
+    },
+    "temporalPoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "branchId",
+        "runId",
+        "stepId",
+        "sequence",
+        "receiptHash",
+        "previousReceiptHash",
+        "stateHash",
+        "prngStateHash",
+        "coordinates",
+        "temporalPointId"
+      ],
+      "properties": {
+        "branchId": { "$ref": "#/$defs/branchId" },
+        "runId": { "type": "string", "minLength": 1 },
+        "stepId": { "type": "string", "minLength": 1 },
+        "sequence": { "$ref": "#/$defs/nonNegativeInteger" },
+        "receiptHash": { "$ref": "#/$defs/hash" },
+        "previousReceiptHash": { "$ref": "#/$defs/nullableHash" },
+        "stateHash": { "$ref": "#/$defs/hash" },
+        "prngStateHash": { "$ref": "#/$defs/hash" },
+        "coordinates": { "$ref": "#/$defs/coordinates" },
+        "temporalPointId": {
+          "type": "string",
+          "pattern": "^temporal-[a-f0-9]{64}$"
+        }
+      }
+    },
+    "receiptNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "branchId",
+        "stepId",
+        "sequence",
+        "receiptHash",
+        "eventHash",
+        "eventIndex",
+        "coordinates",
+        "nodeId"
+      ],
+      "properties": {
+        "kind": { "const": "receipt" },
+        "branchId": { "$ref": "#/$defs/branchId" },
+        "stepId": { "type": "string", "minLength": 1 },
+        "sequence": { "$ref": "#/$defs/nonNegativeInteger" },
+        "receiptHash": { "$ref": "#/$defs/hash" },
+        "eventHash": { "type": "null" },
+        "eventIndex": { "type": "null" },
+        "coordinates": { "$ref": "#/$defs/coordinates" },
+        "nodeId": {
+          "type": "string",
+          "pattern": "^receipt-node-[a-f0-9]{64}$"
+        }
+      }
+    },
+    "eventNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "branchId",
+        "stepId",
+        "sequence",
+        "receiptHash",
+        "eventHash",
+        "eventIndex",
+        "coordinates",
+        "nodeId"
+      ],
+      "properties": {
+        "kind": { "const": "event" },
+        "branchId": { "$ref": "#/$defs/branchId" },
+        "stepId": { "type": "string", "minLength": 1 },
+        "sequence": { "$ref": "#/$defs/nonNegativeInteger" },
+        "receiptHash": { "$ref": "#/$defs/hash" },
+        "eventHash": { "$ref": "#/$defs/hash" },
+        "eventIndex": { "$ref": "#/$defs/nonNegativeInteger" },
+        "coordinates": { "$ref": "#/$defs/coordinates" },
+        "nodeId": {
+          "type": "string",
+          "pattern": "^event-node-[a-f0-9]{64}$"
+        }
+      }
+    },
+    "causalEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "branchId", "fromNodeId", "toNodeId", "edgeId"],
+      "properties": {
+        "kind": { "enum": ["precedes", "emits", "forks"] },
+        "branchId": { "$ref": "#/$defs/branchId" },
+        "fromNodeId": { "$ref": "#/$defs/nodeId" },
+        "toNodeId": { "$ref": "#/$defs/nodeId" },
+        "edgeId": { "$ref": "#/$defs/edgeId" }
+      }
+    },
+    "branchNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "branchId",
+        "label",
+        "parentBranchId",
+        "forkStepId",
+        "parentReceiptHash",
+        "depth",
+        "ordinal",
+        "terminalReceiptHash",
+        "manifestCoreHash",
+        "coordinates",
+        "nodeId"
+      ],
+      "properties": {
+        "branchId": { "$ref": "#/$defs/branchId" },
+        "label": { "type": "string", "minLength": 1 },
+        "parentBranchId": { "$ref": "#/$defs/nullableBranchId" },
+        "forkStepId": { "$ref": "#/$defs/nullableString" },
+        "parentReceiptHash": { "$ref": "#/$defs/nullableHash" },
+        "depth": { "$ref": "#/$defs/nonNegativeInteger" },
+        "ordinal": { "$ref": "#/$defs/nonNegativeInteger" },
+        "terminalReceiptHash": { "$ref": "#/$defs/hash" },
+        "manifestCoreHash": { "$ref": "#/$defs/hash" },
+        "coordinates": { "$ref": "#/$defs/coordinates" },
+        "nodeId": {
+          "type": "string",
+          "pattern": "^branch-node-[a-f0-9]{64}$"
+        }
+      }
+    },
+    "branchEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "branchId",
+        "fromNodeId",
+        "toNodeId",
+        "forkStepId",
+        "parentReceiptHash",
+        "edgeId"
+      ],
+      "properties": {
+        "kind": { "const": "parent" },
+        "branchId": { "$ref": "#/$defs/branchId" },
+        "fromNodeId": {
+          "type": "string",
+          "pattern": "^branch-node-[a-f0-9]{64}$"
+        },
+        "toNodeId": {
+          "type": "string",
+          "pattern": "^branch-node-[a-f0-9]{64}$"
+        },
+        "forkStepId": { "type": "string", "minLength": 1 },
+        "parentReceiptHash": { "$ref": "#/$defs/hash" },
+        "edgeId": { "$ref": "#/$defs/edgeId" }
+      }
+    },
+    "subjectiveStatus": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branchId", "status", "recordCount"],
+      "properties": {
+        "branchId": { "$ref": "#/$defs/branchId" },
+        "status": {
+          "enum": ["not-modeled", "modeled-from-explicit-records"]
+        },
+        "recordCount": { "$ref": "#/$defs/nonNegativeInteger" }
+      }
+    },
+    "subjectiveRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "perspectiveId",
+        "branchId",
+        "stepId",
+        "metricPath",
+        "objectiveValue",
+        "perceivedValue",
+        "scale",
+        "sourceRef",
+        "sourceVersion",
+        "tension",
+        "subjectiveRecordId"
+      ],
+      "properties": {
+        "schemaVersion": { "const": "1.0.0" },
+        "perspectiveId": { "type": "string", "minLength": 1 },
+        "branchId": { "$ref": "#/$defs/branchId" },
+        "stepId": { "type": "string", "minLength": 1 },
+        "metricPath": { "type": "string", "minLength": 1 },
+        "objectiveValue": { "$ref": "#/$defs/safeInteger" },
+        "perceivedValue": { "$ref": "#/$defs/safeInteger" },
+        "scale": { "$ref": "#/$defs/positiveInteger" },
+        "sourceRef": { "type": "string", "minLength": 1 },
+        "sourceVersion": { "type": "string", "minLength": 1 },
+        "tension": { "$ref": "#/$defs/safeInteger" },
+        "subjectiveRecordId": {
+          "type": "string",
+          "pattern": "^subjective-[a-f0-9]{64}$"
+        }
+      }
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["temporal", "causal", "branching", "subjective"],
+      "properties": {
+        "temporal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["points"],
+          "properties": {
+            "points": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/temporalPoint" }
+            }
+          }
+        },
+        "causal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["nodes", "edges"],
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "oneOf": [
+                  { "$ref": "#/$defs/receiptNode" },
+                  { "$ref": "#/$defs/eventNode" }
+                ]
+              }
+            },
+            "edges": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/causalEdge" }
+            }
+          }
+        },
+        "branching": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["nodes", "edges"],
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/branchNode" }
+            },
+            "edges": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/branchEdge" }
+            }
+          }
+        },
+        "subjective": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["statusByBranch", "records"],
+          "properties": {
+            "statusByBranch": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/subjectiveStatus" }
+            },
+            "records": {
+              "type": "array",
+              "items": { "$ref": "#/$defs/subjectiveRecord" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
