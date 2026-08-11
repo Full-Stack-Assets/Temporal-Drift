@@ -19,6 +19,16 @@ test('rejects unsafe canonical values', () => {
   }
 });
 
+test('rejects symbol-keyed and non-enumerable hidden object data', () => {
+  const symbolKeyed = { visible: 1 };
+  symbolKeyed[Symbol('hidden')] = 2;
+  assert.throws(() => canonicalBytes(symbolKeyed), (error) => error.code === 'E_UNSAFE_VALUE');
+
+  const nonEnumerable = { visible: 1 };
+  Object.defineProperty(nonEnumerable, 'hidden', { value: 2, enumerable: false });
+  assert.throws(() => canonicalBytes(nonEnumerable), (error) => error.code === 'E_UNSAFE_VALUE');
+});
+
 test('rejects cycles and sparse arrays', () => {
   const cyclic = {}; cyclic.self = cyclic;
   assert.throws(() => canonicalBytes(cyclic), (error) => error.code === 'E_UNSAFE_VALUE');
