@@ -14,18 +14,31 @@ const bellwether = Object.fromEntries(['baseline', 'shutdown', 'reinvention'].ma
   return [branchId, result.terminalReceiptHash];
 }));
 
-const runGraphEmitter = fileURLToPath(new URL('../tests/kernel/helpers/emit-run-graph.js', import.meta.url));
-const runGraphProcess = spawnSync(process.execPath, [runGraphEmitter], { encoding: 'utf8' });
-if (runGraphProcess.status !== 0) throw new Error(runGraphProcess.stderr || 'RunGraph conformance emitter failed');
-const runGraph = JSON.parse(runGraphProcess.stdout.trim());
+function emit(relativePath, label) {
+  const emitter = fileURLToPath(new URL(relativePath, import.meta.url));
+  const child = spawnSync(process.execPath, [emitter], { encoding: 'utf8' });
+  if (child.status !== 0) throw new Error(child.stderr || `${label} conformance emitter failed`);
+  return JSON.parse(child.stdout.trim());
+}
+
+const runGraph = emit('../tests/kernel/helpers/emit-run-graph.js', 'RunGraph');
+const projection = emit('../tests/kernel/helpers/emit-4d-projection.js', '4D projection');
 
 process.stdout.write(`${JSON.stringify({
   fixtureVersion: 'ripple-trust-kernel-v1',
   runtime: process.version,
   kernelVersion: '1.0.0',
   canonicalFixtureVersion: 'canonical-v1',
+  projectionFixtureVersion: 'projection-v1',
   counterTerminalReceiptHash: counter.ledger.at(-1).receiptHash,
   bellwetherTerminalReceiptHashes: bellwether,
   runGraphConformance: runGraph,
-  acceptanceCases: { seedSweep: 10000, forkIsolation: 1000, shadowEquivalence: 1000, runGraphProcesses: 4 },
+  projectionConformance: projection,
+  acceptanceCases: {
+    seedSweep: 10000,
+    forkIsolation: 1000,
+    shadowEquivalence: 1000,
+    runGraphProcesses: 4,
+    projectionProcesses: 4,
+  },
 })}\n`);
