@@ -35,7 +35,7 @@ export function createForkManifest(parentRun, forkStepId, childBranchId) {
     }],
     initialState: snapstate.modelState,
     initialPrngState: snapstate.prngState,
-    inputs: [],
+    inputs: parentRun.manifest.inputs.slice(index),
     normalization: parentRun.manifest.normalization,
   });
 }
