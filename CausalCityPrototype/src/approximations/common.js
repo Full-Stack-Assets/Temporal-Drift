@@ -2,6 +2,9 @@ import { canonicalString, sha256Hex } from '../kernel/canonicalize.js';
 import { TrustKernelError } from '../kernel/errors.js';
 import { cloneAndFreeze } from '../kernel/immutable.js';
 
+const evaluatorRuntime = new Map();
+let evaluatorRuntimeSequence = 0;
+
 function fail(code, message, path = 'approximation', details = {}) {
   throw new TrustKernelError(code, message, { path, ...details });
 }
@@ -140,19 +143,32 @@ export function pinDeterministicEvaluator(evaluator, metricIds) {
   if (typeof evaluator.evaluate !== 'function') {
     fail('E_APPROX_EVALUATOR', 'evaluator.evaluate must be a function', 'evaluator.evaluate');
   }
-  const evaluate = evaluator.evaluate;
   const metrics = normalizeStringList(metricIds, 'metricIds');
+  evaluatorRuntimeSequence += 1;
+  if (!Number.isSafeInteger(evaluatorRuntimeSequence)) {
+    fail('E_APPROX_EVALUATOR', 'Evaluator runtime token space is exhausted', 'evaluator');
+  }
+  const runtimeToken = `evaluator-runtime-${evaluatorRuntimeSequence}`;
+  evaluatorRuntime.set(runtimeToken, evaluator.evaluate);
   return Object.freeze({
     identity: cloneAndFreeze({ id, version }),
     metricIds: metrics,
-    evaluate,
+    runtimeToken,
   });
+}
+
+function runtimeEvaluator(pinned) {
+  const evaluate = evaluatorRuntime.get(pinned?.runtimeToken);
+  if (typeof evaluate !== 'function') {
+    fail('E_APPROX_EVALUATOR', 'Pinned evaluator runtime is unavailable', 'evaluator');
+  }
+  return evaluate;
 }
 
 function evaluateOnce(pinned, parameters) {
   let result;
   try {
-    result = pinned.evaluate(parameters);
+    result = runtimeEvaluator(pinned)(parameters);
   } catch (error) {
     if (error instanceof TrustKernelError) throw error;
     fail('E_APPROX_EVALUATOR', `Evaluator ${pinned.identity.id}@${pinned.identity.version} threw`, 'evaluator.evaluate');
@@ -172,7 +188,13 @@ function evaluateOnce(pinned, parameters) {
 }
 
 export function evaluateDeterministically(pinned, parametersInput) {
-  if (!pinned || typeof pinned.evaluate !== 'function' || !pinned.identity || !Array.isArray(pinned.metricIds)) {
+  if (
+    !pinned
+    || typeof pinned.runtimeToken !== 'string'
+    || !evaluatorRuntime.has(pinned.runtimeToken)
+    || !pinned.identity
+    || !Array.isArray(pinned.metricIds)
+  ) {
     fail('E_APPROX_EVALUATOR', 'Pinned evaluator contract is invalid', 'evaluator');
   }
   const parameters = normalizeSafeIntegerMap(parametersInput, 'parameters');
