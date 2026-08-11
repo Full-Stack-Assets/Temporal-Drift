@@ -16,6 +16,7 @@
     "check:syntax": "node scripts/check-syntax.js",
     "check:randomness": "node scripts/check-randomness.js",
     "acceptance:summary": "node scripts/acceptance-summary.js",
+    "benchmark:phase2": "node scripts/phase2-benchmark.js",
     "verify": "npm run check && npm run test && npm run acceptance:summary"
   }
 }
