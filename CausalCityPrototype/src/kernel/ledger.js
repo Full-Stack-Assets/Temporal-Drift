@@ -79,13 +79,33 @@ export function verifyReceiptHash(receipt) {
 export function appendReceipt(ledger, receipt) {
   if (!Array.isArray(ledger) || !verifyReceiptHash(receipt)) throw new TrustKernelError('E_RECEIPT_HASH', 'Cannot append an invalid receipt');
   if (ledger.length === 0) {
-    if (receipt.kind !== 'genesis' || receipt.sequence !== 0 || receipt.previousReceiptHash !== null) {
-      throw new TrustKernelError('E_RECEIPT_HASH', 'A ledger must begin with genesis');
+    if (
+      receipt.schemaVersion !== SCHEMA_VERSION
+      || receipt.kernelVersion !== KERNEL_VERSION
+      || receipt.kind !== 'genesis'
+      || receipt.stepId !== 'genesis'
+      || receipt.sequence !== 0
+      || receipt.previousReceiptHash !== null
+      || receipt.previousStateHash !== receipt.resultingStateHash
+      || !HASH_PATTERN.test(receipt.manifestCoreHash)
+    ) {
+      throw new TrustKernelError('E_RECEIPT_HASH', 'A ledger must begin with a valid genesis receipt');
     }
   } else {
     const previous = ledger.at(-1);
-    if (!verifyReceiptHash(previous) || receipt.kind !== 'transition' || receipt.sequence !== previous.sequence + 1 || receipt.previousReceiptHash !== previous.receiptHash) {
-      throw new TrustKernelError('E_RECEIPT_HASH', 'Receipt chain linkage is invalid');
+    if (
+      !verifyReceiptHash(previous)
+      || receipt.schemaVersion !== previous.schemaVersion
+      || receipt.kernelVersion !== previous.kernelVersion
+      || receipt.runId !== previous.runId
+      || receipt.branchId !== previous.branchId
+      || receipt.kind !== 'transition'
+      || receipt.manifestCoreHash !== null
+      || receipt.sequence !== previous.sequence + 1
+      || receipt.previousReceiptHash !== previous.receiptHash
+      || receipt.previousStateHash !== previous.resultingStateHash
+    ) {
+      throw new TrustKernelError('E_RECEIPT_HASH', 'Receipt chain continuity is invalid');
     }
   }
   return deepFreeze([...ledger, receipt]);
