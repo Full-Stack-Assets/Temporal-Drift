@@ -7,6 +7,7 @@ const roots = [
   new URL('../src/trustscape/', import.meta.url),
   new URL('../src/approximation/', import.meta.url),
   new URL('../src/frontier/', import.meta.url),
+  new URL('../src/federation/', import.meta.url),
 ];
 const violations = [];
 let filesChecked = 0;
