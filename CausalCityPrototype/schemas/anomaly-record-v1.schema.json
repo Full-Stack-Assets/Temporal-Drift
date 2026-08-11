@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ripple-city.local/schemas/anomaly-record-v1.schema.json",
+  "title": "Trust Kernel Anomaly Record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "runId", "branchId", "stepId", "metricPath", "expected", "observed", "unit", "scale", "delta", "sourceRef", "sourceVersion", "severity", "requiresHumanReview"],
+  "properties": {
+    "id": { "$ref": "#/$defs/hash" },
+    "runId": { "type": "string", "minLength": 1 },
+    "branchId": { "type": "string", "minLength": 1 },
+    "stepId": { "type": "string", "minLength": 1 },
+    "metricPath": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "expected": { "type": "integer" },
+    "observed": { "type": "integer" },
+    "unit": { "type": "string", "minLength": 1 },
+    "scale": { "type": "integer", "minimum": 1 },
+    "delta": { "type": "integer" },
+    "sourceRef": { "type": "string", "minLength": 1 },
+    "sourceVersion": { "type": "string", "minLength": 1 },
+    "severity": { "enum": ["critical", "high", "medium", "low", "info"] },
+    "requiresHumanReview": { "const": true }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}
