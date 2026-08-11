@@ -40,16 +40,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-      - name: Generate one-time ML-DSA fixture capture
-        if: matrix.node == 24
-        run: node tests/kernel/helpers/generate-ml-dsa-fixture.js > ml-dsa-fixture.json
-      - name: Upload ML-DSA fixture capture
-        if: matrix.node == 24
-        uses: actions/upload-artifact@v4
-        with:
-          name: ml-dsa-fixture-node24
-          path: CausalCityPrototype/ml-dsa-fixture.json
-          if-no-files-found: error
-          retention-days: 1
       - name: Verify legacy, kernel, acceptance, syntax, and randomness gates
         run: npm run verify
