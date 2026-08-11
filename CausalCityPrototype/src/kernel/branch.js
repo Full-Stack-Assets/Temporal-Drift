@@ -1,5 +1,6 @@
 import { sha256Hex } from './canonicalize.js';
 import { TrustKernelError } from './errors.js';
+import { cloneAndFreeze } from './immutable.js';
 import { createGenesisReceipt, verifyReceiptHash } from './ledger.js';
 import { createManifest } from './manifest.js';
 import { createRun } from './replay.js';
@@ -57,13 +58,19 @@ export function forkRun(parentRun, forkStepId, childBranchId) {
   if (typeof childBranchId !== 'string' || childBranchId.length === 0) {
     throw new TrustKernelError('E_BRANCH_EXISTS', 'Child branch ID must be a non-empty string');
   }
+  if (!parentPrefixIsVerified(parentRun)) {
+    throw new TrustKernelError('E_UNVERIFIED_FORK', 'Parent run did not pass receipt verification');
+  }
+
+  const normalizedChildBranchId = cloneAndFreeze(childBranchId);
   const knownBranches = new Set([
     parentRun.manifest.branchId,
     parentRun.manifest.ancestry?.parentBranchId,
   ].filter(Boolean));
-  if (knownBranches.has(childBranchId)) throw new TrustKernelError('E_BRANCH_EXISTS', `Branch already exists: ${childBranchId}`);
+  if (knownBranches.has(normalizedChildBranchId)) {
+    throw new TrustKernelError('E_BRANCH_EXISTS', `Branch already exists: ${normalizedChildBranchId}`);
+  }
 
-  if (!parentPrefixIsVerified(parentRun)) throw new TrustKernelError('E_UNVERIFIED_FORK', 'Parent run did not pass receipt verification');
   const snapstate = parentRun.snapstates.find((entry) => entry.stepId === forkStepId);
   const receipt = parentRun.ledger.find((entry) => entry.stepId === forkStepId);
   if (!snapstate || !receipt || snapstate.sequence !== receipt.sequence) {
@@ -71,7 +78,7 @@ export function forkRun(parentRun, forkStepId, childBranchId) {
   }
   const manifest = createManifest({
     ...parentRun.manifest,
-    branchId: childBranchId,
+    branchId: normalizedChildBranchId,
     initialState: snapstate.modelState,
     initialPrngState: snapstate.prngState,
     inputs: parentRun.manifest.inputs.slice(snapstate.sequence),
