@@ -2,7 +2,14 @@ import { readdir } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const roots = [new URL('../src/', import.meta.url), new URL('../src/kernel/', import.meta.url), new URL('../src/adapters/', import.meta.url), new URL('./', import.meta.url)];
+const roots = [
+  new URL('../src/', import.meta.url),
+  new URL('../src/kernel/', import.meta.url),
+  new URL('../src/adapters/', import.meta.url),
+  new URL('../src/projection/', import.meta.url),
+  new URL('../src/trustscape/', import.meta.url),
+  new URL('./', import.meta.url),
+];
 const files = [];
 for (const root of roots) {
   for (const entry of await readdir(root, { withFileTypes: true })) {
