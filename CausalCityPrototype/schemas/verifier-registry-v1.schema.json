@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "verifier-registry-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["registryVersion", "cryptoProfileHash", "verifiers", "registryHash"],
+  "properties": {
+    "registryVersion": { "const": "verifier-registry-v1" },
+    "cryptoProfileHash": { "$ref": "#/$defs/hash" },
+    "verifiers": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/verifier" } },
+    "registryHash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "verifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verifierId", "keyId", "algorithm", "publicKeySpkiBase64", "weight", "validFromLogicalTime", "validUntilLogicalTime", "role"],
+      "properties": {
+        "verifierId": { "type": "string", "minLength": 1 },
+        "keyId": { "type": "string", "minLength": 1 },
+        "algorithm": { "const": "ed25519" },
+        "publicKeySpkiBase64": { "type": "string", "minLength": 4, "pattern": "^[A-Za-z0-9+/]+={0,2}$" },
+        "weight": { "type": "integer", "minimum": 1 },
+        "validFromLogicalTime": { "type": "integer", "minimum": 0 },
+        "validUntilLogicalTime": { "type": ["integer", "null"], "minimum": 0 },
+        "role": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}
