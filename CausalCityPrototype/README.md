@@ -8,25 +8,27 @@ Ripple City is a dependency-free browser prototype for an explainable causal-wor
 - **The Shutdown** — the city's largest employer closes without a coordinated recovery plan.
 - **The Reinvention** — the employer closes, followed by a university-led training, manufacturing, transit, and riverfront recovery package.
 
-The experience combines an interactive 2D city map, a twenty-year timeline, city metrics, district health, citizen stories, branch comparison, and a causal chain behind every headline event.
+The legacy experience combines an interactive 2D city map, a twenty-year timeline, city metrics, district health, citizen stories, branch comparison, and a causal chain behind every headline event.
 
-## Run locally or on Shadow
+## Run locally
 
 No package installation or build step is required.
 
 ```powershell
-git fetch origin
-git checkout feature/causal-city-browser-prototype
-git pull origin feature/causal-city-browser-prototype
 cd CausalCityPrototype
 python -m http.server 4173
 ```
 
-Open `http://localhost:4173` in the Shadow browser.
+Open:
+
+- `http://localhost:4173/` for the unchanged legacy Bellwether browser experience.
+- `http://localhost:4173/trustscape.html` for the separate **Trustscape Lite** Phase-1 lab.
+
+Trustscape Lite displays a permanent **SHADOW / NON-AUTHORITATIVE VISUALIZATION** banner. It is not a cut-over from the legacy browser.
 
 ## Verify
 
-Trust Kernel v1 supports the Node 22 and Node 24 LTS lines. The runtime has no package dependencies.
+Trust Kernel v1 and the isolated Phase-1 projection work support Node 22 and Node 24. The runtime has no package dependencies.
 
 ```powershell
 npm run verify
@@ -35,15 +37,18 @@ npm run verify
 The command runs:
 
 - the unchanged 13-test legacy Bellwether suite;
-- the Trust Kernel and RunGraph suites;
+- Trust Kernel and RunGraph tests;
+- 4D projector, browser-integrity, and Trustscape consistency tests;
 - fresh-process receipt-chain determinism;
-- fresh-process RunGraph identity and exported-byte conformance;
+- fresh-process RunGraph identity/exported-byte conformance;
+- fresh-process 4D projection hash/coordinate conformance;
+- the pinned Trustscape browser fixture check;
 - the 10,000-seed sweep;
 - 1,000 fork-isolation cases;
 - 1,000 Bellwether shadow cases;
 - schema validation;
 - syntax checks;
-- the kernel/adapter ambient-randomness scan.
+- the kernel/adapter/projection/Trustscape ambient-randomness scan.
 
 GitHub Actions repeats the complete command on Node 22 and Node 24.
 
@@ -61,24 +66,24 @@ The additive kernel lives in `src/kernel/`; its public exports are in `src/kerne
 
 The Bellwether wrapper in `src/adapters/bellwether-model.js` runs as a CI shadow path. It executes the legacy model from the same branch, seed, and year inputs, normalizes its output to fixed-point integers, and commits every state/event step to the kernel receipt chain. Any normalized state or event mismatch fails the shadow suite and reports the first differing path.
 
-This is not a browser cutover. `src/app.js` continues to call the legacy `simulateBranch`, `getSnapshot`, and `compareSnapshots` exports, and the kernel is not imported into the visible browser runtime.
+This is not a browser cutover. `src/app.js` continues to call the legacy `simulateBranch`, `getSnapshot`, and `compareSnapshots` exports. Static regression tests ensure it does not import kernel, projection, or Trustscape modules.
 
 ## RunGraph v1
 
-`src/kernel/run-graph.js` adds the graph-level identity and topology layer required to close the difference between a locally valid fork and a globally coherent branch collection.
+`src/kernel/run-graph.js` adds graph-level identity and topology over verified runs.
 
 RunGraph v1 provides:
 
 - an immutable aggregate owning every known branch descriptor and canonical run export;
-- a content-addressed `graphId` rooted in verified source-run commitments;
-- content-addressed `branchId` values bound to the graph, parent branch, exact parent receipt, fork step, model contract, fork state, PRNG state, ordered child inputs, and normalization contract;
-- NFC-normalized human labels that are deliberately excluded from branch identity;
+- content-addressed `graphId` and `branchId` values;
+- branch identity bound to graph, parent branch, exact parent receipt, fork step, model contract, fork state, PRNG state, ordered child inputs, and normalization contract;
+- NFC-normalized human labels excluded from integrity identity;
 - sibling-only label uniqueness;
 - idempotent repeated fork requests;
 - one-parent, acyclic, root-reachable topology verification;
-- verification that each child starts from the exact parent Snapstate and PRNG state at its declared fork receipt;
+- exact child-state/PRNG binding to the parent fork Snapstate;
 - canonical graph export, parse, replay, and verification;
-- deterministic graph and exported-byte fixtures shared by Node 22 and Node 24.
+- deterministic graph/exported-byte fixtures shared by Node 22 and Node 24.
 
 The source root is replayed under a content-addressed graph branch identity. Its model states and event batches must remain canonically identical to the verified source run; identity-bearing receipts are expected to change because the branch ID changes.
 
@@ -99,100 +104,125 @@ import {
 } from './src/kernel/index.js';
 
 const graph0 = createRunGraph(verifiedRootRun, 'Root');
-
 const { graph: graph1, branch, created } = forkBranch(graph0, {
   parentBranchId: graph0.rootBranchId,
   forkStepId: 'year-2030',
   label: 'Transit first',
   inputs: alternativeInputs,
 });
-
-const exported = exportRunGraph(graph1);
-const restored = parseRunGraph(exported, ({ id, version }) => {
-  if (id === modelAdapter.id && version === modelAdapter.version) return modelAdapter;
-  throw new Error('Unknown model adapter');
-});
-
-const report = verifyRunGraph(restored);
-```
-
-If `inputs` is omitted, `forkBranch` inherits the parent run's declared inputs remaining after the fork Snapstate. A successful new branch is fully executed and verified before graph admission.
-
-An identical fork request with the same label is idempotent and returns `created: false`. The same construction with a different label fails because RunGraph v1 does not support label mutation. A different sibling construction cannot reuse the same NFC-normalized label.
-
-### Additive kernel API
-
-```js
-import {
-  createRun,
-  advanceRun,
-  forkRun,
-  exportRun,
-  replayRun,
-  verifyRun,
-  createRunGraph,
-  forkBranch,
-  getBranch,
-  listChildren,
-  listAncestors,
-  exportRunGraph,
-  parseRunGraph,
-  verifyRunGraph,
-  recordAnomaly,
-  appendAnomalyReview,
-} from './src/kernel/index.js';
 ```
 
 `forkRun` remains a low-level composition primitive. Public graph construction should use `forkBranch`, which owns content-derived identity and graph-wide invariants.
 
+## Phase-1 4D Projection Layer
+
+`src/projection/project-4d.js` is a pure read-only transform over an already verified hydrated RunGraph.
+
+It emits four explicitly bounded dimensions:
+
+1. **Temporal** — Snapstate sequence, step, state hash, receipt hash, event-batch hash, and deterministic integer time coordinate.
+2. **Causal / provenance** — verified receipt-chain, fork, and event-commitment relationships only. In v1 this is **provenance**, not learned or validated real-world causal inference.
+3. **Branching** — branch identity, parent/fork topology, deterministic lane, and depth.
+4. **Subjective** — explicit content-addressed user annotations only. No belief, trust, trauma, sentiment, or resident perception is inferred from kernel state.
+
+For the fixed conformance fixture, branch lanes are assigned from lexicographically sorted canonical branch IDs. Projection coordinates therefore do not depend on labels, viewport dimensions, GPU behavior, insertion order, or frame timing.
+
+```js
+import { projectRunGraph, createAnnotation } from './src/kernel/index.js';
+
+const projection = projectRunGraph(verifiedGraph);
+const annotation = createAnnotation({
+  authorId: 'reviewer-1',
+  targetType: 'snapstate',
+  targetId: projection.dimensions.temporal.nodes[0].nodeId,
+  body: 'Review this state.',
+  createdLogicalTime: 0,
+  supersedes: null,
+});
+
+const annotated = projectRunGraph(verifiedGraph, { annotations: [annotation] });
+```
+
+Annotations change the annotated projection hash but preserve `baseProjectionHash`, so human commentary cannot silently alter the underlying evidence commitment.
+
+## Trustscape Lite
+
+Trustscape Lite is a separate lab surface at `trustscape.html`.
+
+It provides:
+
+- WebGL2 rendering with deterministic projected coordinates;
+- a DOM/table fallback when WebGL2 is unavailable;
+- deterministic time navigation;
+- all-branch or two-branch comparison views;
+- receipt and fork provenance threads;
+- exact hash inspection;
+- local-first multi-author annotations;
+- annotation import/export;
+- a local review radar sourced from explicit annotations.
+
+The browser does **not** run the kernel to regenerate its fixture. It consumes the pinned `data/trustscape-lite-fixture.json`, whose hash is verified in CI and re-verified at browser runtime using Web Crypto SHA-256 and browser-compatible canonical-v1 semantics.
+
+Browser annotation IDs are independently derived in `src/trustscape/browser-integrity.js`; tests require them to equal kernel `createAnnotation()` IDs for the same canonical fields. Imported annotation bundles are re-derived and rejected when IDs or shapes are inconsistent.
+
+Trustscape Lite is evidence visualization, not an authority surface. It cannot mutate runs, receipts, RunGraph topology, projection evidence, or the legacy simulation.
+
 ## Integrity boundaries
 
-RunGraph v1 proves internal consistency of the supplied evidence. It does not provide an external authority signature.
+The verified layers establish reproducibility and internal consistency of supplied synthetic evidence. They do not establish external authority or scientific validity.
 
 Important boundaries:
 
-- `previousGraphHash` commits each new revision to its predecessor hash, but a standalone snapshot cannot prove the predecessor's contents unless that predecessor is also archived.
-- The source-root export is committed through an evidence-normalized canonical export hash, but the original source export remains an external evidence artifact.
-- Anyone capable of replacing the entire unsigned graph and all associated evidence could calculate a different internally consistent graph. Signatures, public anchoring, and decentralized attestations are later roadmap items, not Phase-0 claims.
+- `previousGraphHash` commits each new revision to its predecessor hash, but predecessor contents must still be archived to verify history.
+- The source-root export is committed, but the original imported artifact remains external evidence.
+- Unsigned whole-evidence replacement remains outside v1; signatures, public anchoring, and decentralized attestations are future work.
 - Step IDs are scoped by branch identity; labels and step IDs are not global security identifiers.
-- Graph verification does not prove forecasting accuracy, causal truth, data quality, policy legitimacy, or real-world calibration.
+- Determinism does not prove forecasting accuracy, causal truth, data quality, fairness, legitimacy, or policy correctness.
+- The Phase-1 “Causal” dimension is provenance topology only.
+- The Phase-1 “Subjective” dimension is explicit annotation storage only.
+- The current radar contains local review annotations; automatic anomaly synthesis or anomaly-born branches are not implemented.
 
-See `VERIFICATION_REPORT.md` for observed CI evidence, the exact receipt and RunGraph conformance hashes, RED/GREEN review history, limitations, and remaining closure gates.
+See:
 
-## Phase-0 boundary
+- `VERIFICATION_REPORT.md` for Phase-0 Trust Kernel / RunGraph evidence and closure gates.
+- `PHASE1_VERIFICATION_REPORT.md` for projection / Trustscape evidence.
 
-The RunGraph implementation closes the technical graph-identity design gap, but Phase 0 remains review-frozen until an independent reviewer examines the final version-pinned PR diff and formally disposes of all findings.
+## Gate status
 
-Until that review closes:
+Phase 0 remains **review-frozen** pending an independent version-pinned technical review of draft PR #17. No Phase-0 tag, merge, or authoritative browser cut-over is permitted.
 
-- the pull request remains draft and unmerged;
-- no internal baseline tag is created;
-- the legacy browser remains authoritative;
-- no 4D Projection or Trustscape implementation begins;
-- no real-data, calibration, auto-forking, municipal, or production-readiness claim is made.
+Phase 1 is being developed independently on `codex/ripple-4d-projection-v1` and stacked draft PR #18. This isolation allows implementation and verification work without representing Phase 0 as formally approved.
+
+Until the relevant reviews close:
+
+- both PRs remain draft and unmerged;
+- no baseline tag is created;
+- `src/app.js` and the legacy Bellwether browser remain authoritative;
+- projection/Trustscape remain synthetic, read-only, and non-authoritative;
+- no real-data calibration, policy recommendation, auto-forking, municipal, or production-readiness claim is made.
 
 ## Design boundary
 
-Ripple City is a scenario model, not a forecast. Its outputs are deterministic and internally consistent with the rules in `src/simulation.js`; they do not claim to predict a real city.
+Ripple City is a scenario model, not a forecast. Its outputs are deterministic and internally consistent with the fictional rules in `src/simulation.js`; they do not claim to predict a real city.
 
-The simulation layer is intentionally separate from the UI:
+The legacy simulation layer remains intentionally separate from the UI:
 
-- `src/city-data.js` — world definitions
-- `src/simulation.js` — yearly deterministic transitions
-- `src/explanations.js` — causal provenance traversal
+- `src/city-data.js` — fictional world definitions
+- `src/simulation.js` — deterministic yearly transitions
+- `src/explanations.js` — causal/provenance traversal in the legacy scenario model
 - `src/stories.js` — deterministic citizen narratives
-- `src/map-view.js` and `src/ui.js` — presentation only
-- `src/app.js` — interaction orchestration
+- `src/map-view.js` and `src/ui.js` — legacy presentation
+- `src/app.js` — legacy interaction orchestration
 
-## Unreal 5.8 bridge direction
+The Phase-1 lab is separate:
 
-The prototype is isolated from the Unreal runtime. Its next bridge should preserve that boundary:
+- `src/projection/` — deterministic verified-evidence projection
+- `src/trustscape/model.js` — pure scene model
+- `src/trustscape/browser-integrity.js` — browser fixture/annotation integrity
+- `src/trustscape/renderer-webgl2.js` — presentation only
+- `src/trustscape/local-annotations.js` — local-first adjunct commentary
+- `src/trustscape/app.js` — lab interaction orchestration
 
-1. Export branch snapshots and causal events as stable JSON contracts.
-2. Add an Unreal adapter that translates snapshots into Data Layer, population, signage, mission, audio, and world-consequence commands.
-3. Keep simulation ownership outside Blueprint and presentation systems.
-4. Validate the adapter on the Shadow machine with Unreal Engine 5.8 builds and playtests.
+## Future boundary
 
-## Next product iteration
-
-The second product iteration expands the same timeline, provenance, comparison, and uncertainty contracts into a Near-Future Earth scenario laboratory. Real-world use will require sourced datasets, calibrated domain models, expert review, and explicit uncertainty ranges.
+Real-world use requires sourced datasets, explicit licenses and provenance, calibrated domain models, independent expert review, uncertainty treatment, privacy/governance controls, and a separate formal design review. None of those claims are inferred from synthetic determinism.
