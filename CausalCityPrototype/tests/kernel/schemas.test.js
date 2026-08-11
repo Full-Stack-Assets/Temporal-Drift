@@ -5,9 +5,11 @@ import { isDeepStrictEqual } from 'node:util';
 
 import { createAnomalyRegistry, recordAnomaly } from '../../src/kernel/anomalies.js';
 import { createGenesisReceipt, createTransitionReceipt } from '../../src/kernel/ledger.js';
+import { createRunGraph, exportRunGraph, forkBranch } from '../../src/kernel/run-graph.js';
 import { counterManifest } from './helpers/counter-fixture.js';
+import { completeCounterRun } from './helpers/run-graph-fixture.js';
 
-const schemaNames = ['anomaly-record-v1', 'run-manifest-v1', 'verification-receipt-v1'];
+const schemaNames = ['anomaly-record-v1', 'run-manifest-v1', 'verification-receipt-v1', 'run-graph-v1'];
 
 async function load(name) {
   return JSON.parse(await readFile(new URL(`../../schemas/${name}.schema.json`, import.meta.url), 'utf8'));
@@ -57,6 +59,9 @@ function validateSchema(schema, value, root = schema) {
   }
   if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
     const keys = Object.keys(value);
+    if (schema.minProperties !== undefined && keys.length < schema.minProperties) return false;
+    if (schema.maxProperties !== undefined && keys.length > schema.maxProperties) return false;
+    if (schema.propertyNames && !keys.every((key) => validateSchema(schema.propertyNames, key, root))) return false;
     if (schema.required && schema.required.some((key) => !(key in value))) return false;
     if (schema.properties) {
       for (const [key, property] of Object.entries(schema.properties)) {
@@ -111,6 +116,16 @@ function transitionReceipt() {
   };
 }
 
+function runGraphRecord() {
+  const root = createRunGraph(completeCounterRun(), 'Root');
+  const { graph } = forkBranch(root, {
+    parentBranchId: root.rootBranchId,
+    forkStepId: 's1',
+    label: 'Child',
+  });
+  return JSON.parse(exportRunGraph(graph));
+}
+
 test('all v1 schemas are strict JSON Schema 2020-12 documents', async () => {
   for (const name of schemaNames) {
     const schema = await load(name);
@@ -122,10 +137,11 @@ test('all v1 schemas are strict JSON Schema 2020-12 documents', async () => {
   }
 });
 
-test('authoritative anomaly, manifest, genesis, and transition artifacts satisfy their complete schemas', async () => {
+test('authoritative anomaly, manifest, receipts, and RunGraph satisfy their complete schemas', async () => {
   const anomalySchema = await load('anomaly-record-v1');
   const manifestSchema = await load('run-manifest-v1');
   const receiptSchema = await load('verification-receipt-v1');
+  const graphSchema = await load('run-graph-v1');
   const manifest = counterManifest();
   const { genesis, transition } = transitionReceipt();
 
@@ -133,6 +149,7 @@ test('authoritative anomaly, manifest, genesis, and transition artifacts satisfy
   assert.equal(validateSchema(manifestSchema, manifest), true);
   assert.equal(validateSchema(receiptSchema, genesis), true);
   assert.equal(validateSchema(receiptSchema, transition), true);
+  assert.equal(validateSchema(graphSchema, runGraphRecord()), true);
 });
 
 test('schemas reject nested invalid values and kind-specific receipt contradictions', async () => {
@@ -148,4 +165,30 @@ test('schemas reject nested invalid values and kind-specific receipt contradicti
   assert.equal(validateSchema(receiptSchema, { ...transition, previousReceiptHash: null }), false, 'transition previous hash');
   assert.equal(validateSchema(receiptSchema, { ...transition, manifestCoreHash: 'a'.repeat(64) }), false, 'transition manifest hash');
   assert.equal(validateSchema(receiptSchema, { ...transition, sequence: 0 }), false, 'transition sequence');
+});
+
+test('RunGraph schema rejects malformed IDs, descriptors, membership values, and unknown fields', async () => {
+  const schema = await load('run-graph-v1');
+  const valid = runGraphRecord();
+  const childId = Object.keys(valid.branches).find((branchId) => branchId !== valid.rootBranchId);
+
+  assert.equal(validateSchema(schema, { ...valid, extra: true }), false, 'unknown top-level field');
+  assert.equal(validateSchema(schema, { ...valid, graphId: 'graph-bad' }), false, 'malformed graph id');
+
+  const invalidBranchKey = structuredClone(valid);
+  invalidBranchKey.branches.bad = invalidBranchKey.branches[childId];
+  delete invalidBranchKey.branches[childId];
+  assert.equal(validateSchema(schema, invalidBranchKey), false, 'branch key pattern');
+
+  const invalidDescriptor = structuredClone(valid);
+  invalidDescriptor.branches[childId].extra = true;
+  assert.equal(validateSchema(schema, invalidDescriptor), false, 'descriptor additional property');
+
+  const invalidExport = structuredClone(valid);
+  invalidExport.runExports[childId] = { not: 'a string' };
+  assert.equal(validateSchema(schema, invalidExport), false, 'run export type');
+
+  const missingMembership = structuredClone(valid);
+  delete missingMembership.runExports[childId];
+  assert.equal(validateSchema(schema, missingMembership), true, 'schema handles shapes; semantic membership equality is enforced by verifyRunGraph');
 });
