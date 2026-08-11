@@ -1,105 +1,102 @@
-import { hashCanonical } from './canonicalize.js';
-import { deepCloneFreeze } from './immutable.js';
 import { TrustKernelError } from './errors.js';
+import { cloneAndFreeze } from './immutable.js';
 import { createPrng } from './prng.js';
 
-export const FORMAT_ID = 'ripple-trust-run';
-export const SCHEMA_VERSION = '1';
+export const RUN_FORMAT = 'ripple-trust-run';
+export const SCHEMA_VERSION = '1.0.0';
 export const KERNEL_VERSION = '1.0.0';
+const HASH_PATTERN = /^[a-f0-9]{64}$/;
 
-const HASH_PATTERN = /^[0-9a-f]{64}$/;
-
-function requireString(value, code, field) {
-  if (typeof value !== 'string' || value.length === 0) throw new TrustKernelError(code, `${field} must be a non-empty string`);
+function exactKeys(value, allowed, label) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new TrustKernelError('E_UNSAFE_VALUE', `${label} must be a plain object`);
+  }
+  const keys = Object.keys(value);
+  if (keys.length !== allowed.length || keys.some((key) => !allowed.includes(key))) {
+    throw new TrustKernelError('E_UNSAFE_VALUE', `${label} contains missing or unknown fields`);
+  }
 }
 
-function requireExactKeys(value, allowed, field) {
-  const keys = Reflect.ownKeys(value);
-  if (keys.some((key) => typeof key === 'symbol')) throw new TrustKernelError('E_SCHEMA_VERSION', `${field} may not contain symbol keys`);
-  const expected = new Set(allowed);
-  if (keys.some((key) => !expected.has(key))) throw new TrustKernelError('E_SCHEMA_VERSION', `${field} contains an unknown field`);
+function identifier(value, code, label) {
+  if (typeof value !== 'string' || value.length === 0) throw new TrustKernelError(code, `${label} must be a non-empty string`);
+}
+
+function validateModel(model) {
+  exactKeys(model, ['id', 'version'], 'model');
+  identifier(model.id, 'E_MODEL_NOT_FOUND', 'model.id');
+  identifier(model.version, 'E_MODEL_VERSION', 'model.version');
+}
+
+function validateInput(input) {
+  exactKeys(input, ['stepId', 'type', 'payload'], 'input envelope');
+  identifier(input.stepId, 'E_UNSAFE_VALUE', 'input.stepId');
+  identifier(input.type, 'E_UNSAFE_VALUE', 'input.type');
+  cloneAndFreeze(input.payload);
 }
 
 function validateAncestry(ancestry) {
-  if (!Array.isArray(ancestry)) throw new TrustKernelError('E_SCHEMA_VERSION', 'ancestry must be an array');
-  for (const entry of ancestry) {
-    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) throw new TrustKernelError('E_SCHEMA_VERSION', 'ancestry entry must be an object');
-    requireExactKeys(entry, ['parentRunId', 'parentBranchId', 'parentReceiptHash', 'forkStepId'], 'ancestry entry');
-    requireString(entry.parentRunId, 'E_SCHEMA_VERSION', 'parentRunId');
-    requireString(entry.parentBranchId, 'E_SCHEMA_VERSION', 'parentBranchId');
-    requireString(entry.forkStepId, 'E_SCHEMA_VERSION', 'forkStepId');
-    if (!HASH_PATTERN.test(entry.parentReceiptHash)) throw new TrustKernelError('E_SCHEMA_VERSION', 'parentReceiptHash must be a SHA-256 hex digest');
+  if (ancestry === null) return;
+  try {
+    exactKeys(ancestry, ['parentRunId', 'parentBranchId', 'forkStepId', 'forkReceiptHash'], 'ancestry');
+    identifier(ancestry.parentRunId, 'E_UNVERIFIED_FORK', 'ancestry.parentRunId');
+    identifier(ancestry.parentBranchId, 'E_UNVERIFIED_FORK', 'ancestry.parentBranchId');
+    identifier(ancestry.forkStepId, 'E_UNVERIFIED_FORK', 'ancestry.forkStepId');
+    if (!HASH_PATTERN.test(ancestry.forkReceiptHash)) throw new Error('hash');
+  } catch (error) {
+    if (error instanceof TrustKernelError && error.code === 'E_UNVERIFIED_FORK') throw error;
+    throw new TrustKernelError('E_UNVERIFIED_FORK', 'Ancestry must identify a verified fork receipt');
   }
+}
+
+function validateNormalization(normalization) {
+  exactKeys(normalization, ['id', 'version', 'scales'], 'normalization');
+  identifier(normalization.id, 'E_UNSAFE_VALUE', 'normalization.id');
+  identifier(normalization.version, 'E_UNSAFE_VALUE', 'normalization.version');
+  if (!normalization.scales || typeof normalization.scales !== 'object' || Array.isArray(normalization.scales)) {
+    throw new TrustKernelError('E_UNSAFE_VALUE', 'normalization.scales must be an object');
+  }
+  for (const value of Object.values(normalization.scales)) {
+    if (!Number.isSafeInteger(value) || value < 1) throw new TrustKernelError('E_UNSAFE_INTEGER', 'Every normalization scale must be a positive safe integer');
+  }
+}
+
+export function createManifest(fields) {
+  exactKeys(fields, [
+    'format', 'schemaVersion', 'kernelVersion', 'model', 'runId', 'branchId',
+    'initialState', 'initialPrngState', 'inputs', 'ancestry', 'normalization',
+    'expectedTerminalReceiptHash', 'evidenceRuntime',
+  ], 'run manifest');
+  if (fields.format !== RUN_FORMAT || fields.schemaVersion !== SCHEMA_VERSION) {
+    throw new TrustKernelError('E_SCHEMA_VERSION', `Expected ${RUN_FORMAT} schema ${SCHEMA_VERSION}`);
+  }
+  if (fields.kernelVersion !== KERNEL_VERSION) throw new TrustKernelError('E_SCHEMA_VERSION', `Unsupported kernel version ${fields.kernelVersion}`);
+  validateModel(fields.model);
+  identifier(fields.runId, 'E_UNSAFE_VALUE', 'runId');
+  identifier(fields.branchId, 'E_UNSAFE_VALUE', 'branchId');
+  cloneAndFreeze(fields.initialState);
+  createPrng(fields.initialPrngState);
+  if (!Array.isArray(fields.inputs)) throw new TrustKernelError('E_UNSAFE_VALUE', 'inputs must be an array');
+  const stepIds = new Set();
+  for (const input of fields.inputs) {
+    validateInput(input);
+    if (stepIds.has(input.stepId)) throw new TrustKernelError('E_DUPLICATE_STEP', `Duplicate step ID: ${input.stepId}`);
+    stepIds.add(input.stepId);
+  }
+  validateAncestry(fields.ancestry);
+  validateNormalization(fields.normalization);
+  if (fields.expectedTerminalReceiptHash !== null && !HASH_PATTERN.test(fields.expectedTerminalReceiptHash)) {
+    throw new TrustKernelError('E_RECEIPT_HASH', 'Expected terminal receipt must be lowercase SHA-256 or null');
+  }
+  identifier(fields.evidenceRuntime, 'E_UNSAFE_VALUE', 'evidenceRuntime');
+  return cloneAndFreeze(fields);
 }
 
 export function manifestCore(manifest) {
-  return {
-    format: manifest.format,
-    schemaVersion: manifest.schemaVersion,
-    kernelVersion: manifest.kernelVersion,
-    model: manifest.model,
-    branchId: manifest.branchId,
-    ancestry: manifest.ancestry,
-    initialState: manifest.initialState,
-    initialPrngState: manifest.initialPrngState,
-    inputs: manifest.inputs,
-    normalization: manifest.normalization,
-  };
+  const { expectedTerminalReceiptHash: _terminal, evidenceRuntime: _runtime, ...core } = manifest;
+  return cloneAndFreeze(core);
 }
 
-export function createManifest(config) {
-  if (!config || typeof config !== 'object' || Array.isArray(config)) throw new TrustKernelError('E_SCHEMA_VERSION', 'Manifest config must be an object');
-  const model = config.model;
-  if (!model || typeof model !== 'object' || Array.isArray(model)) throw new TrustKernelError('E_MODEL_NOT_FOUND', 'Model identity is required');
-  requireExactKeys(model, ['id', 'version'], 'model');
-  requireString(model.id, 'E_MODEL_NOT_FOUND', 'model.id');
-  requireString(model.version, 'E_MODEL_VERSION', 'model.version');
-  requireString(config.branchId ?? 'root', 'E_SCHEMA_VERSION', 'branchId');
-  createPrng(config.initialPrngState);
-  const ancestry = config.ancestry ?? [];
-  validateAncestry(ancestry);
-  const inputs = config.inputs ?? [];
-  if (!Array.isArray(inputs)) throw new TrustKernelError('E_SCHEMA_VERSION', 'inputs must be an array');
-  const ids = new Set();
-  for (const input of inputs) {
-    if (!input || typeof input !== 'object' || Array.isArray(input)) throw new TrustKernelError('E_SCHEMA_VERSION', 'input must be an object');
-    requireExactKeys(input, ['stepId', 'type', 'data'], 'input');
-    requireString(input.stepId, 'E_SCHEMA_VERSION', 'input.stepId');
-    requireString(input.type, 'E_SCHEMA_VERSION', 'input.type');
-    if (!Object.hasOwn(input, 'data')) throw new TrustKernelError('E_SCHEMA_VERSION', 'input.data is required');
-    if (ids.has(input.stepId)) throw new TrustKernelError('E_DUPLICATE_STEP', `Duplicate step id: ${input.stepId}`);
-    ids.add(input.stepId);
-    hashCanonical(input);
-  }
-  if (config.expectedTerminalReceiptHash != null && !HASH_PATTERN.test(config.expectedTerminalReceiptHash)) {
-    throw new TrustKernelError('E_SCHEMA_VERSION', 'expectedTerminalReceiptHash must be null or a SHA-256 hex digest');
-  }
-  hashCanonical(config.initialState);
-  hashCanonical(config.normalization ?? { id: 'default', scales: {} });
-  const base = {
-    format: FORMAT_ID,
-    schemaVersion: SCHEMA_VERSION,
-    kernelVersion: KERNEL_VERSION,
-    model: { id: model.id, version: model.version },
-    branchId: config.branchId ?? 'root',
-    ancestry,
-    initialState: config.initialState,
-    initialPrngState: [...config.initialPrngState],
-    inputs,
-    normalization: config.normalization ?? { id: 'default', scales: {} },
-  };
-  const manifestCoreHash = hashCanonical(base);
-  const frozenCore = deepCloneFreeze(base);
-  return deepCloneFreeze({ ...frozenCore, manifestCoreHash, expectedTerminalReceiptHash: config.expectedTerminalReceiptHash ?? null });
-}
-
-export function validateManifest(manifest) {
-  if (!manifest || manifest.format !== FORMAT_ID || manifest.schemaVersion !== SCHEMA_VERSION || manifest.kernelVersion !== KERNEL_VERSION) {
-    throw new TrustKernelError('E_SCHEMA_VERSION', 'Unsupported manifest format or version');
-  }
-  if (manifest.expectedTerminalReceiptHash != null && !HASH_PATTERN.test(manifest.expectedTerminalReceiptHash)) throw new TrustKernelError('E_SCHEMA_VERSION', 'Invalid terminal receipt hash');
-  const expected = hashCanonical(manifestCore(manifest));
-  if (expected !== manifest.manifestCoreHash) throw new TrustKernelError('E_REPLAY_MISMATCH', 'Manifest core hash mismatch');
-  createPrng(manifest.initialPrngState);
-  return manifest;
+export function createInputEnvelope(input) {
+  validateInput(input);
+  return cloneAndFreeze(input);
 }

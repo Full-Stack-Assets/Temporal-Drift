@@ -1,0 +1,23 @@
+{
+  "fixtureVersion": "canonical-v1",
+  "vectors": [
+    {
+      "id": "ordered-nested",
+      "value": { "z": [3, { "b": true, "a": null }], "a": "ok" },
+      "canonical": "{\"a\":\"ok\",\"z\":[3,{\"a\":null,\"b\":true}]}",
+      "sha256": "98078372ea385d9faefb565d70290508ba5052ca7734b3798d331d19bb379345"
+    },
+    {
+      "id": "unicode-nfc",
+      "value": { "é": "é", "control": "line\nquote\"" },
+      "canonical": "{\"control\":\"line\\nquote\\\"\",\"é\":\"é\"}",
+      "sha256": "9146d0c0b9bfd01e28d7e12c4201ffeebe44a6aacf0d17d8a04c7d7d88aeebff"
+    },
+    {
+      "id": "safe-integers",
+      "value": [-9007199254740991, 0, 9007199254740991],
+      "canonical": "[-9007199254740991,0,9007199254740991]",
+      "sha256": "96800f711edd6780b27c203b227a9d77227df8fd906a5236c3a17b6dea82d193"
+    }
+  ]
+}

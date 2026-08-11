@@ -26,12 +26,46 @@ Open `http://localhost:4173` in the Shadow browser.
 
 ## Verify
 
-Node.js 20 or newer is recommended.
+Trust Kernel v1 supports the Node 22 and Node 24 LTS lines. The runtime has no package dependencies.
 
 ```powershell
-npm test
-npm run check
+npm run verify
 ```
+
+The command runs the unchanged 13-test legacy suite, the kernel suite, fresh-process determinism, the 10,000-seed sweep, 1,000 fork-isolation cases, 1,000 Bellwether shadow cases, syntax checks, and the kernel/adapter ambient-randomness scan. GitHub Actions repeats the same command on Node 22 and 24.
+
+## Trust Kernel v1
+
+The additive kernel lives in `src/kernel/`; its public exports are in `src/kernel/index.js`. It provides:
+
+- canonical NFC/UTF-8 serialization over integer-only safe values;
+- explicit xoshiro128** state with rejection-sampled integer draws;
+- recursively immutable snapstates, manifests, ledgers, receipts, branches, anomaly records, and verification reports;
+- SHA-256 receipt chains, deterministic export/replay, and fail-closed tamper verification;
+- isolated forks rooted in a verified parent receipt;
+- append-only anomaly and review records;
+- strict v1 schemas in `schemas/`.
+
+The Bellwether wrapper in `src/adapters/bellwether-model.js` runs as a CI shadow path. It executes the legacy model from the same branch, seed, and year inputs, normalizes its output to fixed-point integers, and commits every state/event step to the kernel receipt chain. Any normalized state or event mismatch fails the shadow suite and reports the first differing path.
+
+This is not a browser cutover. `src/app.js` continues to call the legacy `simulateBranch`, `getSnapshot`, and `compareSnapshots` exports, and the kernel is not imported into the visible browser runtime.
+
+### Additive API
+
+```js
+import {
+  createRun,
+  advanceRun,
+  forkRun,
+  exportRun,
+  replayRun,
+  verifyRun,
+  recordAnomaly,
+  appendAnomalyReview,
+} from './src/kernel/index.js';
+```
+
+See `VERIFICATION_REPORT.md` for observed local evidence and the exact conformance fixture hashes. Node 22/24 cross-runtime status is established by the draft pull request checks, not inferred from a local Node 24 run.
 
 ## Design boundary
 

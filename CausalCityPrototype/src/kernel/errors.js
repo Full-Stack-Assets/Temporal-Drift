@@ -1,13 +1,12 @@
 export class TrustKernelError extends Error {
-  constructor(code, message, context = undefined) {
+  constructor(code, message, details = null) {
     super(message);
     this.name = 'TrustKernelError';
     this.code = code;
-    if (context !== undefined) this.context = context;
-    Object.freeze(this);
+    if (details !== null) this.details = details;
   }
 }
 
-export function fail(code, message, context) {
-  throw new TrustKernelError(code, message, context);
+export function assertKernel(condition, code, message, details = null) {
+  if (!condition) throw new TrustKernelError(code, message, details);
 }

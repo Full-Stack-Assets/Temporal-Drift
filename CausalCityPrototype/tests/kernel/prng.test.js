@@ -1,32 +1,45 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+
 import { createPrng, seedToState } from '../../src/kernel/prng.js';
 
-test('xoshiro128** emits stable reference sequence for state [1,2,3,4]', () => {
+test('xoshiro128** matches the published state transition vector', () => {
   const prng = createPrng([1, 2, 3, 4]);
-  assert.deepEqual([prng.nextUint32(), prng.nextUint32(), prng.nextUint32(), prng.nextUint32()], [11520, 0, 5927040, 70819200]);
+  assert.deepEqual(
+    Array.from({ length: 8 }, () => prng.nextUint32()),
+    [11520, 0, 5927040, 70819200, 2031721883, 1637235492, 1287239034, 3734860849],
+  );
 });
 
-test('clone has independent state but identical future sequence', () => {
-  const left = createPrng(seedToState(2026));
-  left.nextUint32();
-  const right = left.clone();
-  assert.notEqual(left.snapshot(), right.snapshot());
-  assert.deepEqual(left.snapshot(), right.snapshot());
-  assert.equal(left.nextUint32(), right.nextUint32());
-  left.nextUint32();
-  assert.notDeepEqual(left.snapshot(), right.snapshot());
+test('all-zero and malformed PRNG states fail closed', () => {
+  for (const state of [[0, 0, 0, 0], [1, 2, 3], [1, 2, 3, -1], [1, 2, 3, 4294967296]]) {
+    assert.throws(() => createPrng(state), { code: 'E_INVALID_PRNG_STATE' });
+  }
 });
 
-test('nextInt is deterministic and range bounded', () => {
-  const a = createPrng(seedToState(77));
-  const b = createPrng(seedToState(77));
-  const x = Array.from({ length: 1000 }, () => a.nextInt(7));
-  const y = Array.from({ length: 1000 }, () => b.nextInt(7));
-  assert.deepEqual(x, y);
-  assert(x.every((value) => Number.isInteger(value) && value >= 0 && value < 7));
+test('snapshots are frozen copies and clones advance independently', () => {
+  const original = createPrng([1, 2, 3, 4]);
+  original.nextUint32();
+  const snapshot = original.snapshot();
+  const clone = original.clone();
+  assert.ok(Object.isFrozen(snapshot));
+  assert.notStrictEqual(snapshot, clone.snapshot());
+  assert.equal(original.nextUint32(), clone.nextUint32());
+  clone.nextUint32();
+  assert.notDeepEqual(original.snapshot(), clone.snapshot());
 });
 
-test('all-zero state is rejected', () => {
-  assert.throws(() => createPrng([0, 0, 0, 0]), (error) => error.code === 'E_INVALID_PRNG_STATE');
+test('nextInt is deterministic and stays within every declared range', () => {
+  const left = createPrng([11, 22, 33, 44]);
+  const right = createPrng([11, 22, 33, 44]);
+  for (const max of [1, 2, 3, 7, 65537, 4294967295]) {
+    for (let index = 0; index < 200; index += 1) {
+      const actual = left.nextInt(max);
+      assert.equal(actual, right.nextInt(max));
+      assert.ok(actual >= 0 && actual < max);
+    }
+  }
+  for (const invalid of [0, -1, 1.5, 4294967296]) {
+    assert.throws(() => left.nextInt(invalid), { code: 'E_INVALID_PRNG_STATE' });
+  }
 });

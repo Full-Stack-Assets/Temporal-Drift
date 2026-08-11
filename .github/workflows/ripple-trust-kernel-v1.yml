@@ -1,0 +1,44 @@
+name: Ripple Trust Kernel v1
+
+on:
+  pull_request:
+    paths:
+      - "CausalCityPrototype/package.json"
+      - "CausalCityPrototype/schemas/**"
+      - "CausalCityPrototype/scripts/**"
+      - "CausalCityPrototype/src/**"
+      - "CausalCityPrototype/tests/**"
+      - ".github/workflows/ripple-trust-kernel-v1.yml"
+  push:
+    branches:
+      - codex/ripple-trust-kernel-v1
+    paths:
+      - "CausalCityPrototype/package.json"
+      - "CausalCityPrototype/schemas/**"
+      - "CausalCityPrototype/scripts/**"
+      - "CausalCityPrototype/src/**"
+      - "CausalCityPrototype/tests/**"
+      - ".github/workflows/ripple-trust-kernel-v1.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Node ${{ matrix.node }} verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    defaults:
+      run:
+        working-directory: CausalCityPrototype
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Verify legacy, kernel, acceptance, syntax, and randomness gates
+        run: npm run verify

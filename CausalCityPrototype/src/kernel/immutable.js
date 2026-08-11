@@ -1,25 +1,17 @@
-import { TrustKernelError } from './errors.js';
+import { normalizeCanonicalValue } from './canonicalize.js';
 
-function clone(value, seen) {
-  if (value === null || typeof value === 'string' || typeof value === 'boolean' || typeof value === 'number') return value;
-  if (typeof value !== 'object') throw new TrustKernelError('E_UNSAFE_VALUE', 'Unsupported immutable value');
-  if (seen.has(value)) throw new TrustKernelError('E_UNSAFE_VALUE', 'Cyclic values are not supported');
-  seen.add(value);
-  let result;
-  if (Array.isArray(value)) {
-    if (Object.keys(value).length !== value.length) throw new TrustKernelError('E_UNSAFE_VALUE', 'Sparse arrays are not supported');
-    result = value.map((item) => clone(item, seen));
-  } else {
-    const proto = Object.getPrototypeOf(value);
-    if (proto !== Object.prototype && proto !== null) throw new TrustKernelError('E_UNSAFE_VALUE', 'Only plain objects are supported');
-    result = {};
-    for (const key of Object.keys(value)) result[key] = clone(value[key], seen);
+export function deepFreeze(value) {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    for (const entry of Object.values(value)) deepFreeze(entry);
+    Object.freeze(value);
   }
-  seen.delete(value);
-  for (const child of Object.values(result)) if (child && typeof child === 'object' && !Object.isFrozen(child)) Object.freeze(child);
-  return Object.freeze(result);
+  return value;
 }
 
-export function deepCloneFreeze(value) {
-  return clone(value, new WeakSet());
+export function deepClone(value) {
+  return normalizeCanonicalValue(value);
+}
+
+export function cloneAndFreeze(value) {
+  return deepFreeze(deepClone(value));
 }

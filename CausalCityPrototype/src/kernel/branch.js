@@ -1,41 +1,63 @@
-import { createManifest } from './manifest.js';
-import { hashCanonical } from './canonicalize.js';
-import { receiptPayload } from './ledger.js';
+import { sha256Hex } from './canonicalize.js';
 import { TrustKernelError } from './errors.js';
+import { createGenesisReceipt, verifyReceiptHash } from './ledger.js';
+import { createManifest } from './manifest.js';
+import { createRun } from './replay.js';
 
-export function assertStoredStepVerified(run, index) {
-  const receipt = run.ledger[index];
-  const snapstate = run.snapstates[index];
-  const events = run.eventBatches[index];
-  if (!receipt || !snapstate || !events) throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork point is incomplete');
-  if (hashCanonical(receiptPayload(receipt)) !== receipt.receiptHash) throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork receipt hash is invalid');
-  if (hashCanonical(snapstate.modelState) !== snapstate.stateHash) throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork state hash is invalid');
-  if (receipt.resultingStateHash !== snapstate.stateHash) throw new TrustKernelError('E_UNVERIFIED_FORK', 'Receipt/state mismatch at fork');
-  if (receipt.eventBatchHash !== hashCanonical(events)) throw new TrustKernelError('E_UNVERIFIED_FORK', 'Event batch mismatch at fork');
+function parentPrefixIsVerified(parentRun) {
+  if (
+    parentRun.ledger.length !== parentRun.snapstates.length
+    || parentRun.ledger.length !== parentRun.eventBatches.length
+    || parentRun.ledger.length < 1
+  ) return false;
+  if (createGenesisReceipt(parentRun.manifest).receiptHash !== parentRun.ledger[0].receiptHash) return false;
+  for (let index = 0; index < parentRun.ledger.length; index += 1) {
+    const receipt = parentRun.ledger[index];
+    const snapstate = parentRun.snapstates[index];
+    if (!verifyReceiptHash(receipt) || receipt.sequence !== index || snapstate.sequence !== index) return false;
+    if (receipt.resultingStateHash !== sha256Hex(snapstate.modelState)) return false;
+    if (receipt.resultingPrngStateHash !== sha256Hex(snapstate.prngState)) return false;
+    if (receipt.eventBatchHash !== sha256Hex(parentRun.eventBatches[index])) return false;
+    if (index > 0) {
+      const previous = parentRun.ledger[index - 1];
+      if (receipt.previousReceiptHash !== previous.receiptHash) return false;
+      if (receipt.previousStateHash !== parentRun.snapstates[index - 1].stateHash) return false;
+      if (receipt.inputHash !== sha256Hex(parentRun.manifest.inputs[index - 1])) return false;
+    }
+  }
   return true;
 }
 
-export function createForkManifest(parentRun, forkStepId, childBranchId) {
-  if (typeof childBranchId !== 'string' || childBranchId.length === 0 || childBranchId === parentRun.branchId) {
-    throw new TrustKernelError('E_BRANCH_EXISTS', 'Child branch ID must be non-empty and different from parent');
+export function forkRun(parentRun, forkStepId, childBranchId) {
+  if (typeof childBranchId !== 'string' || childBranchId.length === 0) {
+    throw new TrustKernelError('E_BRANCH_EXISTS', 'Child branch ID must be a non-empty string');
   }
-  const index = parentRun.ledger.findIndex((receipt) => receipt.stepId === forkStepId);
-  if (index < 0) throw new TrustKernelError('E_UNVERIFIED_FORK', `Fork step not found: ${forkStepId}`);
-  assertStoredStepVerified(parentRun, index);
-  const receipt = parentRun.ledger[index];
-  const snapstate = parentRun.snapstates[index];
-  return createManifest({
-    model: parentRun.manifest.model,
+  const knownBranches = new Set([
+    parentRun.manifest.branchId,
+    parentRun.manifest.ancestry?.parentBranchId,
+  ].filter(Boolean));
+  if (knownBranches.has(childBranchId)) throw new TrustKernelError('E_BRANCH_EXISTS', `Branch already exists: ${childBranchId}`);
+
+  if (!parentPrefixIsVerified(parentRun)) throw new TrustKernelError('E_UNVERIFIED_FORK', 'Parent run did not pass receipt verification');
+  const snapstate = parentRun.snapstates.find((entry) => entry.stepId === forkStepId);
+  const receipt = parentRun.ledger.find((entry) => entry.stepId === forkStepId);
+  if (!snapstate || !receipt || snapstate.sequence !== receipt.sequence) {
+    throw new TrustKernelError('E_UNVERIFIED_FORK', `Verified fork step not found: ${forkStepId}`);
+  }
+  const manifest = createManifest({
+    ...parentRun.manifest,
     branchId: childBranchId,
-    ancestry: [...parentRun.manifest.ancestry, {
-      parentRunId: parentRun.runId,
-      parentBranchId: parentRun.branchId,
-      parentReceiptHash: receipt.receiptHash,
-      forkStepId,
-    }],
     initialState: snapstate.modelState,
     initialPrngState: snapstate.prngState,
-    inputs: parentRun.manifest.inputs.slice(index),
-    normalization: parentRun.manifest.normalization,
+    inputs: parentRun.manifest.inputs.slice(snapstate.sequence),
+    ancestry: {
+      parentRunId: parentRun.manifest.runId,
+      parentBranchId: parentRun.manifest.branchId,
+      forkStepId,
+      forkReceiptHash: receipt.receiptHash,
+    },
+    expectedTerminalReceiptHash: null,
+    evidenceRuntime: `node-${process.version}`,
   });
+  return createRun(manifest, parentRun.adapter);
 }
