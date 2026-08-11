@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Trustscape Lite — Experimental Viewer</title>
+  <link rel="stylesheet" href="./styles/trustscape.css">
+</head>
+<body>
+  <header class="masthead">
+    <div>
+      <p class="eyebrow">Experimental verified-data viewer</p>
+      <h1>Trustscape Lite</h1>
+      <p class="lede">Load a canonical Ripple 4D projection. The browser verifies its SHA-256 commitment before any point or thread is rendered.</p>
+    </div>
+    <div class="status-stack" aria-live="polite">
+      <span id="verification-badge" class="badge badge-pending">No projection loaded</span>
+      <span id="webgl-badge" class="badge badge-pending">Checking WebGL2</span>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="panel controls" aria-label="Trustscape controls">
+      <section>
+        <h2>Verified source</h2>
+        <label class="file-control" for="projection-file">
+          <span>Projection JSON</span>
+          <input id="projection-file" type="file" accept="application/json,.json">
+        </label>
+        <dl class="commitments">
+          <div><dt>Projection</dt><dd id="projection-id">—</dd></div>
+          <div><dt>Projection hash</dt><dd id="projection-hash">—</dd></div>
+          <div><dt>Source graph</dt><dd id="graph-id">—</dd></div>
+          <div><dt>Graph hash</dt><dd id="graph-hash">—</dd></div>
+          <div><dt>Render model</dt><dd id="render-hash">—</dd></div>
+        </dl>
+      </section>
+
+      <section>
+        <h2>Time navigation</h2>
+        <div class="field-grid">
+          <label>Start sequence<input id="start-sequence" type="number" min="0" step="1" value="0"></label>
+          <label>End sequence<input id="end-sequence" type="number" min="0" step="1" value="0"></label>
+        </div>
+      </section>
+
+      <section>
+        <h2>Branches</h2>
+        <div id="branch-controls" class="branch-controls"><p class="muted">Load a projection to select branches.</p></div>
+        <div class="field-grid">
+          <label>Compare left<select id="compare-left"><option value="">None</option></select></label>
+          <label>Compare right<select id="compare-right"><option value="">None</option></select></label>
+        </div>
+        <button id="apply-view" type="button" disabled>Apply deterministic view</button>
+      </section>
+
+      <section>
+        <h2>Evidence boundary</h2>
+        <ul class="legend">
+          <li><span class="legend-key key-snapstate"></span>Verified Snapstate</li>
+          <li><span class="legend-key key-receipt"></span>Receipt commitment</li>
+          <li><span class="legend-key key-event"></span>Committed event</li>
+          <li><span class="legend-key key-subjective"></span>Explicit subjective record</li>
+        </ul>
+        <p class="muted">Receipt and fork edges show causal provenance. They are not scientific causal-effect claims.</p>
+      </section>
+    </aside>
+
+    <section class="stage" aria-label="Trustscape visualization">
+      <canvas id="trustscape-canvas" width="1280" height="720" aria-label="Verified projection visualization"></canvas>
+      <div id="stage-message" class="stage-message">Load a verified projection to enter the Trustscape.</div>
+      <div class="stage-summary">
+        <span id="object-count">0 objects</span>
+        <span id="thread-count">0 threads</span>
+        <span id="comparison-count">0 comparisons</span>
+      </div>
+    </section>
+
+    <aside class="panel evidence" aria-label="Evidence and annotations">
+      <section>
+        <h2>Anomaly / tension radar</h2>
+        <ol id="radar-list" class="radar-list"><li class="muted">No explicit subjective or reviewed anomaly records loaded.</li></ol>
+      </section>
+
+      <section>
+        <h2>Local-first annotations</h2>
+        <p class="muted">Annotations are append-only local evidence. They never alter simulation, projection, or graph truth.</p>
+        <label>Actor ID<input id="annotation-actor" type="text" value="local-reviewer" autocomplete="off"></label>
+        <label>Target<select id="annotation-target"><option value="">Load a projection</option></select></label>
+        <label>Annotation<textarea id="annotation-body" rows="4" maxlength="2000"></textarea></label>
+        <button id="add-annotation" type="button" disabled>Add annotation</button>
+        <div class="button-row">
+          <button id="export-annotations" type="button" disabled>Export annotations</button>
+          <label class="import-button">Import / merge<input id="annotation-file" type="file" accept="application/json,.json" disabled></label>
+        </div>
+        <ol id="annotation-list" class="annotation-list"><li class="muted">No local annotations.</li></ol>
+      </section>
+    </aside>
+  </main>
+
+  <footer>
+    <p>Trustscape Lite is an isolated experimental route. Ripple City’s legacy browser simulation remains authoritative until an explicit reviewed cut-over.</p>
+  </footer>
+
+  <script type="module" src="./src/trustscape/app.js"></script>
+</body>
+</html>
