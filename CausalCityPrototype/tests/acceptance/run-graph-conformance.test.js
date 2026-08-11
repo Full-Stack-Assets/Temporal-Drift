@@ -17,7 +17,6 @@ test('acceptance: fresh processes emit byte-identical RunGraph identities and ha
   const outputs = Array.from({ length: 4 }, emit);
   for (const output of outputs.slice(1)) assert.equal(output, outputs[0]);
   const actual = JSON.parse(outputs[0]);
-  console.log(`RUN_GRAPH_CONFORMANCE_ACTUAL=${JSON.stringify(actual)}`);
   assert.deepEqual(actual, expected);
   assert.equal(actual.fixtureVersion, 'run-graph-v1');
   assert.match(actual.graphId, /^graph-[a-f0-9]{64}$/);
