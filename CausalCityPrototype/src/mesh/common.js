@@ -25,6 +25,26 @@ export function assertExactPlainObject(value, keys, code, path = 'value') {
   }
 }
 
+function readExactDataArray(value, code, path, allowEmpty) {
+  if (!Array.isArray(value) || Object.getPrototypeOf(value) !== Array.prototype || (!allowEmpty && value.length === 0)) {
+    meshFail(code, `${path} must be ${allowEmpty ? 'an' : 'a non-empty'} ordinary array`, path);
+  }
+  const expectedKeys = new Set(['length', ...Array.from({ length: value.length }, (_, index) => String(index))]);
+  const ownKeys = Reflect.ownKeys(value);
+  if (ownKeys.length !== expectedKeys.size || ownKeys.some((key) => typeof key !== 'string' || !expectedKeys.has(key))) {
+    meshFail(code, `${path} contains sparse, hidden, symbol, or unknown array fields`, path);
+  }
+  const entries = [];
+  for (let index = 0; index < value.length; index += 1) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+    if (!descriptor || !descriptor.enumerable || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) {
+      meshFail(code, `${path}.${index} must be an enumerable data element`, `${path}.${index}`);
+    }
+    entries.push(descriptor.value);
+  }
+  return entries;
+}
+
 export function normalizeText(value, code, path) {
   if (typeof value !== 'string' || value.length === 0) meshFail(code, `${path} must be a non-empty string`, path);
   return value.normalize('NFC');
@@ -60,8 +80,8 @@ export function compareUtf8(left, right) {
 }
 
 export function normalizeStringSet(value, code, path, { pattern = null, allowEmpty = false } = {}) {
-  if (!Array.isArray(value) || (!allowEmpty && value.length === 0)) meshFail(code, `${path} must be ${allowEmpty ? 'an' : 'a non-empty'} array`, path);
-  const normalized = value.map((entry, index) => {
+  const entries = readExactDataArray(value, code, path, allowEmpty);
+  const normalized = entries.map((entry, index) => {
     const text = normalizeText(entry, code, `${path}.${index}`);
     if (pattern && !pattern.test(text)) meshFail(code, `${path}.${index} has an unsupported format`, `${path}.${index}`);
     return text;
