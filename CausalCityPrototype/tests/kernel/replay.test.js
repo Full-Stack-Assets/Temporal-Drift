@@ -50,3 +50,26 @@ test('advance rejects skipped or modified declared inputs', () => {
   assert.throws(() => advanceRun(run, run.manifest.inputs[1]), { code: 'E_REPLAY_MISMATCH' });
   assert.throws(() => advanceRun(run, { ...run.manifest.inputs[0], payload: { amount: 99 } }), { code: 'E_REPLAY_MISMATCH' });
 });
+
+test('run pins the validated adapter transition against later caller mutation', () => {
+  const manifest = counterManifest();
+  const expectedInitial = createRun(manifest, counterAdapter);
+  const expected = advanceRun(expectedInitial, expectedInitial.manifest.inputs[0]);
+
+  const mutableAdapter = {
+    id: counterAdapter.id,
+    version: counterAdapter.version,
+    transition: counterAdapter.transition,
+  };
+  const initial = createRun(manifest, mutableAdapter);
+  mutableAdapter.transition = () => ({ state: { count: 999999 }, events: [] });
+  mutableAdapter.id = 'mutated-model';
+  mutableAdapter.version = '99.0.0';
+
+  const actual = advanceRun(initial, initial.manifest.inputs[0]);
+  assert.deepEqual(actual.snapstates[1].modelState, expected.snapstates[1].modelState);
+  assert.deepEqual(actual.eventBatches[1], expected.eventBatches[1]);
+  assert.equal(actual.adapter.id, counterAdapter.id);
+  assert.equal(actual.adapter.version, counterAdapter.version);
+  assert.ok(Object.isFrozen(actual.adapter));
+});
