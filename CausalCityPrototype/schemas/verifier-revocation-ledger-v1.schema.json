@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "verifier-revocation-ledger-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["ledgerVersion", "registryHash", "records", "terminalRevocationHash", "ledgerHash"],
+  "properties": {
+    "ledgerVersion": { "const": "verifier-revocation-ledger-v1" },
+    "registryHash": { "$ref": "#/$defs/hash" },
+    "records": { "type": "array", "items": { "$ref": "#/$defs/record" } },
+    "terminalRevocationHash": { "anyOf": [{ "$ref": "#/$defs/hash" }, { "type": "null" }] },
+    "ledgerHash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["revocationId", "registryHash", "verifierId", "keyId", "logicalTime", "reasonCode", "sourceEvidenceHash", "previousRevocationHash", "recordHash"],
+      "properties": {
+        "revocationId": { "type": "string", "pattern": "^revocation-[a-f0-9]{64}$" },
+        "registryHash": { "$ref": "#/$defs/hash" },
+        "verifierId": { "type": "string", "minLength": 1 },
+        "keyId": { "type": "string", "minLength": 1 },
+        "logicalTime": { "type": "integer", "minimum": 0 },
+        "reasonCode": { "type": "string", "minLength": 1 },
+        "sourceEvidenceHash": { "$ref": "#/$defs/hash" },
+        "previousRevocationHash": { "anyOf": [{ "$ref": "#/$defs/hash" }, { "type": "null" }] },
+        "recordHash": { "$ref": "#/$defs/hash" }
+      }
+    }
+  }
+}
