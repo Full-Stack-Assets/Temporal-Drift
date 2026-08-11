@@ -24,6 +24,8 @@ function emit(relativePath, label) {
 const runGraph = emit('../tests/kernel/helpers/emit-run-graph.js', 'RunGraph');
 const projection = emit('../tests/kernel/helpers/emit-4d-projection.js', '4D projection');
 const phase2 = emit('../tests/kernel/helpers/emit-phase2-conformance.js', 'Phase 2');
+const frontier = emit('../tests/kernel/helpers/emit-frontier-conformance.js', 'Frontier');
+const mesh = emit('../tests/kernel/helpers/emit-mesh-conformance.js', 'Verification mesh');
 
 process.stdout.write(`${JSON.stringify({
   fixtureVersion: 'ripple-trust-kernel-v1',
@@ -32,11 +34,15 @@ process.stdout.write(`${JSON.stringify({
   canonicalFixtureVersion: 'canonical-v1',
   projectionFixtureVersion: 'projection-v1',
   phase2FixtureVersion: 'phase2-approximation-v1',
+  frontierFixtureVersion: 'frontier-foundations-v1',
+  meshFixtureVersion: 'verification-mesh-v1',
   counterTerminalReceiptHash: counter.ledger.at(-1).receiptHash,
   bellwetherTerminalReceiptHashes: bellwether,
   runGraphConformance: runGraph,
   projectionConformance: projection,
   phase2Conformance: phase2,
+  frontierConformance: frontier,
+  verificationMeshConformance: mesh,
   acceptanceCases: {
     seedSweep: 10000,
     forkIsolation: 1000,
@@ -44,5 +50,7 @@ process.stdout.write(`${JSON.stringify({
     runGraphProcesses: 4,
     projectionProcesses: 4,
     phase2Processes: 4,
+    frontierProcesses: 4,
+    meshProcesses: 4,
   },
 })}\n`);
