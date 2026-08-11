@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 import { runBellwetherShadow } from '../src/adapters/bellwether-model.js';
@@ -19,6 +20,11 @@ const runGraphProcess = spawnSync(process.execPath, [runGraphEmitter], { encodin
 if (runGraphProcess.status !== 0) throw new Error(runGraphProcess.stderr || 'RunGraph conformance emitter failed');
 const runGraph = JSON.parse(runGraphProcess.stdout.trim());
 
+const projectionFixture = JSON.parse(await readFile(
+  new URL('../tests/fixtures/projection-hashes-v1.json', import.meta.url),
+  'utf8',
+));
+
 process.stdout.write(`${JSON.stringify({
   fixtureVersion: 'ripple-trust-kernel-v1',
   runtime: process.version,
@@ -27,5 +33,12 @@ process.stdout.write(`${JSON.stringify({
   counterTerminalReceiptHash: counter.ledger.at(-1).receiptHash,
   bellwetherTerminalReceiptHashes: bellwether,
   runGraphConformance: runGraph,
-  acceptanceCases: { seedSweep: 10000, forkIsolation: 1000, shadowEquivalence: 1000, runGraphProcesses: 4 },
+  projectionConformance: projectionFixture,
+  acceptanceCases: {
+    seedSweep: 10000,
+    forkIsolation: 1000,
+    shadowEquivalence: 1000,
+    runGraphProcesses: 4,
+    projectionProcesses: 4,
+  },
 })}\n`);
