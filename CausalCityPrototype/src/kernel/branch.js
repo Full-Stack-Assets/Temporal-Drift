@@ -54,15 +54,34 @@ function parentPrefixIsVerified(parentRun) {
   return true;
 }
 
+function strictOptionKeys(options) {
+  const prototype = Object.getPrototypeOf(options);
+  if (prototype !== Object.prototype && prototype !== null) {
+    throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork options must be a plain object');
+  }
+  const ownKeys = Reflect.ownKeys(options);
+  if (ownKeys.some((key) => typeof key !== 'string')) {
+    throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork options cannot contain symbol fields');
+  }
+  const allowed = new Set(['inputs', 'parentBranchId']);
+  for (const key of ownKeys) {
+    const descriptor = Object.getOwnPropertyDescriptor(options, key);
+    if (!descriptor?.enumerable || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) {
+      throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork options must contain enumerable data fields only');
+    }
+    if (!allowed.has(key)) {
+      throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork options contain unknown fields');
+    }
+  }
+  return ownKeys;
+}
+
 function normalizeOptions(options) {
   if (options === undefined) return Object.freeze({ inputs: null, parentBranchId: null });
   if (!options || typeof options !== 'object' || Array.isArray(options)) {
     throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork options must be a plain object');
   }
-  const allowed = new Set(['inputs', 'parentBranchId']);
-  if (Object.keys(options).some((key) => !allowed.has(key))) {
-    throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork options contain unknown fields');
-  }
+  strictOptionKeys(options);
   let inputs = null;
   if (Object.prototype.hasOwnProperty.call(options, 'inputs')) {
     if (!Array.isArray(options.inputs)) throw new TrustKernelError('E_UNVERIFIED_FORK', 'Fork inputs must be an array');
