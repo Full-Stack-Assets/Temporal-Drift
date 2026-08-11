@@ -119,3 +119,5 @@ export function adapterFor(run) { return adapters.get(run); }
 export { TrustKernelError } from './errors.js';
 export { createPrng, seedToState } from './prng.js';
 export { canonicalBytes, canonicalString, hashCanonical } from './canonicalize.js';
+export { forkRun, exportRun, replayRun, verifyRun } from './runtime-api.js';
+export { recordAnomaly, appendAnomalyReview } from './anomalies.js';
