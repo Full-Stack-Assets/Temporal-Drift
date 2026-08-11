@@ -40,11 +40,21 @@ function serialize(value, seen) {
   seen.add(value);
   let output;
   if (Array.isArray(value)) {
+    const ownKeys = Reflect.ownKeys(value);
+    if (ownKeys.some((key) => typeof key === 'symbol')) throw new TrustKernelError('E_UNSAFE_VALUE', 'Symbol-keyed array data is not canonical');
+    const allowed = new Set(['length', ...Array.from({ length: value.length }, (_, index) => String(index))]);
+    if (ownKeys.some((key) => !allowed.has(key))) throw new TrustKernelError('E_UNSAFE_VALUE', 'Arrays may not contain hidden or extra properties');
     if (Object.keys(value).length !== value.length) throw new TrustKernelError('E_UNSAFE_VALUE', 'Sparse arrays are not canonical');
     output = `[${value.map((item) => serialize(item, seen)).join(',')}]`;
   } else {
     const proto = Object.getPrototypeOf(value);
     if (proto !== Object.prototype && proto !== null) throw new TrustKernelError('E_UNSAFE_VALUE', 'Only plain objects are canonical');
+    const ownKeys = Reflect.ownKeys(value);
+    if (ownKeys.some((key) => typeof key === 'symbol')) throw new TrustKernelError('E_UNSAFE_VALUE', 'Symbol-keyed object data is not canonical');
+    for (const key of ownKeys) {
+      const descriptor = Object.getOwnPropertyDescriptor(value, key);
+      if (!descriptor?.enumerable) throw new TrustKernelError('E_UNSAFE_VALUE', 'Non-enumerable object data is not canonical');
+    }
     const normalized = [];
     const used = new Set();
     for (const key of Object.keys(value)) {
