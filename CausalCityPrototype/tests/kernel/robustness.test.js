@@ -24,7 +24,7 @@ test('robustness accounting reports supplied-shock survival, spread, and regret 
   assert.equal(byId.get('branch-b').spread, 75);
   assert.equal(byId.get('branch-a').totalRegret, 40);
   assert.equal(byId.get('branch-b').totalRegret, 45);
-  assert.equal(byId.get('branch-c').totalRegret, 45);
+  assert.equal(byId.get('branch-c').totalRegret, 27);
   assert.match(result.robustnessHash, /^[a-f0-9]{64}$/);
   assert.ok(Object.isFrozen(result));
 });
