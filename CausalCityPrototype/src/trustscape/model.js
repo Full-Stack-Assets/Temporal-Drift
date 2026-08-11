@@ -6,6 +6,8 @@ import { PROJECTION_FORMAT, PROJECTION_SCHEMA_VERSION } from '../projection/proj
 
 export const TRUSTSCAPE_SCENE_FORMAT = 'trustscape-lite-scene';
 export const TRUSTSCAPE_SCENE_SCHEMA_VERSION = '1.0.0';
+export const TRUSTSCAPE_FIXTURE_FORMAT = 'trustscape-lite-fixture';
+export const TRUSTSCAPE_FIXTURE_SCHEMA_VERSION = '1.0.0';
 
 function fail(code, message, path = 'scene') {
   throw new TrustKernelError(code, message, { path });
@@ -124,4 +126,32 @@ export function buildTrustscapeScene(projection, annotations = []) {
     radarItems: buildRadarItems(annotations, targets),
   });
   return cloneAndFreeze({ ...core, sceneHash: sha256Hex(core) });
+}
+
+export function buildTrustscapeBrowserFixture(projection, annotations = []) {
+  validateProjection(projection);
+  const scene = buildTrustscapeScene(projection, annotations);
+  const branches = projection.dimensions.branching.nodes.map((node) => cloneAndFreeze({
+    branchId: node.branchId,
+    label: node.label,
+    parentBranchId: node.parentBranchId,
+    forkStepId: node.forkStepId,
+    lane: node.lane,
+    depth: node.depth,
+  }));
+  branches.sort((a, b) => a.branchId.localeCompare(b.branchId));
+  const core = cloneAndFreeze({
+    format: TRUSTSCAPE_FIXTURE_FORMAT,
+    schemaVersion: TRUSTSCAPE_FIXTURE_SCHEMA_VERSION,
+    graphId: scene.graphId,
+    sourceGraphHash: scene.sourceGraphHash,
+    sourceProjectionHash: scene.sourceProjectionHash,
+    sourceSceneHash: scene.sceneHash,
+    branches,
+    points: scene.points,
+    receiptThreads: scene.receiptThreads,
+    branchEdges: scene.branchEdges,
+    radarItems: scene.radarItems,
+  });
+  return cloneAndFreeze({ ...core, fixtureHash: sha256Hex(core) });
 }
