@@ -24,15 +24,19 @@ function build() {
   });
 }
 
-test('forkRun isolates child state and ledger from parent', () => {
+test('forkRun isolates child state and ledger from parent and preserves remaining inputs', () => {
   let parent = createRun(build(), adapter);
   parent = advanceRun(parent, parent.manifest.inputs[0]);
   const before = JSON.stringify(parent);
-  const child = forkRun(parent, 'a', 'child');
+  let child = forkRun(parent, 'a', 'child');
   assert.equal(JSON.stringify(parent), before);
   assert.equal(child.manifest.ancestry.at(-1).parentReceiptHash, parent.ledger[1].receiptHash);
   assert.notEqual(child.currentSnapstate.modelState, parent.currentSnapstate.modelState);
   assert.deepEqual(child.currentSnapstate.modelState, parent.currentSnapstate.modelState);
+  assert.deepEqual(child.manifest.inputs, [parent.manifest.inputs[1]]);
+  child = advanceRun(child, child.manifest.inputs[0]);
+  assert.equal(child.currentSnapstate.modelState.count, 3);
+  assert.equal(JSON.stringify(parent), before);
 });
 
 test('export replay verify reconstructs every receipt', () => {
