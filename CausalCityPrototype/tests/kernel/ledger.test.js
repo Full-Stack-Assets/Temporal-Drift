@@ -68,8 +68,9 @@ test('ledger append is immutable and rejects deletion-order linkage', () => {
   assert.throws(() => appendReceipt([genesis], { ...next, sequence: 2 }), { code: 'E_RECEIPT_HASH' });
 });
 
-test('ledger rejects a validly hashed receipt spliced from another run, branch, or kernel version', () => {
+test('ledger rejects a validly hashed receipt spliced across trust boundaries', () => {
   for (const overrides of [
+    { previousState: { count: 999 } },
     { runId: 'run-2' },
     { branchId: 'other-branch' },
     { kernelVersion: '2.0.0' },
