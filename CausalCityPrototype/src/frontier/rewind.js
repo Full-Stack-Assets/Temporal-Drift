@@ -1,8 +1,7 @@
 import { canonicalString, sha256BytesHex, sha256Hex } from '../kernel/canonicalize.js';
 import { TrustKernelError } from '../kernel/errors.js';
 import { cloneAndFreeze } from '../kernel/immutable.js';
-import { createManifest } from '../kernel/manifest.js';
-import { parseExportedRun, replayRun } from '../kernel/replay.js';
+import { advanceRun, createRun, exportRun, parseExportedRun } from '../kernel/replay.js';
 import { verifyRun } from '../kernel/verify.js';
 
 function fail(code, message, path = 'rewind') {
@@ -14,32 +13,43 @@ function artifactCore(artifact) {
   return cloneAndFreeze(core);
 }
 
+function replayPrefix(parsed, adapter, targetSequence, errorCode) {
+  if (!Number.isSafeInteger(targetSequence) || targetSequence < 0 || targetSequence >= parsed.receipts.length) {
+    fail(errorCode, 'targetSequence is outside the prefix evidence', 'targetSequence');
+  }
+  if (parsed.receipts.length !== targetSequence + 1 || parsed.snapstates.length !== targetSequence + 1 || parsed.eventBatches.length !== targetSequence + 1) {
+    fail(errorCode, 'Prefix evidence length does not match targetSequence', 'prefixExport');
+  }
+  let replayed = createRun(parsed.manifest, adapter);
+  for (let index = 0; index < targetSequence; index += 1) replayed = advanceRun(replayed, replayed.manifest.inputs[index]);
+  if (canonicalString(replayed.ledger) !== canonicalString(parsed.receipts)) fail(errorCode, 'Prefix receipts do not replay exactly', 'prefixExport.receipts');
+  if (canonicalString(replayed.snapstates) !== canonicalString(parsed.snapstates)) fail(errorCode, 'Prefix Snapstates do not replay exactly', 'prefixExport.snapstates');
+  if (canonicalString(replayed.eventBatches) !== canonicalString(parsed.eventBatches)) fail(errorCode, 'Prefix event batches do not replay exactly', 'prefixExport.eventBatches');
+  return replayed;
+}
+
 export function createRewindArtifact(run, targetSequence) {
   if (!run || !run.manifest || !run.adapter || !Array.isArray(run.ledger) || !Array.isArray(run.snapstates) || !Array.isArray(run.eventBatches)) {
     fail('E_REWIND_SCHEMA', 'Source must be an executable run', 'run');
   }
-  const fullReport = verifyRun(run, run.adapter);
+  const sourceExport = exportRun(run);
+  const fullReport = verifyRun(sourceExport, run.adapter);
   if (!fullReport.ok) fail('E_REWIND_SOURCE', `Source run failed verification at ${fullReport.firstMismatch}`, fullReport.firstMismatch ?? 'run');
   if (!Number.isSafeInteger(targetSequence) || targetSequence < 0 || targetSequence >= run.ledger.length) {
     fail('E_REWIND_SCHEMA', 'targetSequence is outside the verified run', 'targetSequence');
   }
+
+  const sourceParsed = parseExportedRun(sourceExport);
   const targetReceipt = run.ledger[targetSequence];
   const targetSnapstate = run.snapstates[targetSequence];
-  const prefixManifest = createManifest({
-    ...run.manifest,
-    inputs: run.manifest.inputs.slice(0, targetSequence),
-    expectedTerminalReceiptHash: targetReceipt.receiptHash,
-    evidenceRuntime: 'logical-rewind-v1',
-  });
   const prefixValue = {
     eventBatches: run.eventBatches.slice(0, targetSequence + 1),
-    manifest: prefixManifest,
+    manifest: sourceParsed.manifest,
     receipts: run.ledger.slice(0, targetSequence + 1),
     snapstates: run.snapstates.slice(0, targetSequence + 1),
   };
   const prefixExport = canonicalString(prefixValue);
-  const prefixReport = verifyRun(prefixExport, run.adapter);
-  if (!prefixReport.ok) fail('E_REWIND_SOURCE', `Prefix run failed verification at ${prefixReport.firstMismatch}`, prefixReport.firstMismatch ?? 'prefix');
+  replayPrefix(parseExportedRun(prefixExport), run.adapter, targetSequence, 'E_REWIND_SOURCE');
 
   const core = cloneAndFreeze({
     format: 'logical-rewind-artifact',
@@ -64,9 +74,8 @@ export function restoreRewindArtifact(artifact, adapter) {
   if (typeof artifact.prefixExport !== 'string' || sha256BytesHex(Buffer.from(artifact.prefixExport, 'utf8')) !== artifact.prefixExportHash) fail('E_REWIND_HASH', 'Prefix export hash mismatch', 'artifact.prefixExportHash');
   const parsed = parseExportedRun(artifact.prefixExport);
   if (parsed.manifest.runId !== artifact.runId || parsed.manifest.branchId !== artifact.branchId) fail('E_REWIND_HASH', 'Prefix identity differs from rewind artifact', 'artifact.prefixExport');
-  const report = verifyRun(artifact.prefixExport, adapter);
-  if (!report.ok) fail('E_REWIND_HASH', `Prefix verification failed at ${report.firstMismatch}`, report.firstMismatch ?? 'artifact.prefixExport');
-  const run = replayRun(artifact.prefixExport, adapter);
+  if (parsed.manifest.expectedTerminalReceiptHash !== artifact.sourceTerminalReceiptHash) fail('E_REWIND_HASH', 'Source terminal commitment differs from rewind artifact', 'artifact.sourceTerminalReceiptHash');
+  const run = replayPrefix(parsed, adapter, artifact.targetSequence, 'E_REWIND_HASH');
   const snapstate = run.snapstates.at(-1);
   const receipt = run.ledger.at(-1);
   if (snapstate.sequence !== artifact.targetSequence || snapstate.stepId !== artifact.targetStepId || receipt.receiptHash !== artifact.targetReceiptHash || snapstate.stateHash !== artifact.targetStateHash || sha256Hex(snapstate.prngState) !== artifact.targetPrngStateHash) {
