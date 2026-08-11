@@ -82,7 +82,7 @@ function rootConstruction(fields) {
 function findForkPoint(parentRun, forkStepId) {
   const snapstate = parentRun.snapstates.find((entry) => entry.stepId === forkStepId);
   const receipt = parentRun.ledger.find((entry) => entry.stepId === forkStepId);
-  if (!snapstate || !receipt || snapstate.sequence !== receipt.sequence || receipt.receiptHash !== snapstate.previousReceiptHash && snapstate.sequence !== 0) {
+  if (!snapstate || !receipt || snapstate.sequence !== receipt.sequence || snapstate.stepId !== receipt.stepId) {
     fail('E_GRAPH_BRANCH', `Verified fork point not found: ${forkStepId}`, `branches.${parentRun.manifest.branchId}.forkStepId`);
   }
   return { snapstate, receipt };
