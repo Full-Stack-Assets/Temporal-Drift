@@ -105,3 +105,39 @@ test('attestation input fails closed on unknown, hidden, symbol, accessor, and u
 
   assert.throws(() => createVerificationAttestation({ ...passInput(), verifiedAtLogical: -1 }, TEST_PRIVATE_KEYS.alpha, profile), { code: 'E_ATTESTATION_SCHEMA' });
 });
+
+test('nested failure-code arrays reject accessors, hidden state, symbols, and sparse entries without invoking getters', () => {
+  let getterCalls = 0;
+  const accessorCodes = [];
+  Object.defineProperty(accessorCodes, '0', {
+    enumerable: true,
+    configurable: true,
+    get() {
+      getterCalls += 1;
+      return 'E_ACCESSOR';
+    },
+  });
+  accessorCodes.length = 1;
+  assert.throws(() => createVerificationAttestation({
+    ...passInput(), result: 'fail', failureCodes: accessorCodes,
+  }, TEST_PRIVATE_KEYS.alpha, profile), { code: 'E_ATTESTATION_SCHEMA' });
+  assert.equal(getterCalls, 0);
+
+  const hiddenCodes = ['E_HIDDEN'];
+  Object.defineProperty(hiddenCodes, 'hidden', { value: true, enumerable: false });
+  assert.throws(() => createVerificationAttestation({
+    ...passInput(), result: 'fail', failureCodes: hiddenCodes,
+  }, TEST_PRIVATE_KEYS.alpha, profile), { code: 'E_ATTESTATION_SCHEMA' });
+
+  const symbolCodes = ['E_SYMBOL'];
+  symbolCodes[Symbol('hidden')] = true;
+  assert.throws(() => createVerificationAttestation({
+    ...passInput(), result: 'fail', failureCodes: symbolCodes,
+  }, TEST_PRIVATE_KEYS.alpha, profile), { code: 'E_ATTESTATION_SCHEMA' });
+
+  const sparseCodes = Array(2);
+  sparseCodes[1] = 'E_SPARSE';
+  assert.throws(() => createVerificationAttestation({
+    ...passInput(), result: 'fail', failureCodes: sparseCodes,
+  }, TEST_PRIVATE_KEYS.alpha, profile), { code: 'E_ATTESTATION_SCHEMA' });
+});
