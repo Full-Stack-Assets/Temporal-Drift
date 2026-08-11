@@ -1,11 +1,11 @@
+import { verifyTrustscapeFixture } from './browser-integrity.js';
 import { createTrustscapeRenderer } from './renderer-webgl2.js';
 import { appendAnnotation, exportAnnotations, importAnnotations, loadAnnotations } from './local-annotations.js';
 
 const fixtureResponse = await fetch('./data/trustscape-lite-fixture.json', { cache: 'no-store' });
 if (!fixtureResponse.ok) throw new Error(`Trustscape fixture unavailable: HTTP ${fixtureResponse.status}`);
 const fixture = await fixtureResponse.json();
-
-if (fixture.format !== 'trustscape-lite-fixture' || fixture.schemaVersion !== '1.0.0') throw new Error('Unsupported Trustscape fixture');
+if (!await verifyTrustscapeFixture(fixture)) throw new Error('Trustscape fixture failed runtime integrity verification');
 
 const canvas = document.querySelector('#trustscape-canvas');
 const fallback = document.querySelector('#fallback-view');
@@ -27,9 +27,10 @@ const importInput = document.querySelector('#import-annotations');
 const renderer = createTrustscapeRenderer(canvas);
 let selectedPoint = null;
 let showAllBranches = true;
-let annotations = loadAnnotations(fixture.graphId);
+let annotations = await loadAnnotations(fixture.graphId);
 const maxTime = Math.max(...fixture.points.map((point) => point.t), 0);
-const stepSize = Math.max(1, Math.min(...fixture.points.filter((point) => point.t > 0).map((point) => point.t), 1000));
+const positiveTimes = fixture.points.filter((point) => point.t > 0).map((point) => point.t);
+const stepSize = positiveTimes.length ? Math.max(1, Math.min(...positiveTimes)) : 1;
 timeSlider.max = String(maxTime);
 timeSlider.step = String(stepSize);
 timeSlider.value = String(maxTime);
@@ -64,15 +65,15 @@ function visiblePoints() {
   return fixture.points.filter((point) => branches.has(point.branchId) && point.t <= max);
 }
 
+function escapeHtml(value) {
+  return String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
+}
+
 function renderFallback(points) {
   fallback.innerHTML = `
     <p>WebGL2 is unavailable. Deterministic evidence table fallback is active.</p>
     <table><thead><tr><th>Branch</th><th>Step</th><th>T</th><th>State hash</th></tr></thead>
     <tbody>${points.map((point) => `<tr><td>${escapeHtml(point.branchId.slice(0, 16))}…</td><td>${escapeHtml(point.stepId)}</td><td>${point.t}</td><td><code>${escapeHtml(point.stateHash.slice(0, 16))}…</code></td></tr>`).join('')}</tbody></table>`;
-}
-
-function escapeHtml(value) {
-  return String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[character]);
 }
 
 function branchLabel(branchId) {
@@ -154,12 +155,12 @@ annotationForm.addEventListener('submit', async (event) => {
     supersedes: null,
   });
   bodyInput.value = '';
-  annotations = loadAnnotations(fixture.graphId);
+  annotations = await loadAnnotations(fixture.graphId);
   renderRadar();
 });
 
-exportButton.addEventListener('click', () => {
-  const blob = new Blob([exportAnnotations(fixture.graphId)], { type: 'application/json' });
+exportButton.addEventListener('click', async () => {
+  const blob = new Blob([await exportAnnotations(fixture.graphId)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;
@@ -171,8 +172,8 @@ exportButton.addEventListener('click', () => {
 importInput.addEventListener('change', async () => {
   const [file] = importInput.files;
   if (!file) return;
-  importAnnotations(fixture.graphId, await file.text());
-  annotations = loadAnnotations(fixture.graphId);
+  await importAnnotations(fixture.graphId, await file.text());
+  annotations = await loadAnnotations(fixture.graphId);
   renderRadar();
   importInput.value = '';
 });
