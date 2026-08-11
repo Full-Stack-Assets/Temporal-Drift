@@ -107,6 +107,9 @@ function normalizeReceiptInput(input, request) {
     externalPublicationPerformed: normalizeBoolean(input.externalPublicationPerformed, code, 'anchorReceiptInput.externalPublicationPerformed'),
   };
   if (normalized.anchoredAtLogical < request.requestedAtLogical) meshFail(code, 'anchoredAtLogical cannot precede the request', 'anchorReceiptInput.anchoredAtLogical');
+  if (!normalized.externalPublicationPerformed && normalized.confirmationCount !== 0) {
+    meshFail(code, 'confirmationCount must be zero when publication is declared false', 'anchorReceiptInput.confirmationCount');
+  }
   return cloneAndFreeze(normalized);
 }
 
