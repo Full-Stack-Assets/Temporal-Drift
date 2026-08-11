@@ -1,0 +1,32 @@
+{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "$id":"https://ripple-city.invalid/schemas/branch-proposal-registry-v1.schema.json",
+  "title":"Ripple Branch Proposal Registry v1",
+  "type":"object",
+  "additionalProperties":false,
+  "required":["format","schemaVersion","minimumApprovals","proposals","reviews","decisions","registryHash"],
+  "properties":{
+    "format":{"const":"ripple-branch-proposal-registry"},
+    "schemaVersion":{"const":"1.0.0"},
+    "minimumApprovals":{"$ref":"#/$defs/positive"},
+    "proposals":{"type":"array","items":{"$ref":"#/$defs/proposal"}},
+    "reviews":{"type":"array","items":{"$ref":"#/$defs/review"}},
+    "decisions":{"type":"array","items":{"$ref":"#/$defs/decision"}},
+    "registryHash":{"$ref":"#/$defs/hash"}
+  },
+  "$defs":{
+    "hash":{"type":"string","pattern":"^[a-f0-9]{64}$"},
+    "graphId":{"type":"string","pattern":"^graph-[a-f0-9]{64}$"},
+    "branchId":{"type":"string","pattern":"^branch-[a-f0-9]{64}$"},
+    "proposalId":{"type":"string","pattern":"^branch-proposal-[a-f0-9]{64}$"},
+    "nonEmpty":{"type":"string","minLength":1},
+    "safeInteger":{"type":"integer","minimum":-9007199254740991,"maximum":9007199254740991},
+    "positive":{"type":"integer","minimum":1,"maximum":9007199254740991},
+    "integerMap":{"type":"object","minProperties":1,"additionalProperties":{"$ref":"#/$defs/safeInteger"}},
+    "stringArray":{"type":"array","items":{"$ref":"#/$defs/nonEmpty"}},
+    "parentRef":{"type":"object","additionalProperties":false,"required":["graphId","parentBranchId","forkStepId","parentReceiptHash"],"properties":{"graphId":{"$ref":"#/$defs/graphId"},"parentBranchId":{"$ref":"#/$defs/branchId"},"forkStepId":{"$ref":"#/$defs/nonEmpty"},"parentReceiptHash":{"$ref":"#/$defs/hash"}}},
+    "proposal":{"type":"object","additionalProperties":false,"required":["anomalyId","requesterId","parentRef","hypothesis","parameters","evidenceRefs","reviewRequired","executionAuthority","proposalId"],"properties":{"anomalyId":{"type":"string","pattern":"^anomaly-[a-f0-9]{64}$"},"requesterId":{"$ref":"#/$defs/nonEmpty"},"parentRef":{"$ref":"#/$defs/parentRef"},"hypothesis":{"$ref":"#/$defs/nonEmpty"},"parameters":{"$ref":"#/$defs/integerMap"},"evidenceRefs":{"$ref":"#/$defs/stringArray"},"reviewRequired":{"const":true},"executionAuthority":{"const":"none"},"proposalId":{"$ref":"#/$defs/proposalId"}}},
+    "review":{"type":"object","additionalProperties":false,"required":["proposalId","reviewerId","disposition","rationale","evidenceRefs","reviewId"],"properties":{"proposalId":{"$ref":"#/$defs/proposalId"},"reviewerId":{"$ref":"#/$defs/nonEmpty"},"disposition":{"enum":["approve-for-manual-simulation","needs-evidence","reject"]},"rationale":{"$ref":"#/$defs/nonEmpty"},"evidenceRefs":{"$ref":"#/$defs/stringArray"},"reviewId":{"type":"string","pattern":"^proposal-review-[a-f0-9]{64}$"}}},
+    "decision":{"type":"object","additionalProperties":false,"required":["proposalId","deciderId","disposition","rationale","reviewRequired","executionAuthority","decisionId"],"properties":{"proposalId":{"$ref":"#/$defs/proposalId"},"deciderId":{"$ref":"#/$defs/nonEmpty"},"disposition":{"enum":["approved-for-manual-simulation","needs-evidence","rejected"]},"rationale":{"$ref":"#/$defs/nonEmpty"},"reviewRequired":{"const":true},"executionAuthority":{"const":"none"},"decisionId":{"type":"string","pattern":"^proposal-decision-[a-f0-9]{64}$"}}}
+  }
+}
