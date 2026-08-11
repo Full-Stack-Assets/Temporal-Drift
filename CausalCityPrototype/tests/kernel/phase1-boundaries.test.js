@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 
 import { sha256Hex } from '../../src/kernel/canonicalize.js';
 import { exportProjection, projectRunGraph4D, verifyProjection } from '../../src/projector/index.js';
-import { verifyProjectionInBrowser } from '../../src/trustscape/browser-core.js';
-import { createTrustscapeScene, exportTrustscapeScene, verifyTrustscapeScene } from '../../src/trustscape/scene.js';
+import { verifyProjectionInBrowser } from '../../src/trustscape/browser-integrity.js';
+import { createTrustscapeScene, exportTrustscapeScene, verifyTrustscapeScene } from '../../src/trustscape/index.js';
 import { createProjectionGraph, subjectiveRecord } from './helpers/projection-fixture.js';
 
 function rehashProjection(value) {

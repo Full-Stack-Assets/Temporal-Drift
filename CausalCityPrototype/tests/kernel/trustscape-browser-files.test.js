@@ -11,20 +11,24 @@ test('isolated Trustscape HTML declares its experimental verified-data boundary'
   assert.match(html, /Experimental verified-data viewer/);
   assert.match(html, /id="projection-file"/);
   assert.match(html, /id="trustscape-canvas"/);
+  assert.match(html, /type="importmap"/);
+  assert.match(html, /browser-core\.js[^\n]+browser-integrity\.js/);
   assert.match(html, /type="module" src="\.\/src\/trustscape\/app\.js"/);
   assert.match(html, /styles\/trustscape\.css/);
-  assert.doesNotMatch(html, /<script(?![^>]*type="module"[^>]*src=)[^>]*>/);
 });
 
-test('Trustscape app uses the browser verifier and renderer without importing kernel or projector modules', async () => {
+test('Trustscape browser entry is remapped through the integrity verifier without importing Node modules', async () => {
   const app = await source('src/trustscape/app.js');
+  const integrity = await source('src/trustscape/browser-integrity.js');
   assert.match(app, /from '\.\/browser-core\.js'/);
-  assert.match(app, /from '\.\/renderer\.js'/);
-  assert.match(app, /verifyProjectionInBrowser/);
-  assert.match(app, /createBrowserRenderModel/);
+  assert.match(integrity, /from '\.\/browser-core\.js\?base'/);
+  assert.match(integrity, /verifyProjectionInBrowser/);
+  assert.match(integrity, /createBrowserRenderModel/);
   assert.match(app, /localStorage/);
   assert.doesNotMatch(app, /\.\.\/kernel\//);
   assert.doesNotMatch(app, /\.\.\/projector\//);
+  assert.doesNotMatch(integrity, /\.\.\/kernel\//);
+  assert.doesNotMatch(integrity, /\.\.\/projector\//);
 });
 
 test('renderer requires WebGL2 and never fabricates random coordinates', async () => {

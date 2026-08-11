@@ -2,8 +2,8 @@ import { Buffer } from 'node:buffer';
 
 import { sha256BytesHex } from '../../../src/kernel/canonicalize.js';
 import { exportProjection, projectRunGraph4D } from '../../../src/projector/index.js';
-import { createBrowserRenderModel } from '../../../src/trustscape/browser-core.js';
-import { createTrustscapeScene, exportTrustscapeScene } from '../../../src/trustscape/scene.js';
+import { createBrowserRenderModel } from '../../../src/trustscape/browser-integrity.js';
+import { createTrustscapeScene, exportTrustscapeScene } from '../../../src/trustscape/index.js';
 import { createProjectionGraph, subjectiveRecord } from './projection-fixture.js';
 
 const fixture = createProjectionGraph();

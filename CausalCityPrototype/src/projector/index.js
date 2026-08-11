@@ -6,5 +6,6 @@ export {
   exportProjection,
   parseProjection,
   projectRunGraph4D,
-  verifyProjection,
 } from './projection.js';
+
+export { verifyProjection } from './projection-integrity.js';
