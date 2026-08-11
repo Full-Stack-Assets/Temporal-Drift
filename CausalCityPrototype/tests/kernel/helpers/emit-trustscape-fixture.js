@@ -1,7 +1,7 @@
 import { canonicalString } from '../../../src/kernel/canonicalize.js';
 import { createRunGraph, forkBranch } from '../../../src/kernel/run-graph.js';
 import { projectRunGraph } from '../../../src/projection/project-4d.js';
-import { buildTrustscapeScene } from '../../../src/trustscape/model.js';
+import { buildTrustscapeBrowserFixture } from '../../../src/trustscape/model.js';
 import { completeCounterRun } from './run-graph-fixture.js';
 
 let graph = createRunGraph(completeCounterRun(), 'Root');
@@ -20,5 +20,5 @@ const planB = forkBranch(graph, {
 graph = planB.graph;
 
 const projection = projectRunGraph(graph);
-const scene = buildTrustscapeScene(projection);
-process.stdout.write(canonicalString({ projection, scene }));
+const fixture = buildTrustscapeBrowserFixture(projection);
+process.stdout.write(canonicalString(fixture));
