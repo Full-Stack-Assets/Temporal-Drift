@@ -12,6 +12,6 @@ test('acceptance: capture deterministic Trustscape fixture before pinning', () =
   const second = spawnSync(process.execPath, [emitter], { encoding: 'utf8' });
   assert.equal(second.status, 0, second.stderr);
   assert.equal(second.stdout.trim(), output);
-  console.log(`TRUSTSCAPE_FIXTURE_BASE64=${Buffer.from(output, 'utf8').toString('base64')}`);
+  console.log(`TRUSTSCAPE_BROWSER_ACTUAL=${output}`);
   assert.fail('E_FIXTURE_UNPINNED: pin data/trustscape-lite-fixture.json from the emitted canonical bytes');
 });
