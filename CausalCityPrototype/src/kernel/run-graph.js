@@ -20,7 +20,20 @@ function fail(code, message, path = 'graph', expected = null, actual = null) {
 
 function exactObject(value, keys, code, label) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) fail(code, `${label} must be an object`, label);
-  const actual = Object.keys(value);
+  const prototype = Object.getPrototypeOf(value);
+  if (prototype !== Object.prototype && prototype !== null) {
+    fail(code, `${label} must be a plain object`, label);
+  }
+  const actual = Reflect.ownKeys(value);
+  if (actual.some((key) => typeof key !== 'string')) {
+    fail(code, `${label} cannot contain symbol fields`, label);
+  }
+  for (const key of actual) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    if (!descriptor?.enumerable || !Object.prototype.hasOwnProperty.call(descriptor, 'value')) {
+      fail(code, `${label} must contain enumerable data fields only`, label);
+    }
+  }
   if (actual.length !== keys.length || actual.some((key) => !keys.includes(key))) {
     fail(code, `${label} contains missing or unknown fields`, label);
   }
@@ -374,6 +387,12 @@ function verificationReport(fields) {
   });
 }
 
+function requireHydratedGraph(graph) {
+  const runtimes = runtimeByGraph.get(graph);
+  if (!runtimes) fail('E_GRAPH_BRANCH', 'RunGraph must be created or parsed before topology reads', 'graph');
+  return runtimes;
+}
+
 export function createRunGraph(rootRun, label = rootRun?.manifest?.branchId) {
   const normalizedLabel = normalizeLabel(label);
   const sourceExport = assertCompleteVerifiedRun(rootRun);
@@ -461,13 +480,14 @@ export function forkBranch(graph, request) {
 
 export function getBranch(graph, branchId) {
   const normalized = requireString(branchId, 'E_GRAPH_BRANCH', 'branchId');
-  const runtimes = runtimeByGraph.get(graph);
-  const run = runtimes?.get(normalized);
-  if (!run) fail('E_GRAPH_BRANCH', `Unknown or unhydrated branch: ${normalized}`, `branches.${normalized}`);
+  const runtimes = requireHydratedGraph(graph);
+  const run = runtimes.get(normalized);
+  if (!run) fail('E_GRAPH_BRANCH', `Unknown branch: ${normalized}`, `branches.${normalized}`);
   return run;
 }
 
 export function listChildren(graph, branchId) {
+  requireHydratedGraph(graph);
   const normalized = requireString(branchId, 'E_GRAPH_BRANCH', 'branchId');
   if (!graph?.branches?.[normalized]) fail('E_GRAPH_BRANCH', `Unknown branch: ${normalized}`, `branches.${normalized}`);
   return cloneAndFreeze(Object.values(graph.branches)
@@ -477,6 +497,7 @@ export function listChildren(graph, branchId) {
 }
 
 export function listAncestors(graph, branchId) {
+  requireHydratedGraph(graph);
   const normalized = requireString(branchId, 'E_GRAPH_BRANCH', 'branchId');
   if (!graph?.branches?.[normalized]) fail('E_GRAPH_BRANCH', `Unknown branch: ${normalized}`, `branches.${normalized}`);
   const ancestors = [];
