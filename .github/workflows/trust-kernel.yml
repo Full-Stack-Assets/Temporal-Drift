@@ -1,0 +1,45 @@
+name: Trust Kernel v1
+
+on:
+  push:
+    branches:
+      - codex/ripple-trust-kernel-v1
+    paths:
+      - 'CausalCityPrototype/**'
+      - '.github/workflows/trust-kernel.yml'
+      - 'Docs/superpowers/specs/2026-08-11-ripple-trust-kernel-v1-design.md'
+      - 'Docs/superpowers/plans/2026-08-11-ripple-trust-kernel-v1-implementation.md'
+  pull_request:
+    paths:
+      - 'CausalCityPrototype/**'
+      - '.github/workflows/trust-kernel.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Node ${{ matrix.node }} verification
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    defaults:
+      run:
+        working-directory: CausalCityPrototype
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+          cache-dependency-path: CausalCityPrototype/package.json
+      - name: Tests
+        run: npm test
+      - name: Syntax
+        run: npm run check
+      - name: Verification summary
+        run: npm run verify:kernel
