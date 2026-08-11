@@ -1,9 +1,10 @@
 import { canonicalString } from './canonicalize.js';
 import { TrustKernelError } from './errors.js';
-import { cloneAndFreeze, deepFreeze } from './immutable.js';
+import { cloneAndFreeze } from './immutable.js';
 import { appendReceipt, createGenesisReceipt, createTransitionReceipt } from './ledger.js';
 import { createInputEnvelope, createManifest } from './manifest.js';
 import { createPrng } from './prng.js';
+import { assertSupportedRuntime } from './runtime.js';
 import { createSnapstate } from './snapstate.js';
 
 function validateAdapter(manifest, adapter) {
@@ -13,6 +14,16 @@ function validateAdapter(manifest, adapter) {
   if (adapter.version !== manifest.model.version) {
     throw new TrustKernelError('E_MODEL_VERSION', `Expected model ${manifest.model.version}, received ${adapter.version}`);
   }
+}
+
+function pinAdapter(manifest, adapter) {
+  validateAdapter(manifest, adapter);
+  const transition = adapter.transition;
+  return Object.freeze({
+    id: manifest.model.id,
+    version: manifest.model.version,
+    transition,
+  });
 }
 
 function makeRun({ manifest, adapter, snapstates, ledger, eventBatches }) {
@@ -26,8 +37,9 @@ function makeRun({ manifest, adapter, snapstates, ledger, eventBatches }) {
 }
 
 export function createRun(manifestInput, modelAdapter) {
+  assertSupportedRuntime();
   const manifest = createManifest(manifestInput);
-  validateAdapter(manifest, modelAdapter);
+  const adapter = pinAdapter(manifest, modelAdapter);
   const genesis = createGenesisReceipt(manifest);
   const snapstate = createSnapstate({
     runId: manifest.runId,
@@ -40,7 +52,7 @@ export function createRun(manifestInput, modelAdapter) {
   });
   return makeRun({
     manifest,
-    adapter: modelAdapter,
+    adapter,
     snapstates: [snapstate],
     ledger: appendReceipt([], genesis),
     eventBatches: [cloneAndFreeze([])],
