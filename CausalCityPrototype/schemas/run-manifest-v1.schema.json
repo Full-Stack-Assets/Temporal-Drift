@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ripple-city.local/schemas/run-manifest-v1.schema.json",
+  "title": "Trust Kernel Run Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "schemaVersion", "kernelVersion", "model", "branchId", "ancestry", "initialState", "initialPrngState", "inputs", "normalization", "manifestCoreHash", "expectedTerminalReceiptHash"],
+  "properties": {
+    "format": { "const": "ripple-trust-run" },
+    "schemaVersion": { "const": "1" },
+    "kernelVersion": { "const": "1.0.0" },
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 }
+      }
+    },
+    "branchId": { "type": "string", "minLength": 1 },
+    "ancestry": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["parentRunId", "parentBranchId", "parentReceiptHash", "forkStepId"],
+        "properties": {
+          "parentRunId": { "type": "string", "minLength": 1 },
+          "parentBranchId": { "type": "string", "minLength": 1 },
+          "parentReceiptHash": { "$ref": "#/$defs/hash" },
+          "forkStepId": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "initialState": { "$ref": "#/$defs/canonical" },
+    "initialPrngState": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "type": "integer", "minimum": 0, "maximum": 4294967295 }
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stepId", "type", "data"],
+        "properties": {
+          "stepId": { "type": "string", "minLength": 1 },
+          "type": { "type": "string", "minLength": 1 },
+          "data": { "$ref": "#/$defs/canonical" }
+        }
+      }
+    },
+    "normalization": { "$ref": "#/$defs/canonical" },
+    "manifestCoreHash": { "$ref": "#/$defs/hash" },
+    "expectedTerminalReceiptHash": {
+      "anyOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/hash" }
+      ]
+    }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "canonical": {
+      "anyOf": [
+        { "type": "null" },
+        { "type": "boolean" },
+        { "type": "string" },
+        { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 },
+        { "type": "array", "items": { "$ref": "#/$defs/canonical" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/canonical" } }
+      ]
+    }
+  }
+}
