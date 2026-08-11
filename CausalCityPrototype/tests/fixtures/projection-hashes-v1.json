@@ -1,0 +1,21 @@
+{
+  "fixtureVersion": "4d-projection-v1",
+  "projectionId": "projection-0000000000000000000000000000000000000000000000000000000000000000",
+  "projectionHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "projectionExportHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "projectionByteLength": 0,
+  "sceneHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "sceneExportHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "sceneByteLength": 0,
+  "browserRenderModelHash": "0000000000000000000000000000000000000000000000000000000000000000",
+  "temporalPointCount": 0,
+  "causalNodeCount": 0,
+  "causalEdgeCount": 0,
+  "branchNodeCount": 0,
+  "branchEdgeCount": 0,
+  "subjectiveRecordCount": 0,
+  "sceneObjectCount": 0,
+  "sceneThreadCount": 0,
+  "sceneComparisonCount": 0,
+  "sceneRadarCount": 0
+}
