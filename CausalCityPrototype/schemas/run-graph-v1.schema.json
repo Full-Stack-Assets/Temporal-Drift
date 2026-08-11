@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ripple-city.invalid/schemas/run-graph-v1.schema.json",
+  "title": "Ripple City RunGraph v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "graphId",
+    "revision",
+    "previousGraphHash",
+    "sourceRootRunId",
+    "sourceRootBranchId",
+    "sourceRootManifestCoreHash",
+    "sourceRootExportHash",
+    "sourceRootTerminalReceiptHash",
+    "rootBranchId",
+    "branches",
+    "runExports",
+    "graphHash"
+  ],
+  "properties": {
+    "format": { "type": "string", "const": "ripple-run-graph" },
+    "schemaVersion": { "type": "string", "const": "1.0.0" },
+    "graphId": { "$ref": "#/$defs/graphId" },
+    "revision": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+    "previousGraphHash": {
+      "oneOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/hash" }
+      ]
+    },
+    "sourceRootRunId": { "type": "string", "minLength": 1 },
+    "sourceRootBranchId": { "type": "string", "minLength": 1 },
+    "sourceRootManifestCoreHash": { "$ref": "#/$defs/hash" },
+    "sourceRootExportHash": { "$ref": "#/$defs/hash" },
+    "sourceRootTerminalReceiptHash": { "$ref": "#/$defs/hash" },
+    "rootBranchId": { "$ref": "#/$defs/branchId" },
+    "branches": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "#/$defs/branchId" },
+      "additionalProperties": { "$ref": "#/$defs/branchDescriptor" }
+    },
+    "runExports": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "$ref": "#/$defs/branchId" },
+      "additionalProperties": { "type": "string", "minLength": 2 }
+    },
+    "graphHash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "graphId": {
+      "type": "string",
+      "pattern": "^graph-[a-f0-9]{64}$"
+    },
+    "branchId": {
+      "type": "string",
+      "pattern": "^branch-[a-f0-9]{64}$"
+    },
+    "branchDescriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "branchId",
+        "label",
+        "parentBranchId",
+        "forkStepId",
+        "parentReceiptHash",
+        "constructionHash",
+        "manifestCoreHash",
+        "terminalReceiptHash",
+        "exportedRunHash"
+      ],
+      "properties": {
+        "branchId": { "$ref": "#/$defs/branchId" },
+        "label": { "type": "string", "minLength": 1 },
+        "parentBranchId": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/branchId" }
+          ]
+        },
+        "forkStepId": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "minLength": 1 }
+          ]
+        },
+        "parentReceiptHash": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/hash" }
+          ]
+        },
+        "constructionHash": { "$ref": "#/$defs/hash" },
+        "manifestCoreHash": { "$ref": "#/$defs/hash" },
+        "terminalReceiptHash": { "$ref": "#/$defs/hash" },
+        "exportedRunHash": { "$ref": "#/$defs/hash" }
+      }
+    }
+  }
+}
