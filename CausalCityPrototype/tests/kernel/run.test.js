@@ -38,6 +38,29 @@ test('manifest rejects duplicate step IDs', () => {
   }), (error) => error.code === 'E_DUPLICATE_STEP');
 });
 
+test('manifest rejects missing data and unknown authoritative input fields', () => {
+  const base = {
+    model: { id: 'counter', version: '1' },
+    initialState: { count: 0 },
+    initialPrngState: seedToState(1),
+    normalization: { id: 'v1', scales: {} },
+  };
+  assert.throws(() => createManifest({ ...base, inputs: [{ stepId: 'x', type: 't' }] }), (error) => error.code === 'E_SCHEMA_VERSION');
+  assert.throws(() => createManifest({ ...base, inputs: [{ stepId: 'x', type: 't', data: {}, typo: true }] }), (error) => error.code === 'E_SCHEMA_VERSION');
+});
+
+test('manifest rejects malformed ancestry and terminal receipt hashes', () => {
+  const base = {
+    model: { id: 'counter', version: '1' },
+    initialState: { count: 0 },
+    initialPrngState: seedToState(1),
+    inputs: [],
+    normalization: { id: 'v1', scales: {} },
+  };
+  assert.throws(() => createManifest({ ...base, ancestry: [{ parentRunId: 'p' }] }), (error) => error.code === 'E_SCHEMA_VERSION');
+  assert.throws(() => createManifest({ ...base, expectedTerminalReceiptHash: 'not-a-hash' }), (error) => error.code === 'E_SCHEMA_VERSION');
+});
+
 test('createRun commits an immutable genesis state and receipt', () => {
   const run = createRun(manifest(), adapter);
   assert.equal(run.ledger.length, 1);
