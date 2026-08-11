@@ -82,9 +82,20 @@ function setup() {
   return { profile, registry, unsigned, classicalAttestation, pqEvidence, revocations, policy };
 }
 
+function hybridArgs(input, overrides = {}) {
+  return {
+    classicalAttestation: input.classicalAttestation,
+    pqEvidence: input.pqEvidence,
+    registry: input.registry,
+    cryptoProfile: input.profile,
+    revocations: input.revocations,
+    ...overrides,
+  };
+}
+
 test('hybrid evaluation is classical-first and reports explicit runtime-dependent PQ strength', () => {
   const input = setup();
-  const result = evaluateHybridAttestation(input);
+  const result = evaluateHybridAttestation(hybridArgs(input));
   const major = Number(process.versions.node.split('.')[0]);
 
   assert.equal(result.classicalVerified, true);
@@ -106,7 +117,7 @@ test('hybrid evaluation is classical-first and reports explicit runtime-dependen
 
 test('absence of PQ evidence remains a truthful classical-only disposition', () => {
   const input = setup();
-  const result = evaluateHybridAttestation({ ...input, pqEvidence: null });
+  const result = evaluateHybridAttestation(hybridArgs(input, { pqEvidence: null }));
   assert.equal(result.disposition, 'classical-verified-no-pq-evidence');
   assert.equal(result.classicalVerified, true);
   assert.equal(result.pqEvidencePresent, false);
@@ -118,7 +129,7 @@ test('invalid classical evidence cannot be rescued by valid PQ evidence', () => 
   const input = setup();
   const tampered = { ...input.classicalAttestation, verdict: 'fail' };
   assert.throws(
-    () => evaluateHybridAttestation({ ...input, classicalAttestation: tampered }),
+    () => evaluateHybridAttestation(hybridArgs(input, { classicalAttestation: tampered })),
     (error) => ['E_ATTESTATION_SIGNATURE', 'E_ATTESTATION_SCHEMA'].includes(error?.code),
   );
 });
@@ -136,7 +147,7 @@ test('PQ evidence must bind the exact classical attestation hash', () => {
     contextBase64: input.pqEvidence.contextBase64,
     sourceRuntimeClass: input.pqEvidence.sourceRuntimeClass,
   });
-  const result = evaluateHybridAttestation({ ...input, pqEvidence: mismatched });
+  const result = evaluateHybridAttestation(hybridArgs(input, { pqEvidence: mismatched }));
   assert.equal(result.disposition, 'invalid-pq-evidence');
   assert.equal(result.classicalVerified, true);
   assert.equal(result.pqCryptographicallyVerified, false);
@@ -157,7 +168,7 @@ test('cryptographically bad but structurally valid PQ evidence cannot inflate hy
     contextBase64: input.pqEvidence.contextBase64,
     sourceRuntimeClass: 'node-24-test-fixture-tampered',
   });
-  const result = evaluateHybridAttestation({ ...input, pqEvidence: bad });
+  const result = evaluateHybridAttestation(hybridArgs(input, { pqEvidence: bad }));
   if (Number(process.versions.node.split('.')[0]) === 22) {
     assert.equal(result.disposition, 'classical-verified-pq-unavailable');
   } else {
@@ -167,7 +178,7 @@ test('cryptographically bad but structurally valid PQ evidence cannot inflate hy
 
 test('PQ migration policy evaluates compliance without changing cryptographic facts or authority', () => {
   const input = setup();
-  const hybrid = evaluateHybridAttestation(input);
+  const hybrid = evaluateHybridAttestation(hybridArgs(input));
   const result = evaluatePqMigrationPolicy(hybrid, input.policy);
 
   assert.equal(result.cryptographicDisposition, hybrid.disposition);
@@ -183,10 +194,16 @@ test('PQ migration policy evaluates compliance without changing cryptographic fa
     assert.equal(result.reasonCode, 'hybrid-verified');
   }
 
-  const stricter = { ...input.policy, allowPqUnavailable: false, policyHash: undefined };
-  delete stricter.policyHash;
-  const strictPolicy = createPqCapabilityPolicy(stricter);
-  const strictResult = evaluatePqMigrationPolicy(hybrid, strictPolicy);
+  const stricter = createPqCapabilityPolicy({
+    policyVersion: 'pq-migration-policy-v1',
+    requiredClassical: 'ed25519',
+    optionalPostQuantum: 'ml-dsa-65',
+    allowClassicalOnly: true,
+    allowPqUnavailable: false,
+    requireHybridForRelease: false,
+    executionAuthority: 'none',
+  });
+  const strictResult = evaluatePqMigrationPolicy(hybrid, stricter);
   if (Number(process.versions.node.split('.')[0]) === 22) {
     assert.equal(strictResult.compliant, false);
     assert.equal(strictResult.reasonCode, 'pq-verification-required');
