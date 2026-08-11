@@ -6,24 +6,49 @@ import { createRun } from './replay.js';
 
 function parentPrefixIsVerified(parentRun) {
   if (
-    parentRun.ledger.length !== parentRun.snapstates.length
+    !parentRun
+    || !parentRun.manifest
+    || !Array.isArray(parentRun.ledger)
+    || !Array.isArray(parentRun.snapstates)
+    || !Array.isArray(parentRun.eventBatches)
+    || parentRun.ledger.length !== parentRun.snapstates.length
     || parentRun.ledger.length !== parentRun.eventBatches.length
     || parentRun.ledger.length < 1
   ) return false;
-  if (createGenesisReceipt(parentRun.manifest).receiptHash !== parentRun.ledger[0].receiptHash) return false;
+
+  const { manifest } = parentRun;
+  if (createGenesisReceipt(manifest).receiptHash !== parentRun.ledger[0].receiptHash) return false;
+
   for (let index = 0; index < parentRun.ledger.length; index += 1) {
     const receipt = parentRun.ledger[index];
     const snapstate = parentRun.snapstates[index];
+    const events = parentRun.eventBatches[index];
+    if (!receipt || !snapstate || !Array.isArray(events)) return false;
     if (!verifyReceiptHash(receipt) || receipt.sequence !== index || snapstate.sequence !== index) return false;
-    if (receipt.resultingStateHash !== sha256Hex(snapstate.modelState)) return false;
+    if (receipt.kernelVersion !== manifest.kernelVersion || receipt.schemaVersion !== manifest.schemaVersion) return false;
+    if (receipt.runId !== manifest.runId || receipt.branchId !== manifest.branchId) return false;
+    if (snapstate.runId !== manifest.runId || snapstate.branchId !== manifest.branchId) return false;
+    if (receipt.stepId !== snapstate.stepId) return false;
+    if (snapstate.stateHash !== sha256Hex(snapstate.modelState)) return false;
+    if (receipt.resultingStateHash !== snapstate.stateHash) return false;
     if (receipt.resultingPrngStateHash !== sha256Hex(snapstate.prngState)) return false;
-    if (receipt.eventBatchHash !== sha256Hex(parentRun.eventBatches[index])) return false;
-    if (index > 0) {
-      const previous = parentRun.ledger[index - 1];
-      if (receipt.previousReceiptHash !== previous.receiptHash) return false;
-      if (receipt.previousStateHash !== parentRun.snapstates[index - 1].stateHash) return false;
-      if (receipt.inputHash !== sha256Hex(parentRun.manifest.inputs[index - 1])) return false;
+    if (receipt.eventBatchHash !== sha256Hex(events)) return false;
+    if (snapstate.previousReceiptHash !== receipt.previousReceiptHash) return false;
+
+    if (index === 0) {
+      if (receipt.kind !== 'genesis' || snapstate.stepId !== 'genesis' || receipt.previousReceiptHash !== null) return false;
+      continue;
     }
+
+    const previous = parentRun.ledger[index - 1];
+    const previousSnapstate = parentRun.snapstates[index - 1];
+    const input = manifest.inputs[index - 1];
+    if (!input || receipt.kind !== 'transition') return false;
+    if (receipt.stepId !== input.stepId) return false;
+    if (receipt.previousReceiptHash !== previous.receiptHash) return false;
+    if (snapstate.previousReceiptHash !== previous.receiptHash) return false;
+    if (receipt.previousStateHash !== previousSnapstate.stateHash) return false;
+    if (receipt.inputHash !== sha256Hex(input)) return false;
   }
   return true;
 }
