@@ -26,6 +26,7 @@ const projection = emit('../tests/kernel/helpers/emit-4d-projection.js', '4D pro
 const phase2 = emit('../tests/kernel/helpers/emit-phase2-conformance.js', 'Phase 2');
 const frontier = emit('../tests/kernel/helpers/emit-frontier-conformance.js', 'Frontier');
 const mesh = emit('../tests/kernel/helpers/emit-mesh-conformance.js', 'Verification mesh');
+const keyLifecycle = emit('../tests/kernel/helpers/emit-key-lifecycle-conformance.js', 'Key lifecycle');
 
 process.stdout.write(`${JSON.stringify({
   fixtureVersion: 'ripple-trust-kernel-v1',
@@ -36,6 +37,7 @@ process.stdout.write(`${JSON.stringify({
   phase2FixtureVersion: 'phase2-approximation-v1',
   frontierFixtureVersion: 'frontier-foundations-v1',
   meshFixtureVersion: 'verification-mesh-v1',
+  keyLifecycleFixtureVersion: 'key-lifecycle-v1',
   counterTerminalReceiptHash: counter.ledger.at(-1).receiptHash,
   bellwetherTerminalReceiptHashes: bellwether,
   runGraphConformance: runGraph,
@@ -43,6 +45,7 @@ process.stdout.write(`${JSON.stringify({
   phase2Conformance: phase2,
   frontierConformance: frontier,
   verificationMeshConformance: mesh,
+  keyLifecycleConformance: keyLifecycle,
   acceptanceCases: {
     seedSweep: 10000,
     forkIsolation: 1000,
@@ -52,5 +55,6 @@ process.stdout.write(`${JSON.stringify({
     phase2Processes: 4,
     frontierProcesses: 4,
     meshProcesses: 4,
+    keyLifecycleProcesses: 4,
   },
 })}\n`);
