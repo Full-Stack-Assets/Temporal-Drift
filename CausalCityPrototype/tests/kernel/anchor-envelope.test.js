@@ -99,3 +99,15 @@ test('anchor envelopes cannot smuggle local claims of external verification or a
     externalPublicationPerformed: false,
   }), { code: 'E_ANCHOR_SCHEMA' });
 });
+
+test('anchor receipt rejects confirmations when publication is declared false', () => {
+  const request = createAnchorRequest(requestInput());
+  assert.throws(() => createAnchorReceipt(request, {
+    providerId: 'provider-placeholder',
+    externalRecordId: 'record-placeholder-001',
+    providerEvidenceHash: 'c'.repeat(64),
+    anchoredAtLogical: 205,
+    confirmationCount: 1,
+    externalPublicationPerformed: false,
+  }), { code: 'E_ANCHOR_SCHEMA' });
+});
