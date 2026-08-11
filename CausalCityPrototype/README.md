@@ -28,7 +28,7 @@ Trustscape Lite displays a permanent **SHADOW / NON-AUTHORITATIVE VISUALIZATION*
 
 ## Verify
 
-Trust Kernel v1 and the isolated Phase-1 projection work support Node 22 and Node 24. The runtime has no package dependencies.
+Trust Kernel v1 and the isolated projection / approximation work support Node 22 and Node 24. The runtime has no package dependencies.
 
 ```powershell
 npm run verify
@@ -39,16 +39,18 @@ The command runs:
 - the unchanged 13-test legacy Bellwether suite;
 - Trust Kernel and RunGraph tests;
 - 4D projector, browser-integrity, and Trustscape consistency tests;
+- deterministic Phase-2 sensitivity, branch-ranking, synthetic-memory, and anomaly-review tests;
 - fresh-process receipt-chain determinism;
 - fresh-process RunGraph identity/exported-byte conformance;
 - fresh-process 4D projection hash/coordinate conformance;
+- fresh-process Phase-2 approximation conformance;
 - the pinned Trustscape browser fixture check;
 - the 10,000-seed sweep;
 - 1,000 fork-isolation cases;
 - 1,000 Bellwether shadow cases;
 - schema validation;
 - syntax checks;
-- the kernel/adapter/projection/Trustscape ambient-randomness scan.
+- the kernel/adapter/projection/Trustscape/approximation ambient-randomness scan.
 
 GitHub Actions repeats the complete command on Node 22 and Node 24.
 
@@ -66,7 +68,7 @@ The additive kernel lives in `src/kernel/`; its public exports are in `src/kerne
 
 The Bellwether wrapper in `src/adapters/bellwether-model.js` runs as a CI shadow path. It executes the legacy model from the same branch, seed, and year inputs, normalizes its output to fixed-point integers, and commits every state/event step to the kernel receipt chain. Any normalized state or event mismatch fails the shadow suite and reports the first differing path.
 
-This is not a browser cutover. `src/app.js` continues to call the legacy `simulateBranch`, `getSnapshot`, and `compareSnapshots` exports. Static regression tests ensure it does not import kernel, projection, or Trustscape modules.
+This is not a browser cutover. `src/app.js` continues to call the legacy `simulateBranch`, `getSnapshot`, and `compareSnapshots` exports. Static regression tests ensure it does not import kernel, projection, Trustscape, or approximation modules.
 
 ## RunGraph v1
 
@@ -167,6 +169,57 @@ Browser annotation IDs are independently derived in `src/trustscape/browser-inte
 
 Trustscape Lite is evidence visualization, not an authority surface. It cannot mutate runs, receipts, RunGraph topology, projection evidence, or the legacy simulation.
 
+## Phase-2 Approximation Layer
+
+Phase 2 lives in `src/approximation/` and is intentionally **synthetic, deterministic, advisory, and non-authoritative**.
+
+### Sparse sensitivity topography
+
+`sampleSensitivityTopography()` evaluates explicitly supplied, already-declared synthetic branches at explicitly declared safe-integer outcome paths. It produces sampled points, neighboring deltas, and threshold flags.
+
+Every artifact carries:
+
+```text
+semanticClass = approximate-sensitivity
+```
+
+It does not fit a causal response surface, infer a causal graph, extrapolate outside the supplied branches, or claim real-world effect estimates.
+
+### Existing-branch fitness ranking
+
+`rankBranches()` compares only branches already present in the verified RunGraph. Objective normalization and weighted aggregation use exact BigInt/rational arithmetic, with deterministic branch-ID tie-breaking.
+
+The output is a `synthetic-fitness-table` with `advisoryOnly: true`. The ranking code does not call `forkRun()` or `forkBranch()` and cannot admit a new branch.
+
+### Synthetic Subjective Time
+
+`createMemoryProfile()`, `perceivedValue()`, and `narrativeTension()` provide explicit synthetic short/long memory windows, integer salience, generation weighting, exact rational evidence, and reconstructable objective-versus-perceived gaps.
+
+These are modeling primitives. They are not validated measures of resident trauma, trust, sentiment, beliefs, or psychology, and they ingest no real resident data.
+
+### Human-gated anomaly review
+
+`classifyAnomalyForReview()` and `createAnomalyReviewQueue()` apply explicit thresholds to existing anomaly records. Every result hard-codes:
+
+```text
+advisoryOnly = true
+humanReviewRequired = true
+autoForkAllowed = false
+autoCalibrationAllowed = false
+```
+
+The approximation layer cannot recalibrate a model, mutate a verified run, alter graph topology, or authorize a policy action.
+
+### Performance observations
+
+```powershell
+npm run benchmark:phase2
+```
+
+runs an environment-specific synthetic benchmark. Timing results are not integrity commitments, correctness gates, SLAs, or portable performance claims.
+
+See `PHASE2_VERIFICATION_REPORT.md` for exact conformance hashes, RED/GREEN workflow history, observed test counts, and claim limitations.
+
 ## Integrity boundaries
 
 The verified layers establish reproducibility and internal consistency of supplied synthetic evidence. They do not establish external authority or scientific validity.
@@ -180,26 +233,31 @@ Important boundaries:
 - Determinism does not prove forecasting accuracy, causal truth, data quality, fairness, legitimacy, or policy correctness.
 - The Phase-1 “Causal” dimension is provenance topology only.
 - The Phase-1 “Subjective” dimension is explicit annotation storage only.
-- The current radar contains local review annotations; automatic anomaly synthesis or anomaly-born branches are not implemented.
+- Phase-2 “causal topography” is approximate sensitivity over supplied synthetic samples, not causal identification.
+- Phase-2 “Subjective Time” uses explicit synthetic memory profiles, not inferred resident state.
+- Automatic branch generation, auto-calibration, and anomaly-born authoritative forks remain disabled.
 
 See:
 
 - `VERIFICATION_REPORT.md` for Phase-0 Trust Kernel / RunGraph evidence and closure gates.
 - `PHASE1_VERIFICATION_REPORT.md` for projection / Trustscape evidence.
+- `PHASE2_VERIFICATION_REPORT.md` for approximation evidence.
 
 ## Gate status
 
 Phase 0 remains **review-frozen** pending an independent version-pinned technical review of draft PR #17. No Phase-0 tag, merge, or authoritative browser cut-over is permitted.
 
-Phase 1 is being developed independently on `codex/ripple-4d-projection-v1` and stacked draft PR #18. This isolation allows implementation and verification work without representing Phase 0 as formally approved.
+Phase 1 is isolated on `codex/ripple-4d-projection-v1` and stacked draft PR #18.
+
+Phase 2 is isolated on `codex/ripple-phase2-approximations-v1` and stacked draft PR #20. Its tools are synthetic R&D adjuncts only and cannot alter the lower-layer authority model.
 
 Until the relevant reviews close:
 
-- both PRs remain draft and unmerged;
+- all phase PRs remain draft and unmerged;
 - no baseline tag is created;
 - `src/app.js` and the legacy Bellwether browser remain authoritative;
-- projection/Trustscape remain synthetic, read-only, and non-authoritative;
-- no real-data calibration, policy recommendation, auto-forking, municipal, or production-readiness claim is made.
+- projection, Trustscape, and approximation artifacts remain synthetic and non-authoritative;
+- no real-data calibration, policy recommendation, auto-forking, municipal, scientific-validation, or production-readiness claim is made.
 
 ## Design boundary
 
@@ -222,6 +280,14 @@ The Phase-1 lab is separate:
 - `src/trustscape/renderer-webgl2.js` — presentation only
 - `src/trustscape/local-annotations.js` — local-first adjunct commentary
 - `src/trustscape/app.js` — lab interaction orchestration
+
+The Phase-2 synthetic R&D layer is separate:
+
+- `src/approximation/sensitivity-topography.js` — sparse simulated sensitivity only
+- `src/approximation/branch-ranking.js` — existing-branch fitness table only
+- `src/approximation/subjective-memory.js` — explicit synthetic memory profiles
+- `src/approximation/anomaly-review.js` — human-gated advisory classification
+- `scripts/phase2-benchmark.js` — non-authoritative performance observation
 
 ## Future boundary
 
