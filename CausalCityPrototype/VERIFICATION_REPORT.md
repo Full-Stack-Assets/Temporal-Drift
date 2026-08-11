@@ -186,7 +186,7 @@ This entire process is an **internal technical audit**, not an independent exter
 1. **Independent technical review remains incomplete.** No reviewer operating outside the implementation reasoning context has submitted a version-pinned disposition on draft PR #17.
 2. **RunGraph is not externally signed.** Internal hashes detect inconsistency within supplied evidence, but they do not prove who authorized or published the evidence.
 3. **Predecessor availability is external.** `previousGraphHash` commits a revision to its predecessor hash, but verifying the predecessor contents requires the predecessor artifact.
-4. **Source-root provenance is external.** The graph commits an evidence-normalized canonical source export hash and source receipt/manfiest commitments; the original imported source-run artifact must remain in the evidence archive for provenance review.
+4. **Source-root provenance is external.** The graph commits an evidence-normalized canonical source export hash and source receipt/manifest commitments; the original imported source-run artifact must remain in the evidence archive for provenance review.
 5. **Whole-evidence replacement is outside v1.** A party able to replace an unsigned graph, all runs, and all referenced evidence could produce a different internally consistent history. Signatures, public anchoring, and independent attestations are later work.
 6. **Scientific validity is not established.** Determinism and integrity do not prove data quality, causal truth, forecast accuracy, fairness, legitimacy, or policy correctness.
 7. **Bellwether shadow equivalence is wrapper parity.** The shadow adapter calls the same fictional legacy model; it is not an independently implemented causal engine.
