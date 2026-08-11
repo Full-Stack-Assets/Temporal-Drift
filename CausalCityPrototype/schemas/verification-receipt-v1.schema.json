@@ -21,5 +21,34 @@
     "eventBatchHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "manifestCoreHash": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
     "receiptHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "kind": { "const": "genesis" } },
+        "required": ["kind"]
+      },
+      "then": {
+        "properties": {
+          "stepId": { "const": "genesis" },
+          "sequence": { "const": 0 },
+          "previousReceiptHash": { "type": "null" },
+          "manifestCoreHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "kind": { "const": "transition" } },
+        "required": ["kind"]
+      },
+      "then": {
+        "properties": {
+          "sequence": { "type": "integer", "minimum": 1 },
+          "previousReceiptHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "manifestCoreHash": { "type": "null" }
+        }
+      }
+    }
+  ]
 }
