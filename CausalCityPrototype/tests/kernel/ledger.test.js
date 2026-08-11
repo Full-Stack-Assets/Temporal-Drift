@@ -16,6 +16,20 @@ function manifest() {
   });
 }
 
+function transition(overrides = {}) {
+  const genesis = createGenesisReceipt(manifest());
+  return {
+    genesis,
+    receipt: createTransitionReceipt({
+      kernelVersion: '1.0.0', runId: 'run-1', branchId: 'baseline', stepId: 's1', sequence: 1,
+      previousReceiptHash: genesis.receiptHash, input: { stepId: 's1', type: 'increment', payload: { amount: 1 } },
+      previousState: { count: 0 }, resultingState: { count: 1 },
+      resultingPrngState: [10, 20, 30, 40], eventBatch: [{ type: 'incremented', amount: 1 }],
+      ...overrides,
+    }),
+  };
+}
+
 test('genesis receipt commits to manifest core, state, PRNG, and model identity', () => {
   const receipt = createGenesisReceipt(manifest());
   assert.equal(receipt.kind, 'genesis');
@@ -28,13 +42,7 @@ test('genesis receipt commits to manifest core, state, PRNG, and model identity'
 });
 
 test('transition receipt commits every transition boundary hash', () => {
-  const genesis = createGenesisReceipt(manifest());
-  const receipt = createTransitionReceipt({
-    kernelVersion: '1.0.0', runId: 'run-1', branchId: 'baseline', stepId: 's1', sequence: 1,
-    previousReceiptHash: genesis.receiptHash, input: { stepId: 's1', type: 'increment', payload: { amount: 1 } },
-    previousState: { count: 0 }, resultingState: { count: 1 },
-    resultingPrngState: [10, 20, 30, 40], eventBatch: [{ type: 'incremented', amount: 1 }],
-  });
+  const { genesis, receipt } = transition();
   for (const field of ['inputHash', 'previousStateHash', 'resultingStateHash', 'resultingPrngStateHash', 'eventBatchHash', 'receiptHash']) {
     assert.match(receipt[field], /^[a-f0-9]{64}$/, field);
   }
@@ -50,13 +58,7 @@ test('receipt tampering is detectable without mutating the original', () => {
 });
 
 test('ledger append is immutable and rejects deletion-order linkage', () => {
-  const genesis = createGenesisReceipt(manifest());
-  const next = createTransitionReceipt({
-    kernelVersion: '1.0.0', runId: 'run-1', branchId: 'baseline', stepId: 's1', sequence: 1,
-    previousReceiptHash: genesis.receiptHash, input: { stepId: 's1', type: 'increment', payload: { amount: 1 } },
-    previousState: { count: 0 }, resultingState: { count: 1 },
-    resultingPrngState: [1, 2, 3, 4], eventBatch: [],
-  });
+  const { genesis, receipt: next } = transition();
   const first = appendReceipt([], genesis);
   const second = appendReceipt(first, next);
   assert.equal(first.length, 1);
@@ -64,4 +66,16 @@ test('ledger append is immutable and rejects deletion-order linkage', () => {
   assert.ok(Object.isFrozen(second));
   assert.throws(() => appendReceipt([], next), { code: 'E_RECEIPT_HASH' });
   assert.throws(() => appendReceipt([genesis], { ...next, sequence: 2 }), { code: 'E_RECEIPT_HASH' });
+});
+
+test('ledger rejects a validly hashed receipt spliced from another run, branch, or kernel version', () => {
+  for (const overrides of [
+    { runId: 'run-2' },
+    { branchId: 'other-branch' },
+    { kernelVersion: '2.0.0' },
+  ]) {
+    const { genesis, receipt } = transition(overrides);
+    assert.equal(verifyReceiptHash(receipt), true);
+    assert.throws(() => appendReceipt([genesis], receipt), { code: 'E_RECEIPT_HASH' });
+  }
 });
