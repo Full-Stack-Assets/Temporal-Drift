@@ -10,6 +10,7 @@ const roots = [
   new URL('../src/trustscape/', import.meta.url),
   new URL('../src/approximation/', import.meta.url),
   new URL('../src/frontier/', import.meta.url),
+  new URL('../src/mesh/', import.meta.url),
   new URL('./', import.meta.url),
 ];
 const files = [];
