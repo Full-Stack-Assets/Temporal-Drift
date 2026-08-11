@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "verification-attestation-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["attestationVersion", "registryHash", "verifierId", "keyId", "logicalTime", "subjectType", "subjectId", "subjectHash", "verificationProcedureId", "verificationProcedureHash", "verdict", "findingsHash", "limitationsHash", "algorithm", "signatureBase64", "attestationHash"],
+  "properties": {
+    "attestationVersion": { "const": "verification-attestation-v1" },
+    "registryHash": { "$ref": "#/$defs/hash" },
+    "verifierId": { "type": "string", "minLength": 1 },
+    "keyId": { "type": "string", "minLength": 1 },
+    "logicalTime": { "type": "integer", "minimum": 0 },
+    "subjectType": { "type": "string", "minLength": 1 },
+    "subjectId": { "type": "string", "minLength": 1 },
+    "subjectHash": { "$ref": "#/$defs/hash" },
+    "verificationProcedureId": { "type": "string", "minLength": 1 },
+    "verificationProcedureHash": { "$ref": "#/$defs/hash" },
+    "verdict": { "enum": ["pass", "fail", "abstain"] },
+    "findingsHash": { "anyOf": [{ "$ref": "#/$defs/hash" }, { "type": "null" }] },
+    "limitationsHash": { "anyOf": [{ "$ref": "#/$defs/hash" }, { "type": "null" }] },
+    "algorithm": { "const": "ed25519" },
+    "signatureBase64": { "type": "string", "minLength": 4, "pattern": "^[A-Za-z0-9+/]+={0,2}$" },
+    "attestationHash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": { "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" } }
+}
