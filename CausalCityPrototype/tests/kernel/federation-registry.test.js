@@ -96,6 +96,15 @@ test('profile and registry validation fail closed for ambiguous or unsupported i
     (error) => error?.code === 'E_VERIFIER_REGISTRY',
   );
 
+  assert.throws(
+    () => createVerifierRegistry({
+      registryVersion: 'verifier-registry-v1',
+      cryptoProfileHash: 'f'.repeat(64),
+      verifiers: [VERIFIER_A],
+    }, profile),
+    (error) => error?.code === 'E_VERIFIER_REGISTRY',
+  );
+
   for (const invalid of [
     { ...VERIFIER_A, weight: 0 },
     { ...VERIFIER_A, algorithm: 'rsa' },
@@ -125,7 +134,7 @@ test('profile and registry validation fail closed for ambiguous or unsupported i
   );
 });
 
-test('tampered content addresses and profile links are rejected', () => {
+test('tampered content addresses are rejected', () => {
   const profile = createCryptoProfile({ profileVersion: 'federation-crypto-v1' });
   const registry = createVerifierRegistry({
     registryVersion: 'verifier-registry-v1',
@@ -140,12 +149,6 @@ test('tampered content addresses and profile links are rejected', () => {
 
   assert.throws(
     () => verifyVerifierRegistry({ ...registry, registryHash: '0'.repeat(64) }, profile),
-    (error) => error?.code === 'E_VERIFIER_REGISTRY',
-  );
-
-  const anotherProfile = createCryptoProfile({ profileVersion: 'another-profile-v1' });
-  assert.throws(
-    () => verifyVerifierRegistry(registry, anotherProfile),
     (error) => error?.code === 'E_VERIFIER_REGISTRY',
   );
 });
