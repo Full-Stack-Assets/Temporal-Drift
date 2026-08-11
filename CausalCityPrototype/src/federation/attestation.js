@@ -13,6 +13,7 @@ import {
 import { cloneAndFreeze } from '../kernel/immutable.js';
 import { TrustKernelError } from '../kernel/errors.js';
 import { verifyCryptoProfile } from './crypto-profile.js';
+import { isKeyRevokedAt, verifyRevocationLedger } from './revocation.js';
 import { verifyVerifierRegistry } from './verifier-registry.js';
 
 const ATTESTATION_VERSION = 'verification-attestation-v1';
@@ -179,7 +180,7 @@ export function createVerificationAttestation(unsignedPayload, privateKeyPem, re
   return cloneAndFreeze({ ...signedCore, attestationHash: sha256Hex(signedCore) });
 }
 
-export function verifyVerificationAttestation(rawAttestation, registry, profile) {
+export function verifyVerificationAttestation(rawAttestation, registry, profile, revocationLedger = null) {
   const attestation = exactObject(rawAttestation, SIGNED_KEYS, 'E_ATTESTATION_SCHEMA', 'Verification attestation');
   const unsigned = unsignedFromSigned(attestation);
   const { verifier } = validateUnsigned(unsigned, registry, profile);
@@ -207,6 +208,20 @@ export function verifyVerificationAttestation(rawAttestation, registry, profile)
   }
   if (!verified) {
     throw new TrustKernelError('E_ATTESTATION_SIGNATURE', 'Ed25519 signature verification failed');
+  }
+
+  if (revocationLedger !== null) {
+    const revocationReport = verifyRevocationLedger(revocationLedger);
+    if (revocationReport.registryHash !== registry.registryHash) {
+      throw new TrustKernelError('E_ATTESTATION_REVOKED', 'Revocation ledger registry hash does not match attestation registry');
+    }
+    if (isKeyRevokedAt(revocationLedger, {
+      verifierId: attestation.verifierId,
+      keyId: attestation.keyId,
+      logicalTime: attestation.logicalTime,
+    })) {
+      throw new TrustKernelError('E_ATTESTATION_REVOKED', 'Verifier key was revoked at or before attestation logical time');
+    }
   }
 
   return cloneAndFreeze({
