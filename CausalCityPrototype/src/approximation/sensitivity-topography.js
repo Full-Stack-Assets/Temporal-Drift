@@ -63,7 +63,7 @@ function delta(left, right, path) {
 export function sampleSensitivityTopography(graph, config) {
   verifiedGraph(graph);
   assertPlainExact(config, ['samples', 'outcomes', 'cliffThresholds'], 'E_APPROX_SCHEMA', 'config');
-  if (!Array.isArray(config.samples) || config.samples.length < 2) approxFail('E_APPROX_SCHEMA', 'samples must contain at least two entries', 'samples');
+  if (!Array.isArray(config.samples) || config.samples.length < 1) approxFail('E_APPROX_SCHEMA', 'samples must contain at least one entry', 'samples');
   const outcomes = normalizeOutcomes(config.outcomes);
   const thresholds = normalizeThresholds(config.cliffThresholds, outcomes);
 
