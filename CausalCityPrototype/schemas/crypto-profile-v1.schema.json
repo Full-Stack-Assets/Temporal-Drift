@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "crypto-profile-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profileVersion", "canonicalization", "hashAlgorithms", "signatureAlgorithms", "primarySignatureAlgorithm", "unsupportedFutureAlgorithms", "profileHash"],
+  "properties": {
+    "profileVersion": { "const": "federation-crypto-v1" },
+    "canonicalization": { "const": "canonical-v1" },
+    "hashAlgorithms": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "const": "sha256" } },
+    "signatureAlgorithms": { "type": "array", "minItems": 1, "maxItems": 1, "items": { "const": "ed25519" } },
+    "primarySignatureAlgorithm": { "const": "ed25519" },
+    "unsupportedFutureAlgorithms": { "type": "array", "maxItems": 0, "items": { "type": "string" } },
+    "profileHash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}
