@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ripple-city.local/schemas/verification-receipt-v1.schema.json",
+  "title": "Trust Kernel Verification Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "kernelVersion", "runId", "branchId", "stepId", "sequence", "previousReceiptHash", "inputHash", "previousStateHash", "resultingStateHash", "resultingPrngHash", "eventBatchHash", "receiptHash"],
+  "properties": {
+    "schemaVersion": { "const": "1" },
+    "kernelVersion": { "const": "1.0.0" },
+    "runId": { "type": "string", "minLength": 1 },
+    "branchId": { "type": "string", "minLength": 1 },
+    "stepId": { "type": "string", "minLength": 1 },
+    "sequence": { "type": "integer", "minimum": 0 },
+    "previousReceiptHash": { "$ref": "#/$defs/hash" },
+    "inputHash": { "$ref": "#/$defs/hash" },
+    "previousStateHash": { "$ref": "#/$defs/hash" },
+    "resultingStateHash": { "$ref": "#/$defs/hash" },
+    "resultingPrngHash": { "$ref": "#/$defs/hash" },
+    "eventBatchHash": { "$ref": "#/$defs/hash" },
+    "receiptHash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}
