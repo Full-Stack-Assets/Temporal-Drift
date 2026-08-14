@@ -1,0 +1,27 @@
+{
+  "jumpSpeedThresholdMph": 40.0,
+  "fluxChargeStartSpeedMph": 28.0,
+  "energyPerSecondAtThreshold": 45.0,
+  "fluxCapacitorMaxEnergy": 1210.0,
+  "energyDrainOnJump": 1150.0,
+  "fluxEnergyRequiredFraction": 0.92,
+  "maxParadoxLevel": 100.0,
+  "paradoxIncreasePerMajorChange": 15.0,
+  "paradoxDecayRatePerMinute": 2.0,
+  "hawkingBaseJumpRisk": 30.0,
+  "hawkingRadiationScale": 0.8,
+  "hawkingUnstableThreshold": 40.0,
+  "hawkingUnstableParadox": 8.0,
+  "tiplerJumpChargeRequired": 85.0,
+  "tiplerJumpParadox": 35.0,
+  "phaseDurationSeconds": 0.25,
+  "cooldownDurationSeconds": 1.0,
+  "eras": [
+    { "id": "Present1985", "year": 1985, "displayName": "1985 — Present", "paradoxMultiplier": 1.0, "paradoxRisk": false },
+    { "id": "Alternate1985", "year": 1985, "displayName": "1985 — Alternate", "paradoxMultiplier": 1.35, "paradoxRisk": true },
+    { "id": "Past1955", "year": 1955, "displayName": "1955 — Past", "paradoxMultiplier": 1.15, "paradoxRisk": false },
+    { "id": "Future2015", "year": 2015, "displayName": "2015 — Future", "paradoxMultiplier": 1.1, "paradoxRisk": false },
+    { "id": "DeepFuture2045", "year": 2045, "displayName": "2045 — Deep Future", "paradoxMultiplier": 1.25, "paradoxRisk": false },
+    { "id": "WildWest1885", "year": 1885, "displayName": "1885 — Frontier", "paradoxMultiplier": 1.4, "paradoxRisk": true }
+  ]
+}

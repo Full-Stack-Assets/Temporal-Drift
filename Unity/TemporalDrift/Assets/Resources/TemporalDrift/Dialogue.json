@@ -1,0 +1,98 @@
+{
+  "conversations": [
+    {
+      "id": "M01.GarageTutorial",
+      "entryNodeId": "ValeTutorial",
+      "nodes": [
+        {
+          "id": "ValeTutorial",
+          "speakerId": "Vale",
+          "speakerDisplayName": "Dr. Emmett Vale",
+          "line": "Collect the calibration parts, install them on the time machine, then complete the courthouse course.",
+          "missionEvent": "TalkedToVale",
+          "minimumDisplaySeconds": 2.0
+        }
+      ]
+    },
+    {
+      "id": "M02.CourthouseBriefing",
+      "entryNodeId": "ValeGreeting",
+      "nodes": [
+        {
+          "id": "ValeGreeting",
+          "speakerId": "Vale",
+          "speakerDisplayName": "Dr. Emmett Vale",
+          "line": "June and I need you at the courthouse. Install the sensor package, then jump to 1955.",
+          "missionEvent": "TalkedToValeAndJune",
+          "automaticNextNodeId": "JuneReminder",
+          "minimumDisplaySeconds": 2.0
+        },
+        {
+          "id": "JuneReminder",
+          "speakerId": "June",
+          "speakerDisplayName": "June Parker",
+          "line": "When you reach the square in 1955, calibrate the clocktower sensor carefully.",
+          "minimumDisplaySeconds": 1.5
+        }
+      ]
+    },
+    {
+      "id": "M03.ArchiveBriefing",
+      "entryNodeId": "JuneArchive",
+      "nodes": [
+        {
+          "id": "JuneArchive",
+          "speakerId": "June",
+          "speakerDisplayName": "June Parker",
+          "line": "The courthouse archives changed overnight. Inspect the diner sign, school dedication, and founder portrait.",
+          "missionEvent": "ArchiveBriefingComplete",
+          "minimumDisplaySeconds": 2.0
+        }
+      ]
+    },
+    {
+      "id": "M04.WorkshopBriefing",
+      "entryNodeId": "ValeWorkshop",
+      "nodes": [
+        {
+          "id": "ValeWorkshop",
+          "speakerId": "Vale",
+          "speakerDisplayName": "Dr. Emmett Vale",
+          "line": "The temporal regulator failed in transit. Recover the alloy and install the replacement before the storm window closes.",
+          "missionEvent": "WorkshopEntered",
+          "minimumDisplaySeconds": 2.0
+        }
+      ]
+    },
+    {
+      "id": "M05.LightningFinale",
+      "entryNodeId": "ValeFinale",
+      "nodes": [
+        {
+          "id": "ValeFinale",
+          "speakerId": "Vale",
+          "speakerDisplayName": "Dr. Emmett Vale",
+          "line": "The lightning will strike the clocktower at 10:04. Hit the jump threshold on the courthouse run and do not stop.",
+          "automaticNextNodeId": "ElenaWitness",
+          "minimumDisplaySeconds": 2.5
+        },
+        {
+          "id": "ElenaWitness",
+          "speakerId": "Elena",
+          "speakerDisplayName": "Elena Diaz",
+          "line": "I will keep the square clear. When you return, inspect the plaque and tell us what changed.",
+          "automaticNextNodeId": "CraneWarning",
+          "minimumDisplaySeconds": 2.0
+        },
+        {
+          "id": "CraneWarning",
+          "speakerId": "Crane",
+          "speakerDisplayName": "Officer Crane",
+          "line": "Move the crowd back from the cable route. This storm is not a drill.",
+          "missionEvent": "CampaignResolved",
+          "minimumDisplaySeconds": 1.5
+        }
+      ]
+    }
+  ]
+}

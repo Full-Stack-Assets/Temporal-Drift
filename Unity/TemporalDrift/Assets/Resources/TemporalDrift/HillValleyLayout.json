@@ -1,0 +1,30 @@
+{
+  "units": "centimeters",
+  "townOffsetY": 7600.0,
+  "note": "Coordinates from Scripts/hill_valley. Unity generators convert cm to meters (/100) and apply townOffsetY.",
+  "blocks": [
+    { "name": "HV_Civic_Lawn", "x": 0, "y": -1150, "z": 60, "sx": 5100, "sy": 3450, "sz": 80, "color": [0.22, 0.42, 0.18], "era": "shared" },
+    { "name": "HV_Civic_Path_NS", "x": 0, "y": -1150, "z": 110, "sx": 420, "sy": 3450, "sz": 25, "color": [0.55, 0.55, 0.52], "era": "shared" },
+    { "name": "HV_Civic_Path_EW", "x": 0, "y": -1100, "z": 112, "sx": 5100, "sy": 360, "sz": 25, "color": [0.55, 0.55, 0.52], "era": "shared" },
+    { "name": "HV_Courthouse_Plaza", "x": 0, "y": 2550, "z": 70, "sx": 4800, "sy": 750, "sz": 90, "color": [0.58, 0.57, 0.54], "era": "shared" },
+    { "name": "HV_Courthouse_Main", "x": 0, "y": 4300, "z": 950, "sx": 4300, "sy": 2200, "sz": 1800, "color": [0.72, 0.7, 0.64], "era": "shared" },
+    { "name": "HV_Courthouse_Wing_L", "x": -2600, "y": 4450, "z": 700, "sx": 1400, "sy": 1800, "sz": 1300, "color": [0.72, 0.7, 0.64], "era": "shared" },
+    { "name": "HV_Courthouse_Wing_R", "x": 2600, "y": 4450, "z": 700, "sx": 1400, "sy": 1800, "sz": 1300, "color": [0.72, 0.7, 0.64], "era": "shared" },
+    { "name": "HV_Courthouse_Portico", "x": 0, "y": 3000, "z": 950, "sx": 2500, "sy": 450, "sz": 350, "color": [0.72, 0.7, 0.64], "era": "shared" },
+    { "name": "HV_Clocktower_Base", "x": 0, "y": 4150, "z": 2200, "sx": 1650, "sy": 1450, "sz": 850, "color": [0.7, 0.68, 0.62], "era": "shared" },
+    { "name": "HV_Clocktower_Upper", "x": 0, "y": 4120, "z": 2880, "sx": 1150, "sy": 1100, "sz": 520, "color": [0.7, 0.68, 0.62], "era": "shared" },
+    { "name": "HV_Clocktower_Cap", "x": 0, "y": 4120, "z": 3260, "sx": 1450, "sy": 1350, "sz": 240, "color": [0.35, 0.18, 0.14], "era": "shared" },
+    { "name": "HV_Road_SquareRing", "x": 0, "y": 0, "z": 20, "sx": 9000, "sy": 9000, "sz": 40, "color": [0.12, 0.12, 0.13], "era": "shared" }
+  ],
+  "signs": [
+    { "name": "HVVariant_Diner_Original", "text": "LOU'S CAFE", "x": -9400, "y": -8900, "z": 520, "showIfFact": null, "hideIfFact": "C_DinerRenamed" },
+    { "name": "HVVariant_Diner_Changed", "text": "ELENA'S DINER", "x": -9400, "y": -8900, "z": 520, "showIfFact": "C_DinerRenamed", "hideIfFact": null }
+  ],
+  "volumes": [
+    { "name": "MV_M01_ValeGarage", "x": -2400, "y": 800, "z": 120, "sx": 1400, "sy": 1400, "sz": 300, "eventId": "TalkedToVale" },
+    { "name": "MV_M02_CourthouseBriefing", "x": 0, "y": 3000, "z": 200, "sx": 1800, "sy": 1800, "sz": 400, "eventId": "TalkedToValeAndJune" },
+    { "name": "MV_M02_ClocktowerReach", "x": 0, "y": 4100, "z": 200, "sx": 2200, "sy": 2200, "sz": 500, "eventId": "ClocktowerReached" },
+    { "name": "MV_M03_DinerSign", "x": 1800, "y": 2600, "z": 120, "sx": 1200, "sy": 1200, "sz": 300, "eventId": "DiscrepanciesInspected" }
+  ],
+  "spawn": { "vehicleX": -2400, "vehicleY": 400, "vehicleZ": 80 }
+}

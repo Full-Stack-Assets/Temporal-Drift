@@ -1,0 +1,77 @@
+{
+  "missions": [
+    {
+      "id": "M01.FirstTestRun",
+      "displayName": "M01 — First Test Run",
+      "objectives": [
+        { "id": "MeetVale", "description": "Meet Dr. Vale at the garage", "completionEvent": "TalkedToVale", "checkpointId": "M01_Start", "paradoxDelta": 0 },
+        { "id": "CollectParts", "description": "Collect the oscillator, cable, and coolant cell", "completionEvent": "CalibrationPartsCollected", "checkpointId": "M01_PartsCollected", "paradoxDelta": 0 },
+        { "id": "InstallParts", "description": "Install the calibration parts", "completionEvent": "VehicleReady", "checkpointId": "M01_VehicleReady", "paradoxDelta": 0 },
+        { "id": "CompleteCourse", "description": "Complete the courthouse driving course", "completionEvent": "TestCourseComplete", "checkpointId": "M01_CourseStart", "paradoxDelta": 0 },
+        { "id": "ReturnToVale", "description": "Return to Vale Garage", "completionEvent": "M01Returned", "checkpointId": "M01_Complete", "paradoxDelta": 0 }
+      ]
+    },
+    {
+      "id": "M02.ClocktowerCalibration",
+      "displayName": "M02 — Clocktower Calibration",
+      "objectives": [
+        { "id": "Briefing", "description": "Meet Vale and June at the courthouse", "completionEvent": "TalkedToValeAndJune", "checkpointId": "M02_Briefing", "paradoxDelta": 0 },
+        { "id": "InstallSensorVehicle", "description": "Install the clocktower sensor package", "completionEvent": "SensorInstalledVehicle", "checkpointId": "M02_SensorInstalledVehicle", "paradoxDelta": 0 },
+        { "id": "Jump1955", "description": "Reach 40 MPH and travel to 1955", "completionEvent": "Arrived1955", "checkpointId": "M02_Arrived1955", "paradoxDelta": 0 },
+        { "id": "ReachClocktower", "description": "Reach courthouse square on foot", "completionEvent": "ClocktowerReached", "checkpointId": "M02_ClocktowerReached", "paradoxDelta": 0 },
+        { "id": "Calibrate", "description": "Install and calibrate the clocktower sensor", "completionEvent": "ClocktowerCalibrated", "checkpointId": "M02_Calibrated", "paradoxDelta": -3 },
+        { "id": "Return1985", "description": "Return safely to 1985", "completionEvent": "Returned1985", "checkpointId": "M02_Returned1985", "paradoxDelta": 0 }
+      ]
+    },
+    {
+      "id": "M03.TownOutOfTime",
+      "displayName": "M03 — A Town Out of Time",
+      "objectives": [
+        { "id": "MeetJune", "description": "Investigate changed courthouse records", "completionEvent": "ArchiveBriefingComplete", "checkpointId": "M03_Briefing", "paradoxDelta": 0 },
+        { "id": "InspectDiscrepancies", "description": "Inspect the diner, school, and founder discrepancies", "completionEvent": "DiscrepanciesInspected", "checkpointId": "M03_Evidence", "paradoxDelta": 2 },
+        { "id": "InterviewWitnesses", "description": "Follow clues across town", "completionEvent": "WitnessesInterviewed", "checkpointId": "M03_Witnesses", "paradoxDelta": 0 },
+        { "id": "IdentifyCause", "description": "Identify the altered historical event", "completionEvent": "AlterationIdentified", "checkpointId": "M03_Complete", "paradoxDelta": 0 }
+      ]
+    },
+    {
+      "id": "M04.MissingComponent",
+      "displayName": "M04 — The Missing Component",
+      "objectives": [
+        { "id": "GatherClues", "description": "Question contacts in 1955", "completionEvent": "WorkshopLocated", "checkpointId": "M04_Clues", "paradoxDelta": 0 },
+        { "id": "InfiltrateWorkshop", "description": "Enter Crane's workshop", "completionEvent": "WorkshopEntered", "checkpointId": "M04_Infiltration", "paradoxDelta": 1 },
+        { "id": "RecoverComponents", "description": "Recover the alloy fragment and regulator", "completionEvent": "ComponentsRecovered", "checkpointId": "M04_Components", "paradoxDelta": 0 },
+        { "id": "ResolveNotes", "description": "Choose the fate of Crane's research notes", "completionEvent": "ResearchChoiceResolved", "checkpointId": "M04_Choice", "paradoxDelta": 5 },
+        { "id": "InstallRegulator", "description": "Install the regulator at Vale Garage", "completionEvent": "RegulatorInstalled", "checkpointId": "M04_Complete", "paradoxDelta": 0 }
+      ]
+    },
+    {
+      "id": "M05.RaceTheLightning",
+      "displayName": "M05 — Race the Lightning",
+      "objectives": [
+        { "id": "PrepareRoute", "description": "Prepare cable, streets, and clock synchronization", "completionEvent": "FinalePrepared", "checkpointId": "M05_Ready", "paradoxDelta": 0 },
+        { "id": "StartRun", "description": "Begin the rural lightning approach", "completionEvent": "FinalRunStarted", "checkpointId": "M05_Approach", "paradoxDelta": 0 },
+        { "id": "HitWire", "description": "Reach the courthouse wire at the synchronized moment", "completionEvent": "LightningJumpComplete", "checkpointId": "M05_Jump", "paradoxDelta": 0 },
+        { "id": "InspectConsequences", "description": "Inspect the consequence-altered 1985", "completionEvent": "ConsequencesInspected", "checkpointId": "M05_Consequences", "paradoxDelta": 0 },
+        { "id": "FinalDialogue", "description": "Resolve the campaign with Vale", "completionEvent": "CampaignResolved", "checkpointId": "M05_Complete", "paradoxDelta": 0 }
+      ]
+    },
+    {
+      "id": "SideA.FacesOfHillValley",
+      "displayName": "Side A — Faces of the Square",
+      "objectives": [
+        { "id": "MeetJune", "description": "Meet June at the courthouse archive", "completionEvent": "SideA_Briefing", "checkpointId": "SideA_Start", "paradoxDelta": 0 },
+        { "id": "IdentifyResidents", "description": "Match four residents to altered photographs", "completionEvent": "SideA_Identified", "checkpointId": "SideA_Evidence", "paradoxDelta": 0 },
+        { "id": "ResolveConnection", "description": "Choose whether to restore or preserve a family connection", "completionEvent": "SideA_Resolved", "checkpointId": "SideA_Complete", "paradoxDelta": -1 }
+      ]
+    },
+    {
+      "id": "SideB.SpecialDelivery",
+      "displayName": "Side B — Special Delivery",
+      "objectives": [
+        { "id": "AcceptDelivery", "description": "Accept the timed delivery from the service station", "completionEvent": "SideB_Accepted", "checkpointId": "SideB_Start", "paradoxDelta": 0 },
+        { "id": "Complete1985Route", "description": "Deliver the package across 1985", "completionEvent": "SideB_1985Complete", "checkpointId": "SideB_1985", "paradoxDelta": 0 },
+        { "id": "Complete1955Route", "description": "Complete the alternate 1955 rural handoff", "completionEvent": "SideB_1955Complete", "checkpointId": "SideB_Complete", "paradoxDelta": 0 }
+      ]
+    }
+  ]
+}

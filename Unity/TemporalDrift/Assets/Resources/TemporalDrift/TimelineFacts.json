@@ -1,0 +1,33 @@
+{
+  "facts": [
+    { "id": "1885.SaloonStandoffResolved", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [] },
+    { "id": "1885.LandDisputeWon", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [] },
+    { "id": "1885.RailSurveyApproved", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [] },
+    { "id": "1955.MallSiteOwned", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [{ "id": "1885.LandDisputeWon", "requiredValue": true }] },
+    { "id": "1955.DinerLegacyIntact", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [{ "id": "1885.SaloonStandoffResolved", "requiredValue": true }] },
+    { "id": "1955.ClocktowerFunded", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [{ "id": "1885.RailSurveyApproved", "requiredValue": true }] },
+    { "id": "C_PlaqueChanged", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [] },
+    { "id": "C_DinerRenamed", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [{ "id": "1955.DinerLegacyIntact", "requiredValue": false }] },
+    { "id": "C_SchoolDedication", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [] },
+    { "id": "C_FounderMissing", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [] },
+    { "id": "1985.StreetRenamed", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [{ "id": "1955.MallSiteOwned", "requiredValue": false }] },
+    { "id": "A_TimelineCorrupted", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [
+      { "id": "C_DinerRenamed", "requiredValue": true },
+      { "id": "C_FounderMissing", "requiredValue": true },
+      { "id": "C_CampaignComplete", "requiredValue": false }
+    ]},
+    { "id": "2015.SkywayLitigation", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [{ "id": "1985.StreetRenamed", "requiredValue": true }] },
+    { "id": "2015.Cafe80sThriving", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [
+      { "id": "C_CampaignComplete", "requiredValue": true },
+      { "id": "A_TimelineCorrupted", "requiredValue": false }
+    ]},
+    { "id": "2045.TierThreeOwned", "defaultValue": true, "valueWhenDependenciesSatisfied": false, "dependencies": [{ "id": "1985.StreetRenamed", "requiredValue": true }] },
+    { "id": "2045.HeritageDistrictIntact", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [{ "id": "2045.TierThreeOwned", "requiredValue": false }] },
+    { "id": "C_CampaignComplete", "defaultValue": false, "valueWhenDependenciesSatisfied": true, "dependencies": [
+      { "id": "C_PlaqueChanged", "requiredValue": true },
+      { "id": "C_DinerRenamed", "requiredValue": true },
+      { "id": "C_SchoolDedication", "requiredValue": true },
+      { "id": "C_FounderMissing", "requiredValue": true }
+    ]}
+  ]
+}
