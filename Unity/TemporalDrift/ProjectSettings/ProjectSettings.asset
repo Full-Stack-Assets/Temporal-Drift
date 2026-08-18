@@ -1,0 +1,14 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!129 &1
+PlayerSettings:
+  productGUID: 7c3a9e2b4f1d4a6e8b0c2d4e6f8a0b1c
+  companyName: Full-Stack-Assets
+  productName: Temporal Drift
+  defaultScreenWidth: 1920
+  defaultScreenHeight: 1080
+  defaultScreenWidthWeb: 960
+  defaultScreenHeightWeb: 600
+  m_ActiveColorSpace: 1
+  m_SpriteBatchVertexThreshold: 300
+  m_ActiveInputHandler: 2

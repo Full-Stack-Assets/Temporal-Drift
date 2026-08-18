@@ -36,7 +36,13 @@ Scripts/                      Unreal Python and utility scripts
 Source/                       C++ game code and build targets
   BTTF_TemporalDrift/         Runtime module
 SourceArt/                    Source-owned hero vehicle art and regeneration notes
+Unity/TemporalDrift/          Clean Unity 6 URP starter using salvaged meshes, JSON, and C# rules
+Docs/UnityTransition/         Evaluation of moving off Unreal onto a clean Unity build
 ```
+
+## Unity clean-build exploration
+
+Unreal `.uasset` files are not portable. A Unity 6 starter that keeps the original FBX meshes, campaign/timeline JSON, and rewritten C# game rules is in `Unity/TemporalDrift/`. Read `Docs/UnityTransition/EVALUATION.md` before investing further in the UE 5.8 Windows pipeline.
 
 ## Core Implemented Areas
 
