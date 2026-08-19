@@ -1,0 +1,9 @@
+{
+  "name": "hv-sandbox-playcanvas",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 8080",
+    "test": "node js/tests/butterfly-rules.test.mjs"
+  }
+}

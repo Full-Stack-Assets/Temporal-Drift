@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "models": [
+    {
+      "id": "cesium_milk_truck",
+      "url": "https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models@master/2.0/CesiumMilkTruck/glTF-Binary/CesiumMilkTruck.glb",
+      "type": "container",
+      "persistent": true,
+      "position": [22, 0, 32],
+      "scale": 1.8,
+      "euler": [0, -40, 0],
+      "visibleEras": ["1985", "2015", "2045"]
+    }
+  ]
+}

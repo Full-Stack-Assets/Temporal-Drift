@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Hill Valley" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#00ff41" />
+  <meta name="description" content="Hill Valley Multi-Era Sandbox — drive the DeLorean across five eras" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png" />
+  <title>Hill Valley Multi-Era Sandbox</title>
+  <link rel="stylesheet" href="css/time-circuits.css" />
+
+  <script type="importmap">
+  {
+    "imports": {
+      "playcanvas": "https://cdn.jsdelivr.net/npm/playcanvas@2.7.5/build/playcanvas.mjs"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="loading-overlay">
+    <div id="loading-title">HILL VALLEY</div>
+    <div id="loading-bar"><div id="loading-fill"></div></div>
+    <div id="loading-status">Booting temporal systems…</div>
+  </div>
+
+  <button id="interact-prompt" type="button" hidden>Press E / tap to repair</button>
+
+  <canvas id="application-canvas"></canvas>
+
+  <div id="time-circuits">
+    <div class="circuit-row">
+      <div class="circuit-label">DESTINATION TIME</div>
+      <div class="circuit-value destination" id="dest-time">10 26 1985</div>
+    </div>
+    <div class="circuit-row">
+      <div class="circuit-label">PRESENT TIME</div>
+      <div class="circuit-value present" id="present-time">10 26 1985</div>
+    </div>
+    <div class="circuit-row">
+      <div class="circuit-label">LAST TIME DEPARTED</div>
+      <div class="circuit-value last" id="last-time">---- -- ----</div>
+    </div>
+  </div>
+
+  <div id="era-label">ERA: 1985 — HILL VALLEY</div>
+  <div id="butterfly-flag">FLAGS: none</div>
+
+  <div id="hud-bottom">
+    <div id="speed-display">0 MPH</div>
+    <div id="stars-display"></div>
+  </div>
+
+  <div id="controls-hint">
+    WASD drive · SPACE handbrake · SHIFT boost<br/>
+    H hover (2015/2045) · TAB keypad<br/>
+    P / 1-7 toggle butterfly flags · E repair
+  </div>
+
+  <div id="status-bar">Hill Valley · Add to Home Screen on iOS</div>
+  <div id="time-flash"></div>
+
+  <div id="touch-controls">
+    <div id="steer-pad" class="touch-zone"><div id="steer-knob"></div></div>
+    <div id="throttle-btn" class="touch-zone">GAS</div>
+    <div id="brake-btn" class="touch-zone">BRAKE</div>
+    <div id="handbrake-btn" class="touch-zone">HB</div>
+    <div id="boost-btn" class="touch-zone">BOOST</div>
+    <div id="keypad-btn" class="touch-zone">TIME</div>
+  </div>
+
+  <div id="keypad-overlay">
+    <div id="keypad">
+      <div id="keypad-display">MMDDYYYY</div>
+      <div class="keypad-grid">
+        <button class="key" data-key="1">1</button>
+        <button class="key" data-key="2">2</button>
+        <button class="key" data-key="3">3</button>
+        <button class="key" data-key="4">4</button>
+        <button class="key" data-key="5">5</button>
+        <button class="key" data-key="6">6</button>
+        <button class="key" data-key="7">7</button>
+        <button class="key" data-key="8">8</button>
+        <button class="key" data-key="9">9</button>
+        <button class="key action" data-key="C">C</button>
+        <button class="key" data-key="0">0</button>
+        <button class="key action" data-key="ENTER">⏎</button>
+      </div>
+      <div id="keypad-hint">MMDDYYYY · Tab / TIME to close</div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
