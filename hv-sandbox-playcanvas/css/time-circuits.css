@@ -1,0 +1,403 @@
+/* Hill Valley Time Circuits + Keypad + HUD + Touch Controls */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --led-green: #00ff41;
+  --led-amber: #ffb000;
+  --led-red: #ff2a2a;
+  --led-glow: 0 0 8px currentColor, 0 0 16px currentColor;
+  --panel-bg: rgba(10, 12, 18, 0.92);
+  --border: #2a3a4a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  font-family: 'Share Tech Mono', monospace;
+  color: #c8d0d8;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#application-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+}
+
+#time-circuits {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 14px;
+  background: var(--panel-bg);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  box-shadow: 0 0 20px rgba(0, 255, 65, 0.15);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.circuit-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 100px;
+}
+
+.circuit-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: #6a7a8a;
+  margin-bottom: 3px;
+}
+
+.circuit-value {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 18px;
+  letter-spacing: 2px;
+  text-shadow: var(--led-glow);
+}
+
+.circuit-value.destination { color: var(--led-green); }
+.circuit-value.present     { color: var(--led-amber); }
+.circuit-value.last        { color: var(--led-red); }
+
+#era-label {
+  position: absolute;
+  top: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: #8a9aaa;
+  z-index: 100;
+  pointer-events: none;
+}
+
+#hud-bottom {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+#speed-display {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 26px;
+  color: var(--led-amber);
+  text-shadow: var(--led-glow);
+}
+
+#speed-display.over88 {
+  color: var(--led-red);
+  animation: pulse 0.3s infinite alternate;
+}
+
+@keyframes pulse {
+  from { opacity: 1; }
+  to   { opacity: 0.55; }
+}
+
+#stars-display {
+  font-size: 16px;
+  letter-spacing: 3px;
+  color: var(--led-red);
+  text-shadow: 0 0 6px var(--led-red);
+}
+
+#status-bar {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  font-size: 11px;
+  color: #5a6a7a;
+  z-index: 100;
+  pointer-events: none;
+  text-align: right;
+  max-width: 200px;
+}
+
+#controls-hint {
+  position: absolute;
+  bottom: 70px;
+  left: 16px;
+  font-size: 10px;
+  color: #4a5a6a;
+  z-index: 100;
+  pointer-events: none;
+  line-height: 1.45;
+}
+
+#keypad-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+
+#keypad-overlay.visible { display: flex; }
+
+#keypad {
+  background: #0d1117;
+  border: 3px solid #1f2a36;
+  border-radius: 10px;
+  padding: 18px;
+  width: 270px;
+  box-shadow: 0 0 40px rgba(0, 255, 65, 0.2);
+}
+
+#keypad-display {
+  background: #000;
+  border: 2px solid #1a3a2a;
+  color: var(--led-green);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 26px;
+  letter-spacing: 3px;
+  text-align: center;
+  padding: 10px;
+  margin-bottom: 12px;
+  text-shadow: var(--led-glow);
+  min-height: 48px;
+}
+
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.key {
+  background: #1a222c;
+  border: 1px solid #2a3a4a;
+  color: #c8d0d8;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 17px;
+  padding: 13px 0;
+  cursor: pointer;
+  border-radius: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.key:active, .key:hover {
+  background: #243040;
+  color: var(--led-green);
+}
+
+.key.action { background: #1a2a1a; color: var(--led-green); }
+.key.danger { background: #2a1a1a; color: var(--led-red); }
+
+#keypad-hint {
+  margin-top: 10px;
+  font-size: 10px;
+  color: #5a6a7a;
+  text-align: center;
+}
+
+#time-flash {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 300;
+  transition: opacity 0.18s ease-out;
+}
+
+#time-flash.active {
+  opacity: 1;
+  transition: none;
+}
+
+#touch-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  display: none;
+}
+
+#touch-controls.visible {
+  display: block;
+}
+
+.touch-zone {
+  position: absolute;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#steer-pad {
+  left: 16px;
+  bottom: 100px;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: rgba(20, 30, 40, 0.55);
+  border: 2px solid rgba(0, 255, 65, 0.25);
+}
+
+#steer-knob {
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(0, 255, 65, 0.45);
+  border: 2px solid var(--led-green);
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+#throttle-btn, #brake-btn, #handbrake-btn, #boost-btn, #keypad-btn {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(20, 30, 40, 0.6);
+  border: 2px solid rgba(255, 176, 0, 0.35);
+  color: var(--led-amber);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.1;
+}
+
+#throttle-btn { right: 24px; bottom: 160px; }
+#brake-btn    { right: 24px; bottom: 90px; }
+#handbrake-btn { right: 100px; bottom: 90px; border-color: rgba(255, 42, 42, 0.4); color: var(--led-red); }
+#boost-btn    { right: 100px; bottom: 160px; border-color: rgba(0, 255, 65, 0.35); color: var(--led-green); }
+#keypad-btn   { right: 24px; top: 80px; border-color: rgba(0, 255, 65, 0.35); color: var(--led-green); width: 56px; height: 56px; font-size: 10px; }
+
+.touch-zone.active {
+  background: rgba(0, 255, 65, 0.25) !important;
+  border-color: var(--led-green) !important;
+}
+
+#butterfly-flag {
+  position: absolute;
+  top: 90px;
+  left: 16px;
+  font-size: 11px;
+  color: #7a8a6a;
+  z-index: 100;
+  pointer-events: none;
+  background: rgba(0,0,0,0.5);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+#interact-prompt {
+  position: absolute;
+  left: 50%;
+  bottom: 110px;
+  transform: translateX(-50%);
+  z-index: 160;
+  display: none;
+  pointer-events: auto;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: #041208;
+  background: rgba(0, 255, 65, 0.88);
+  border: 2px solid #00ff41;
+  border-radius: 6px;
+  padding: 10px 16px;
+  cursor: pointer;
+}
+
+#interact-prompt.visible {
+  display: block;
+}
+
+#loading-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 500;
+  background: #05080c;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+#loading-overlay.hidden {
+  display: none;
+}
+
+#loading-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px;
+  letter-spacing: 6px;
+  color: var(--led-green);
+  text-shadow: var(--led-glow);
+}
+
+#loading-bar {
+  width: min(280px, 70vw);
+  height: 8px;
+  background: #1a222c;
+  border: 1px solid #2a3a4a;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#loading-fill {
+  width: 8%;
+  height: 100%;
+  background: var(--led-green);
+  box-shadow: 0 0 10px var(--led-green);
+  transition: width 0.2s ease;
+}
+
+#loading-status {
+  font-size: 12px;
+  color: #7a8a9a;
+}
+
+/* iOS safe areas */
+@supports (padding: max(0px)) {
+  #time-circuits {
+    top: max(10px, env(safe-area-inset-top));
+  }
+  #hud-bottom {
+    bottom: max(16px, env(safe-area-inset-bottom));
+    left: max(16px, env(safe-area-inset-left));
+  }
+  #status-bar {
+    bottom: max(16px, env(safe-area-inset-bottom));
+    right: max(16px, env(safe-area-inset-right));
+  }
+  #steer-pad {
+    left: max(16px, env(safe-area-inset-left));
+    bottom: max(100px, env(safe-area-inset-bottom) + 80px);
+  }
+  #throttle-btn { right: max(24px, env(safe-area-inset-right)); }
+  #brake-btn { right: max(24px, env(safe-area-inset-right)); }
+  #handbrake-btn { right: max(100px, env(safe-area-inset-right) + 76px); }
+  #boost-btn { right: max(100px, env(safe-area-inset-right) + 76px); }
+  #keypad-btn { right: max(24px, env(safe-area-inset-right)); top: max(80px, env(safe-area-inset-top) + 60px); }
+}

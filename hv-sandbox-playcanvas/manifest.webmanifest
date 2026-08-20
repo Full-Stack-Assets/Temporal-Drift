@@ -1,0 +1,25 @@
+{
+  "name": "Hill Valley Multi-Era Sandbox",
+  "short_name": "Hill Valley",
+  "description": "Back to the Future × Vice City time-travel sandbox. Drive the DeLorean across five eras of Hill Valley.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#000000",
+  "theme_color": "#00ff41",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
