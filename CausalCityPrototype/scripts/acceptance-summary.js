@@ -23,6 +23,7 @@ function emit(relativePath, label) {
 
 const runGraph = emit('../tests/kernel/helpers/emit-run-graph.js', 'RunGraph');
 const projection = emit('../tests/kernel/helpers/emit-4d-projection.js', '4D projection');
+const phase2 = emit('../tests/kernel/helpers/emit-phase2-conformance.js', 'Phase 2');
 
 process.stdout.write(`${JSON.stringify({
   fixtureVersion: 'ripple-trust-kernel-v1',
@@ -30,15 +31,18 @@ process.stdout.write(`${JSON.stringify({
   kernelVersion: '1.0.0',
   canonicalFixtureVersion: 'canonical-v1',
   projectionFixtureVersion: 'projection-v1',
+  phase2FixtureVersion: 'phase2-approximation-v1',
   counterTerminalReceiptHash: counter.ledger.at(-1).receiptHash,
   bellwetherTerminalReceiptHashes: bellwether,
   runGraphConformance: runGraph,
   projectionConformance: projection,
+  phase2Conformance: phase2,
   acceptanceCases: {
     seedSweep: 10000,
     forkIsolation: 1000,
     shadowEquivalence: 1000,
     runGraphProcesses: 4,
     projectionProcesses: 4,
+    phase2Processes: 4,
   },
 })}\n`);
