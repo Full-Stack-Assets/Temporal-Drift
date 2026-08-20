@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ripple-city.invalid/schemas/sparse-topography-v1.schema.json",
+  "title": "Ripple Sparse Topography v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format","schemaVersion","approximation","evaluator","baseline","axes","metrics","cliffThreshold","pairLimit","samples","sensitivities","interactions","topographyHash"],
+  "properties": {
+    "format": {"const":"ripple-sparse-topography"},
+    "schemaVersion": {"const":"1.0.0"},
+    "approximation": {"const":true},
+    "evaluator": {"$ref":"#/$defs/evaluator"},
+    "baseline": {"$ref":"#/$defs/integerMap"},
+    "axes": {"type":"array","minItems":1,"items":{"$ref":"#/$defs/axis"}},
+    "metrics": {"type":"array","minItems":1,"items":{"$ref":"#/$defs/nonEmpty"}},
+    "cliffThreshold": {"$ref":"#/$defs/threshold"},
+    "pairLimit": {"$ref":"#/$defs/nonNegative"},
+    "samples": {"type":"array","minItems":1,"items":{"$ref":"#/$defs/sample"}},
+    "sensitivities": {"type":"array","items":{"$ref":"#/$defs/sensitivity"}},
+    "interactions": {"type":"array","items":{"$ref":"#/$defs/interaction"}},
+    "topographyHash": {"$ref":"#/$defs/hash"}
+  },
+  "$defs": {
+    "hash": {"type":"string","pattern":"^[a-f0-9]{64}$"},
+    "nonEmpty": {"type":"string","minLength":1},
+    "safeInteger": {"type":"integer","minimum":-9007199254740991,"maximum":9007199254740991},
+    "nonNegative": {"type":"integer","minimum":0,"maximum":9007199254740991},
+    "positive": {"type":"integer","minimum":1,"maximum":9007199254740991},
+    "integerMap": {"type":"object","minProperties":1,"additionalProperties":{"$ref":"#/$defs/safeInteger"}},
+    "evaluator": {"type":"object","additionalProperties":false,"required":["id","version"],"properties":{"id":{"$ref":"#/$defs/nonEmpty"},"version":{"$ref":"#/$defs/nonEmpty"}}},
+    "axis": {"type":"object","additionalProperties":false,"required":["axisId","minimum","maximum","step"],"properties":{"axisId":{"$ref":"#/$defs/nonEmpty"},"minimum":{"$ref":"#/$defs/safeInteger"},"maximum":{"$ref":"#/$defs/safeInteger"},"step":{"$ref":"#/$defs/positive"}}},
+    "threshold": {"type":"object","additionalProperties":false,"required":["outputNumerator","inputDenominator"],"properties":{"outputNumerator":{"$ref":"#/$defs/positive"},"inputDenominator":{"$ref":"#/$defs/positive"}}},
+    "sample": {"type":"object","additionalProperties":false,"required":["kind","axisIds","parameters","metrics","sampleId"],"properties":{"kind":{"enum":["baseline","axis-negative","axis-positive","pair-positive"]},"axisIds":{"type":"array","items":{"$ref":"#/$defs/nonEmpty"}},"parameters":{"$ref":"#/$defs/integerMap"},"metrics":{"$ref":"#/$defs/integerMap"},"sampleId":{"type":"string","pattern":"^sample-[a-f0-9]{64}$"}}},
+    "sensitivity": {"type":"object","additionalProperties":false,"required":["baselineSampleId","sampleId","axisId","sampleDirection","metricId","deltaInput","deltaOutput","slopeNumerator","slopeDenominator","classification","sensitivityId"],"properties":{"baselineSampleId":{"type":"string","pattern":"^sample-[a-f0-9]{64}$"},"sampleId":{"type":"string","pattern":"^sample-[a-f0-9]{64}$"},"axisId":{"$ref":"#/$defs/nonEmpty"},"sampleDirection":{"enum":["negative","positive"]},"metricId":{"$ref":"#/$defs/nonEmpty"},"deltaInput":{"$ref":"#/$defs/safeInteger"},"deltaOutput":{"$ref":"#/$defs/safeInteger"},"slopeNumerator":{"$ref":"#/$defs/safeInteger"},"slopeDenominator":{"$ref":"#/$defs/safeInteger"},"classification":{"enum":["flat","negative","positive","cliff-candidate"]},"sensitivityId":{"type":"string","pattern":"^sensitivity-[a-f0-9]{64}$"}}},
+    "interaction": {"type":"object","additionalProperties":false,"required":["baselineSampleId","pairSampleId","singleSampleIds","axisIds","metricId","combinedDelta","singleDeltas","interactionDelta","interactionId"],"properties":{"baselineSampleId":{"type":"string","pattern":"^sample-[a-f0-9]{64}$"},"pairSampleId":{"type":"string","pattern":"^sample-[a-f0-9]{64}$"},"singleSampleIds":{"type":"array","minItems":2,"maxItems":2,"items":{"type":"string","pattern":"^sample-[a-f0-9]{64}$"}},"axisIds":{"type":"array","minItems":2,"maxItems":2,"items":{"$ref":"#/$defs/nonEmpty"}},"metricId":{"$ref":"#/$defs/nonEmpty"},"combinedDelta":{"$ref":"#/$defs/safeInteger"},"singleDeltas":{"type":"array","minItems":2,"maxItems":2,"items":{"$ref":"#/$defs/safeInteger"}},"interactionDelta":{"$ref":"#/$defs/safeInteger"},"interactionId":{"type":"string","pattern":"^interaction-[a-f0-9]{64}$"}}}
+  }
+}
