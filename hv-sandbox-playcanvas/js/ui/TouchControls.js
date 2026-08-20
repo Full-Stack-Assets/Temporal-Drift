@@ -111,9 +111,12 @@ export class TouchControls {
     const kbtn = document.getElementById('keypad-btn');
     if (kbtn) {
       const open = e => { e.preventDefault(); this.onKeypad(); };
-      kbtn.addEventListener('pointerdown', open);
-      kbtn.addEventListener('touchstart', open, { passive: false });
-      kbtn.addEventListener('click', open);
+      if (window.PointerEvent) {
+        kbtn.addEventListener('pointerdown', open);
+      } else {
+        kbtn.addEventListener('touchstart', open, { passive: false });
+        kbtn.addEventListener('click', open);
+      }
     }
   }
 
