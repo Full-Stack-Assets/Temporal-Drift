@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "verification-quorum-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["resultVersion", "registryHash", "policyHash", "subject", "disposition", "distinctVerifierCount", "passWeight", "failWeight", "abstainWeight", "invalidEvidenceCount", "sameVerifierConflictCount", "requiredRolesSatisfied", "passVerifierIds", "failVerifierIds", "abstainVerifierIds", "contributingAttestationHashes", "executionAuthority", "quorumHash"],
+  "properties": {
+    "resultVersion": { "const": "verification-quorum-v1" },
+    "registryHash": { "$ref": "#/$defs/hash" },
+    "policyHash": { "$ref": "#/$defs/hash" },
+    "subject": { "$ref": "#/$defs/subject" },
+    "disposition": { "enum": ["quorum-pass", "quorum-fail", "conflicted", "insufficient-quorum", "invalid-evidence"] },
+    "distinctVerifierCount": { "type": "integer", "minimum": 0 },
+    "passWeight": { "type": "integer", "minimum": 0 },
+    "failWeight": { "type": "integer", "minimum": 0 },
+    "abstainWeight": { "type": "integer", "minimum": 0 },
+    "invalidEvidenceCount": { "type": "integer", "minimum": 0 },
+    "sameVerifierConflictCount": { "type": "integer", "minimum": 0 },
+    "requiredRolesSatisfied": { "type": "boolean" },
+    "passVerifierIds": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "failVerifierIds": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "abstainVerifierIds": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "contributingAttestationHashes": { "type": "array", "items": { "$ref": "#/$defs/hash" } },
+    "executionAuthority": { "const": "none" },
+    "quorumHash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["subjectType", "subjectId", "subjectHash"],
+      "properties": {
+        "subjectType": { "type": "string", "minLength": 1 },
+        "subjectId": { "type": "string", "minLength": 1 },
+        "subjectHash": { "$ref": "#/$defs/hash" }
+      }
+    }
+  }
+}

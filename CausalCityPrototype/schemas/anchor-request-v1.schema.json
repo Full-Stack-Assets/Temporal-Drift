@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "anchor-request-v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["requestVersion", "subjectType", "subjectId", "subjectHash", "targetProfile", "nonce", "requestHash"],
+  "properties": {
+    "requestVersion": { "const": "anchor-request-v1" },
+    "subjectType": { "type": "string", "minLength": 1 },
+    "subjectId": { "type": "string", "minLength": 1 },
+    "subjectHash": { "$ref": "#/$defs/hash" },
+    "targetProfile": { "type": "string", "minLength": 1 },
+    "nonce": { "type": "string", "minLength": 1 },
+    "requestHash": { "$ref": "#/$defs/hash" }
+  },
+  "$defs": { "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" } }
+}

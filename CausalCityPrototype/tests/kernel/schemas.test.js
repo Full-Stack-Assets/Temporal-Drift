@@ -9,7 +9,19 @@ import { createRunGraph, exportRunGraph, forkBranch } from '../../src/kernel/run
 import { counterManifest } from './helpers/counter-fixture.js';
 import { completeCounterRun } from './helpers/run-graph-fixture.js';
 
-const schemaNames = ['anomaly-record-v1', 'run-manifest-v1', 'verification-receipt-v1', 'run-graph-v1'];
+const schemaNames = [
+  'anomaly-record-v1',
+  'run-manifest-v1',
+  'verification-receipt-v1',
+  'run-graph-v1',
+  'crypto-profile-v1',
+  'verifier-registry-v1',
+  'verification-attestation-v1',
+  'verifier-revocation-ledger-v1',
+  'verification-quorum-v1',
+  'anchor-request-v1',
+  'anchor-receipt-v1',
+];
 
 async function load(name) {
   return JSON.parse(await readFile(new URL(`../../schemas/${name}.schema.json`, import.meta.url), 'utf8'));
