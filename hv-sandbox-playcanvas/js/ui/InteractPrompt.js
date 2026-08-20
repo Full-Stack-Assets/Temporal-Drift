@@ -15,8 +15,12 @@ export class InteractPrompt {
       e.preventDefault();
       this.tryActivate();
     };
-    this.el.addEventListener('click', activate);
-    this.el.addEventListener('pointerdown', activate);
+    // Pointer Events synthesize click; bind one path to avoid double repair.
+    if (window.PointerEvent) {
+      this.el.addEventListener('pointerdown', activate);
+    } else {
+      this.el.addEventListener('click', activate);
+    }
   }
 
   show(label, action) {
