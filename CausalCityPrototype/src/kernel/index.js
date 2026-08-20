@@ -16,3 +16,5 @@ export { createManifest, manifestCore } from './manifest.js';
 export { createPrng, seedToState } from './prng.js';
 export { canonicalBytes, canonicalString, sha256Hex } from './canonicalize.js';
 export { TrustKernelError } from './errors.js';
+export { createAnnotation, normalizeAnnotations } from '../projection/annotations.js';
+export { projectRunGraph, PROJECTION_FORMAT, PROJECTION_SCHEMA_VERSION } from '../projection/project-4d.js';

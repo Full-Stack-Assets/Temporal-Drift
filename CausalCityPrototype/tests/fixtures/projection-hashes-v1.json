@@ -1,0 +1,50 @@
+{
+  "fixtureVersion": "projection-v1",
+  "graphId": "graph-0710269a4b8d2f275c95cc70383d21228b455a1609401facf1550a33ceb4346b",
+  "sourceGraphHash": "2f8f34ca29378ce8df21fc2970b1ccea74f2f5de70c69b81dba8cfc124b6839a",
+  "projectionHash": "71f74c3c83600cd75e9c1dd91c78fb4c73c2af0901849bb1a6c8a80f0ae50c56",
+  "projectionBytesHash": "893bdbe66c6d0434809f11926e3000efb0050a00d141a9a9c571ebc26d502d6d",
+  "projectionByteLength": 16881,
+  "temporalNodeCount": 9,
+  "provenanceEdgeCount": 14,
+  "branchNodeCount": 3,
+  "branchEdgeCount": 2,
+  "coordinateSample": [
+    {
+      "nodeId": "snapstate:branch-4ac09347a67e452646b176c35d870bc4d730294a4474ed98a99700d705f68601:genesis:0c07187ea6d064441225b3cba26a7b1e8bc702fcf332b457dae8e26892ba68a6",
+      "branchId": "branch-4ac09347a67e452646b176c35d870bc4d730294a4474ed98a99700d705f68601",
+      "sequence": 0,
+      "x": 0,
+      "y": 1000,
+      "z": 0,
+      "t": 0
+    },
+    {
+      "nodeId": "snapstate:branch-4ac09347a67e452646b176c35d870bc4d730294a4474ed98a99700d705f68601:alt:8a5c7f0a249309a0a490436246d7e4c75abc97488ad2da0c6e85a517ac13cdd2",
+      "branchId": "branch-4ac09347a67e452646b176c35d870bc4d730294a4474ed98a99700d705f68601",
+      "sequence": 1,
+      "x": 0,
+      "y": 1000,
+      "z": 1000,
+      "t": 1000
+    },
+    {
+      "nodeId": "snapstate:branch-ee5136a14c9e9fbee68a2cdcbd4d1b79ce60189511e7c2685966fe4b1bb60463:genesis:6aea6dfe6561984cdc5c54ead84d47d2cf29e48253ae282aef237404adad4661",
+      "branchId": "branch-ee5136a14c9e9fbee68a2cdcbd4d1b79ce60189511e7c2685966fe4b1bb60463",
+      "sequence": 0,
+      "x": 1000,
+      "y": 1000,
+      "z": 0,
+      "t": 0
+    },
+    {
+      "nodeId": "snapstate:branch-ee5136a14c9e9fbee68a2cdcbd4d1b79ce60189511e7c2685966fe4b1bb60463:s2:0c07187ea6d064441225b3cba26a7b1e8bc702fcf332b457dae8e26892ba68a6",
+      "branchId": "branch-ee5136a14c9e9fbee68a2cdcbd4d1b79ce60189511e7c2685966fe4b1bb60463",
+      "sequence": 1,
+      "x": 1000,
+      "y": 1000,
+      "z": 1000,
+      "t": 1000
+    }
+  ]
+}

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trustscape Lite — Ripple City</title>
+  <meta name="description" content="Non-authoritative deterministic explorer for verified Trust Kernel and RunGraph evidence.">
+  <link rel="stylesheet" href="./styles/trustscape.css">
+</head>
+<body>
+  <header class="masthead">
+    <div>
+      <p class="eyebrow">Ripple City · Phase 1 Lab</p>
+      <h1>Trustscape Lite</h1>
+      <p class="lede">Deterministic navigation of Snapstates, receipt provenance, branch topology, and local annotations.</p>
+    </div>
+    <div class="warning" role="status">SHADOW / NON-AUTHORITATIVE VISUALIZATION</div>
+  </header>
+
+  <main class="layout">
+    <section class="stage-panel" aria-labelledby="stage-heading">
+      <div class="panel-heading">
+        <div>
+          <p class="eyebrow">Verified projection fixture</p>
+          <h2 id="stage-heading">Temporal × Branch Space</h2>
+        </div>
+        <div class="hash-block">
+          <span>Projection</span>
+          <code id="projection-hash">loading…</code>
+        </div>
+      </div>
+
+      <div class="controls" aria-label="Trustscape controls">
+        <label class="range-control">
+          <span>Time horizon <output id="time-output">0</output></span>
+          <input id="time-slider" type="range" min="0" max="0" step="1000" value="0">
+        </label>
+        <label>
+          <span>Branch A</span>
+          <select id="branch-a"></select>
+        </label>
+        <label>
+          <span>Branch B</span>
+          <select id="branch-b"></select>
+        </label>
+        <button id="show-all" type="button">Show all branches</button>
+      </div>
+
+      <div class="viewport-wrap">
+        <canvas id="trustscape-canvas" aria-label="Trustscape WebGL visualization"></canvas>
+        <div id="fallback-view" class="fallback-view" hidden></div>
+        <div class="axis-key" aria-hidden="true">
+          <span>X · deterministic branch lane</span>
+          <span>Y · branch depth</span>
+          <span>Z/T · Snapstate sequence</span>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span><i class="dot"></i> Snapstate</span>
+        <span><i class="line"></i> Verified receipt/fork provenance</span>
+        <span class="semantic-note">“Causal” means provenance in v1, not inferred real-world causality.</span>
+      </div>
+    </section>
+
+    <aside class="side-panel">
+      <section class="card" aria-labelledby="inspector-heading">
+        <p class="eyebrow">Evidence inspector</p>
+        <h2 id="inspector-heading">Selected Snapstate</h2>
+        <div id="inspector" class="inspector empty">Select a point from the evidence list.</div>
+        <div id="evidence-list" class="evidence-list" role="list"></div>
+      </section>
+
+      <section class="card" aria-labelledby="radar-heading">
+        <p class="eyebrow">Anomaly / annotation radar</p>
+        <h2 id="radar-heading">Local review signals</h2>
+        <div id="radar-list" class="radar-list"></div>
+      </section>
+
+      <section class="card" aria-labelledby="annotation-heading">
+        <p class="eyebrow">Local-first collaboration</p>
+        <h2 id="annotation-heading">Add annotation</h2>
+        <form id="annotation-form">
+          <label><span>Author ID</span><input id="author-id" name="authorId" required value="planner-1"></label>
+          <label><span>Target</span><input id="target-id" name="targetId" required readonly placeholder="Select a Snapstate"></label>
+          <label><span>Note</span><textarea id="annotation-body" name="body" rows="3" required></textarea></label>
+          <button type="submit">Append annotation</button>
+        </form>
+        <div class="annotation-actions">
+          <button id="export-annotations" type="button">Export annotations</button>
+          <label class="import-label">Import <input id="import-annotations" type="file" accept="application/json"></label>
+        </div>
+        <p class="fine-print">Annotations are stored only in this browser unless explicitly exported. They never modify kernel receipts, RunGraph hashes, or projection evidence.</p>
+      </section>
+
+      <section class="card provenance-card" aria-labelledby="integrity-heading">
+        <p class="eyebrow">Integrity anchors</p>
+        <h2 id="integrity-heading">Source commitments</h2>
+        <dl>
+          <div><dt>Graph</dt><dd><code id="graph-id"></code></dd></div>
+          <div><dt>Graph hash</dt><dd><code id="graph-hash"></code></dd></div>
+          <div><dt>Scene hash</dt><dd><code id="scene-hash"></code></dd></div>
+        </dl>
+      </section>
+    </aside>
+  </main>
+
+  <script type="module" src="./src/trustscape/app.js"></script>
+</body>
+</html>
