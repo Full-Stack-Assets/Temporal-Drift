@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://full-stack-assets.example/schemas/verification-attestation-v1.schema.json",
+  "title": "Verification Attestation v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "artifactType",
+    "artifactId",
+    "artifactHash",
+    "verifierNodeId",
+    "operatorId",
+    "verificationMethod",
+    "verificationVersion",
+    "verifiedAtLogical",
+    "runtime",
+    "evidenceHash",
+    "result",
+    "failureCodes",
+    "cryptoProfileId",
+    "independenceStatus",
+    "executionAuthority",
+    "statementHash",
+    "publicKeyEncoding",
+    "publicKey",
+    "publicKeyFingerprint",
+    "signatureAlgorithm",
+    "signatureEncoding",
+    "signature",
+    "attestationId"
+  ],
+  "properties": {
+    "format": { "const": "verification-attestation" },
+    "schemaVersion": { "const": "1.0.0" },
+    "artifactType": { "type": "string", "minLength": 1 },
+    "artifactId": { "type": "string", "minLength": 1 },
+    "artifactHash": { "$ref": "#/$defs/hash" },
+    "verifierNodeId": { "type": "string", "minLength": 1 },
+    "operatorId": { "type": "string", "minLength": 1 },
+    "verificationMethod": { "type": "string", "minLength": 1 },
+    "verificationVersion": { "type": "string", "minLength": 1 },
+    "verifiedAtLogical": { "type": "integer", "minimum": 0 },
+    "runtime": { "type": "string", "minLength": 1 },
+    "evidenceHash": { "$ref": "#/$defs/hash" },
+    "result": { "enum": ["pass", "fail"] },
+    "failureCodes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^E_[A-Z0-9_]+$" }
+    },
+    "cryptoProfileId": { "$ref": "#/$defs/profileId" },
+    "independenceStatus": { "const": "declared-not-proven" },
+    "executionAuthority": { "const": "none" },
+    "statementHash": { "$ref": "#/$defs/hash" },
+    "publicKeyEncoding": { "const": "spki-der-base64url" },
+    "publicKey": { "$ref": "#/$defs/base64url" },
+    "publicKeyFingerprint": { "$ref": "#/$defs/hash" },
+    "signatureAlgorithm": { "const": "ed25519" },
+    "signatureEncoding": { "const": "base64url" },
+    "signature": { "$ref": "#/$defs/base64url" },
+    "attestationId": { "type": "string", "pattern": "^attestation-[a-f0-9]{64}$" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "result": { "const": "pass" } }, "required": ["result"] },
+      "then": { "properties": { "failureCodes": { "maxItems": 0 } } },
+      "else": { "properties": { "failureCodes": { "minItems": 1 } } }
+    }
+  ],
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "profileId": { "type": "string", "pattern": "^crypto-profile-[a-f0-9]{64}$" },
+    "base64url": { "type": "string", "minLength": 1, "pattern": "^[A-Za-z0-9_-]+$" }
+  }
+}

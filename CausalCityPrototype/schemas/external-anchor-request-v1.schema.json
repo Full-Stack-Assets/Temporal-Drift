@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://full-stack-assets.example/schemas/external-anchor-request-v1.schema.json",
+  "title": "External Anchor Request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "schemaVersion",
+    "artifactType",
+    "artifactHash",
+    "cryptoProfileId",
+    "externalNetworkId",
+    "requestedAtLogical",
+    "metadataHash",
+    "anchorCommitmentHash",
+    "externalPublicationPerformed",
+    "externalVerificationRequired",
+    "externalNetworkAuthority",
+    "requestId"
+  ],
+  "properties": {
+    "format": { "const": "external-anchor-request" },
+    "schemaVersion": { "const": "1.0.0" },
+    "artifactType": { "type": "string", "minLength": 1 },
+    "artifactHash": { "$ref": "#/$defs/hash" },
+    "cryptoProfileId": { "$ref": "#/$defs/profileId" },
+    "externalNetworkId": { "type": "string", "minLength": 1 },
+    "requestedAtLogical": { "type": "integer", "minimum": 0 },
+    "metadataHash": { "$ref": "#/$defs/hash" },
+    "anchorCommitmentHash": { "$ref": "#/$defs/hash" },
+    "externalPublicationPerformed": { "const": false },
+    "externalVerificationRequired": { "const": true },
+    "externalNetworkAuthority": { "const": "none" },
+    "requestId": { "type": "string", "pattern": "^anchor-request-[a-f0-9]{64}$" }
+  },
+  "$defs": {
+    "hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "profileId": { "type": "string", "pattern": "^crypto-profile-[a-f0-9]{64}$" }
+  }
+}
