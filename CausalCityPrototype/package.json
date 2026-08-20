@@ -3,8 +3,19 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0 <25.0.0"
+  },
   "scripts": {
-    "test": "node --test",
-    "check": "node --check src/*.js"
+    "test": "npm run test:legacy && npm run test:kernel && npm run test:acceptance",
+    "test:legacy": "node --test tests/explanations.test.js tests/simulation.test.js tests/stories.test.js",
+    "test:kernel": "node --test tests/kernel/*.test.js",
+    "test:acceptance": "node --test tests/acceptance/*.test.js",
+    "check": "npm run check:runtime && npm run check:syntax && npm run check:randomness",
+    "check:runtime": "node scripts/check-runtime.js",
+    "check:syntax": "node scripts/check-syntax.js",
+    "check:randomness": "node scripts/check-randomness.js",
+    "acceptance:summary": "node scripts/acceptance-summary.js",
+    "verify": "npm run check && npm run test && npm run acceptance:summary"
   }
 }

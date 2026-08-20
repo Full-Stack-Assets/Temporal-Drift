@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ripple-city.invalid/schemas/anomaly-record-v1.schema.json",
+  "title": "Ripple City anomaly record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "anomalyId", "runId", "branchId", "stepId", "metricPath", "expected", "observed", "unit", "scale", "delta", "sourceRef", "sourceVersion", "severity", "requiresHumanReview"],
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1.0.0" },
+    "anomalyId": { "type": "string", "pattern": "^anomaly-[a-f0-9]{64}$" },
+    "runId": { "type": "string", "minLength": 1 },
+    "branchId": { "type": "string", "minLength": 1 },
+    "stepId": { "type": "string", "minLength": 1 },
+    "metricPath": { "type": "string", "minLength": 1 },
+    "expected": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 },
+    "observed": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 },
+    "unit": { "type": "string", "minLength": 1 },
+    "scale": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+    "delta": { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 },
+    "sourceRef": { "type": "string", "minLength": 1 },
+    "sourceVersion": { "type": "string", "minLength": 1 },
+    "severity": { "type": "string", "enum": ["info", "warning", "critical"] },
+    "requiresHumanReview": { "type": "boolean", "const": true }
+  }
+}

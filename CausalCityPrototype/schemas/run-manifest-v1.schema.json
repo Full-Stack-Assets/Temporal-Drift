@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ripple-city.invalid/schemas/run-manifest-v1.schema.json",
+  "title": "Ripple City run manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "schemaVersion", "kernelVersion", "model", "runId", "branchId", "initialState", "initialPrngState", "inputs", "ancestry", "normalization", "expectedTerminalReceiptHash", "evidenceRuntime"],
+  "properties": {
+    "format": { "type": "string", "const": "ripple-trust-run" },
+    "schemaVersion": { "type": "string", "const": "1.0.0" },
+    "kernelVersion": { "type": "string", "const": "1.0.0" },
+    "model": {
+      "type": "object", "additionalProperties": false, "required": ["id", "version"],
+      "properties": { "id": { "type": "string", "minLength": 1 }, "version": { "type": "string", "minLength": 1 } }
+    },
+    "runId": { "type": "string", "minLength": 1 },
+    "branchId": { "type": "string", "minLength": 1 },
+    "initialState": { "$ref": "#/$defs/canonicalValue" },
+    "initialPrngState": {
+      "type": "array", "minItems": 4, "maxItems": 4,
+      "items": { "type": "integer", "minimum": 0, "maximum": 4294967295 },
+      "not": { "const": [0, 0, 0, 0] }
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "object", "additionalProperties": false, "required": ["stepId", "type", "payload"],
+        "properties": {
+          "stepId": { "type": "string", "minLength": 1 },
+          "type": { "type": "string", "minLength": 1 },
+          "payload": { "$ref": "#/$defs/canonicalValue" }
+        }
+      }
+    },
+    "ancestry": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object", "additionalProperties": false,
+          "required": ["parentRunId", "parentBranchId", "forkStepId", "forkReceiptHash"],
+          "properties": {
+            "parentRunId": { "type": "string", "minLength": 1 },
+            "parentBranchId": { "type": "string", "minLength": 1 },
+            "forkStepId": { "type": "string", "minLength": 1 },
+            "forkReceiptHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+          }
+        }
+      ]
+    },
+    "normalization": {
+      "type": "object", "additionalProperties": false, "required": ["id", "version", "scales"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "minLength": 1 },
+        "scales": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 1 } }
+      }
+    },
+    "expectedTerminalReceiptHash": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "evidenceRuntime": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "canonicalValue": {
+      "oneOf": [
+        { "type": "null" }, { "type": "boolean" }, { "type": "string" },
+        { "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 },
+        { "type": "array", "items": { "$ref": "#/$defs/canonicalValue" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/canonicalValue" } }
+      ]
+    }
+  }
+}

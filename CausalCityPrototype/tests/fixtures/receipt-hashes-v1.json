@@ -1,0 +1,9 @@
+{
+  "fixtureVersion": "ripple-trust-kernel-v1",
+  "counterTerminalReceiptHash": "df797bb7f17a3583dada534fa65f60fe06a73916b55244ac273c78eb3a2887fd",
+  "bellwetherTerminalReceiptHashes": {
+    "baseline": "9e95347ca3f0fb76be8001d5a65173bc7e06d1e9e7554e94c2e9fcc2d10e0132",
+    "shutdown": "6be136d97d9f3d6436751358109728681d2c45688aade467d5571de0eff51497",
+    "reinvention": "42505367d03b25e9aff35950107c68100be59b8c74ce9e36efbaa95bc8cbc57a"
+  }
+}

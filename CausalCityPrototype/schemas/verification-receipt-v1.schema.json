@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ripple-city.invalid/schemas/verification-receipt-v1.schema.json",
+  "title": "Ripple City verification receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "kernelVersion", "kind", "runId", "branchId", "stepId", "sequence", "previousReceiptHash", "inputHash", "previousStateHash", "resultingStateHash", "resultingPrngStateHash", "eventBatchHash", "manifestCoreHash", "receiptHash"],
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1.0.0" },
+    "kernelVersion": { "type": "string", "const": "1.0.0" },
+    "kind": { "type": "string", "enum": ["genesis", "transition"] },
+    "runId": { "type": "string", "minLength": 1 },
+    "branchId": { "type": "string", "minLength": 1 },
+    "stepId": { "type": "string", "minLength": 1 },
+    "sequence": { "type": "integer", "minimum": 0 },
+    "previousReceiptHash": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "inputHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "previousStateHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "resultingStateHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "resultingPrngStateHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "eventBatchHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "manifestCoreHash": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "receiptHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "kind": { "const": "genesis" } },
+        "required": ["kind"]
+      },
+      "then": {
+        "properties": {
+          "stepId": { "const": "genesis" },
+          "sequence": { "const": 0 },
+          "previousReceiptHash": { "type": "null" },
+          "manifestCoreHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "kind": { "const": "transition" } },
+        "required": ["kind"]
+      },
+      "then": {
+        "properties": {
+          "sequence": { "type": "integer", "minimum": 1 },
+          "previousReceiptHash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "manifestCoreHash": { "type": "null" }
+        }
+      }
+    }
+  ]
+}
