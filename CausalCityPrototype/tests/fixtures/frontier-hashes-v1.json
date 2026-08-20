@@ -1,0 +1,38 @@
+{
+  "fixtureVersion": "frontier-foundations-v1",
+  "populationSize": 100000,
+  "populationShardCount": 98,
+  "populationRoot": "ae936d615b8cd930e91bdab09862fe8d51091d6ae36861260b658b9d379d7e09",
+  "populationFirstShardHash": "082c5aeea43e0a8073c6f6774531bb645b682e35fec8bbb05ad84d36f72e5cc4",
+  "populationLastShardHash": "78bd49f44b5340b299dfd7d99ba30205e8b113a8e3b7de19d86c62352118ef14",
+  "populationBytesHash": "0ee544b845f55086e5ab2de6a3dfd3147d36ef1800e2211399919045aeb46626",
+  "crystalRootHash": "1c656fc4ec8f538854c8d9ca7679d5a767778da966340fae72fde9cc0e0a21d7",
+  "crystalHash": "adea6714a221fd6b3821f398f1b68d595eaf1afcea7715e480b15cd91bc085e7",
+  "crystalBytesHash": "7bfb9a423be534ced16db90b1600738063093558f501bed5f1855df3e3df4bc6",
+  "crystalProofLevelCount": 2,
+  "crystalProofVerified": true,
+  "rewindArtifactHash": "73c88dc12dd154db6fdaedb99c23b9b7a15b8bbca2fac94be90a2edad41c8771",
+  "rewindBytesHash": "cf2997040fc79c574c1ba160541131f3b17e8cecab180673376cbe445a90c090",
+  "rewindTargetReceiptHash": "2324c07dce3ea9aa6cbc7fc6145758da600936c00e2affd692fe538b89cc7c3f",
+  "rewindRestoredReceiptHash": "2324c07dce3ea9aa6cbc7fc6145758da600936c00e2affd692fe538b89cc7c3f",
+  "rewindRestoredStateHash": "0c07187ea6d064441225b3cba26a7b1e8bc702fcf332b457dae8e26892ba68a6",
+  "surpriseHash": "980b144de11ef870a761a0c9a188116311ec4a55e97140776bfc47800a7350e8",
+  "surpriseOrder": [
+    "s-c",
+    "s-b",
+    "s-a"
+  ],
+  "robustnessHash": "f27677b1a7c4ef2ad270f6e13a7f506bde2f6f514300b4d5815485de8f0ebb3c",
+  "robustnessBytesHash": "e6f9f94b5d3500a672eba1bfdbb1c05c6950dfaa753755a85febbada0a44f646",
+  "robustnessOrder": [
+    "branch-c",
+    "branch-a",
+    "branch-b"
+  ],
+  "institutionalRecordCount": 2,
+  "institutionalTerminalRecordHash": "dc898296bb434e95615453c11e9df2c4e1f61ab7076c525b97626b99e388a1df",
+  "institutionalLedgerBytesHash": "159bf6c221bbca571750b25c36a3e8e6903a20ab07df2e501b54a5e64e5e84a1",
+  "surpriseHumanReviewRequired": true,
+  "surpriseAutoCalibrationAllowed": false,
+  "surpriseAutoForkAllowed": false
+}
