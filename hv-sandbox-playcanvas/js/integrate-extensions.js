@@ -137,9 +137,9 @@ export async function initExtensions(ctx) {
     butterfly.fromBitmask(loaded.flagMask);
     if (loaded.era && loaded.era !== timeMachine.getCurrentEra()) {
       timeMachine.applyEra(loaded.era);
-    } else {
-      butterfly.evaluateAndMutateAssets(timeMachine.getCurrentEra(), sceneRefs);
     }
+    // Saved flags must drive era-dependent scene state after restoration.
+    butterfly.evaluateAndMutateAssets(timeMachine.getCurrentEra(), sceneRefs);
     updateButterflyHUD();
     flagPanel._refresh();
     console.log('[Save] Restored flags/era from LocalStorage', loaded.era);
